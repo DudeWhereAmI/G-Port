@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>G-Port - Quản lý phát thải và Vận hành Cảng biển Xanh</title>
+    <meta name="description" content="Nền tảng quản lý phát thải carbon và tối ưu hóa vận hành cảng biển xanh GPort" />
+    <meta property="og:title" content="G-Port - Quản lý phát thải và Vận hành Cảng biển Xanh" />
+    <meta property="og:description" content="Nền tảng quản lý phát thải carbon và tối ưu hóa vận hành cảng biển xanh GPort" />
+    <script>
+      // Suppress cross-origin frame security errors from DevTools and React development inspect checks
+      window.addEventListener('error', function(event) {
+        if (
+          event &&
+          ((event.error && (event.error.name === 'SecurityError' || String(event.error.message || '').includes('$$typeof'))) ||
+           String(event.message || '').includes('$$typeof') ||
+           String(event.message || '').includes('Blocked a frame with origin'))
+        ) {
+          event.preventDefault();
+          event.stopImmediatePropagation();
+          return true;
+        }
+      }, true);
+      window.addEventListener('unhandledrejection', function(event) {
+        if (
+          event &&
+          event.reason &&
+          (event.reason.name === 'SecurityError' ||
+           String(event.reason.message || '').includes('$$typeof') ||
+           String(event.reason.message || '').includes('Blocked a frame with origin'))
+        ) {
+          event.preventDefault();
+          event.stopImmediatePropagation();
+        }
+      });
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+

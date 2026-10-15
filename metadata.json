@@ -1,0 +1,6 @@
+{
+  "name": "G-Port",
+  "description": "Nền tảng quản lý phát thải carbon và tối ưu hóa vận hành cảng biển xanh GPort",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
