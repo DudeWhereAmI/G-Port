@@ -87,9 +87,6 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
           <h1 className="text-2xl font-black text-slate-900 tracking-tight">
             Port Energy & Decarbonization Dashboard
           </h1>
-          <p className="text-xs text-slate-600 mt-1 max-w-3xl">
-            Real-time multi-source power balancing, vessel shore power (OPS) dispatch, and automated DCSA voyage emissions auditing.
-          </p>
         </div>
 
         <div className="flex items-center gap-2">

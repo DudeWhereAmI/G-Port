@@ -86,9 +86,6 @@ export const MeasurementPage: React.FC<MeasurementPageProps> = ({
           <h1 className="text-2xl font-black text-slate-900 tracking-tight">
             Emissions Quantification & Carbon Intensity (kgCO₂e/TEU)
           </h1>
-          <p className="text-xs text-slate-600 mt-1 max-w-3xl">
-            Real-time energy consumption telemetry aggregated across terminal sub-zones, computing Scope 1 direct combustion and Scope 2 indirect grid emissions.
-          </p>
         </div>
 
         <div className="flex items-center gap-2.5 shrink-0">

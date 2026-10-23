@@ -91,9 +91,6 @@ export const VesselCarbonInvoicePage: React.FC<VesselCarbonInvoicePageProps> = (
           <h1 className="text-2xl font-black text-slate-900 tracking-tight">
             Port Call Invoicing: Fuel, Energy & Emissions Attestation
           </h1>
-          <p className="text-xs text-slate-600 mt-1 max-w-3xl">
-            Automated accounting from all-fast to cast-off, capturing cold ironing (OPS), STS moves, reefer yard chilling, tug assist, and tractor haulage with direct meter logs and cryptographic verification.
-          </p>
         </div>
 
         <div className="flex items-center gap-2.5 self-start md:self-auto shrink-0">
