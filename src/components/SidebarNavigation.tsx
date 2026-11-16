@@ -39,7 +39,6 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
   // Collapsible section states (clean single accordion)
   const [scheduleOpen, setScheduleOpen] = useState(true);
   const [energyOpen, setEnergyOpen] = useState(true);
-  const [carbonOpen, setCarbonOpen] = useState(true);
 
   // Auto-expand the category of the active page
   useEffect(() => {
@@ -51,8 +50,6 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
       activeSubPage === "MODULE_3_OPTIMIZATION"
     ) {
       setEnergyOpen(true);
-    } else if (activeSubPage === "MODULE_2_MEASUREMENT" || activeSubPage === "VESSEL_CARBON_INVOICE") {
-      setCarbonOpen(true);
     }
   }, [activeSubPage]);
 
@@ -249,66 +246,27 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
           )}
         </div>
 
-        {/* 4. EMISSIONS & INVOICES */}
-        <div className="space-y-0.5 pt-1">
+        {/* 4. EMISSIONS & INVOICES (Direct navigation to Carbon Invoices) */}
+        <div className="pt-1">
           <button
-            onClick={() => {
-              if (collapsed) onToggleCollapse();
-              setCarbonOpen(!carbonOpen);
-            }}
+            onClick={() => handleNavigate("VESSEL_CARBON_INVOICE")}
             className={`w-full flex items-center justify-between px-3 py-2 rounded-lg font-bold transition-colors ${
-              (activeSubPage === "MODULE_2_MEASUREMENT" || activeSubPage === "VESSEL_CARBON_INVOICE")
-                ? "bg-emerald-50/70 text-emerald-900"
+              activeSubPage === "VESSEL_CARBON_INVOICE" || activeSubPage === "MODULE_2_MEASUREMENT"
+                ? "bg-emerald-50/90 text-emerald-900 font-black border-l-3 border-emerald-600"
                 : "text-slate-700 hover:bg-slate-50"
             }`}
-            title="Emissions & Invoices"
+            title="Emissions & Invoices (Carbon Invoices)"
           >
             <div className="flex items-center gap-2.5">
               <Leaf className="w-4 h-4 text-emerald-600 shrink-0" />
               {!collapsed && <span>Emissions & Invoices</span>}
             </div>
             {!collapsed && (
-              <ChevronDown 
-                className={`w-3.5 h-3.5 text-slate-400 transition-transform duration-200 ${
-                  carbonOpen ? "" : "-rotate-90"
-                }`} 
-              />
+              <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 font-bold">
+                e-INV
+              </span>
             )}
           </button>
-
-          {(!collapsed && carbonOpen) && (
-            <div className="pl-6 space-y-0.5 border-l border-slate-100 ml-4 py-0.5">
-              <button
-                onClick={() => handleNavigate("MODULE_2_MEASUREMENT")}
-                className={`w-full text-left px-3 py-1.5 rounded-md transition-colors flex items-center justify-between ${
-                  activeSubPage === "MODULE_2_MEASUREMENT"
-                    ? "bg-emerald-100/80 text-emerald-900 font-bold"
-                    : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  <Leaf className="w-3.5 h-3.5 text-emerald-600" />
-                  <span>Emissions MRV</span>
-                </div>
-                <span className="text-[9px] font-mono px-1 rounded bg-emerald-100 text-emerald-700 font-bold">M-2</span>
-              </button>
-
-              <button
-                onClick={() => handleNavigate("VESSEL_CARBON_INVOICE")}
-                className={`w-full text-left px-3 py-1.5 rounded-md transition-colors flex items-center justify-between ${
-                  activeSubPage === "VESSEL_CARBON_INVOICE"
-                    ? "bg-cyan-100/80 text-cyan-900 font-bold"
-                    : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  <FileText className="w-3.5 h-3.5 text-cyan-600" />
-                  <span>Carbon Invoices</span>
-                </div>
-                <span className="text-[9px] font-mono px-1 rounded bg-cyan-100 text-cyan-700 font-bold">e-INV</span>
-              </button>
-            </div>
-          )}
         </div>
       </div>
     </aside>

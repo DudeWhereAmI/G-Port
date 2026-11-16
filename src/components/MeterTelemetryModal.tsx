@@ -1,737 +1,990 @@
-import React, { useState, useMemo } from "react";
-import { 
-  X, 
-  Calendar, 
-  ChevronDown, 
-  Search, 
-  Fuel, 
-  Zap, 
-  Clock, 
-  Gauge, 
-  MapPin, 
-  Activity, 
-  Download, 
-  CheckCircle2, 
-  RotateCcw,
+import React, { useState, useEffect, useMemo } from "react";
+import {
+  X,
+  Zap,
+  Fuel,
+  Gauge,
+  Activity,
+  CheckCircle2,
+  Download,
+  Clock,
   Ship,
-  Thermometer,
-  BatteryCharging,
-  Layers,
   BarChart3,
-  TrendingUp,
   FileText,
-  Sliders
+  ArrowLeft,
+  ShieldCheck,
+  Lock,
+  ChevronRight,
 } from "lucide-react";
 
-// ============================================================================
-// TYPES FOR MULTI-METER TELEMETRY SYSTEM
-// ============================================================================
-export type MeterCategory = 
-  | "ELECTRICITY_OPS" 
-  | "ELECTRICITY_STS" 
-  | "ELECTRICITY_REEFER" 
-  | "FUEL_TUGBOAT" 
-  | "FUEL_TRACTOR" 
-  | "STORAGE_BESS";
+export type MeterMedium = "ELECTRICITY" | "FUEL" | "REEFER_THERMAL" | "BATTERY";
+export type MeterModalMode = "LIVE_MONITORING" | "COMPLETED_INVOICE";
 
-export type PhysicalMedium = "ELECTRICITY" | "FUEL" | "REEFER_THERMAL" | "BATTERY";
-
-export interface TelemetryPoint {
+export interface MeterTimePoint {
   time: string;
-  hour: number; // 0 to 24 (or hoteling duration)
-  primaryVal: number; // kW for elec, L/h for fuel, kW for reefer/battery
-  secondaryVal?: number; // kV for elec, bar for fuel, °C for reefer, SOC % for battery
-  tertiaryVal?: number; // Amps for elec, Temp °C for fuel, Plugs count for reefer, Cell Temp °C for battery
-  quaternaryVal?: number; // cos φ for elec, RPM for fuel, Excursions for reefer, SOH % for battery
+  hour: number;
+  primaryVal: number; // kW or L/h
+  secondaryVal: number; // Voltage (kV) or Pressure (bar) or Temp (°C) or SOC (%)
+  tertiaryVal: number; // Current (A) or Temp (°C) or Active Plugs or Cell Temp (°C)
+  quaternaryVal: number; // Power Factor (cos φ) or RPM or Excursion Count or SOH (%)
+  cumulativeTotal: number; // Cumulative kWh or Liters
   statusText: string;
-  locationNote: string;
 }
 
-export interface HistoricalCallRecord {
+export interface HistoricalPortCallRecord {
   voyage: string;
+  vesselName: string;
+  invoiceNumber: string;
   date: string;
-  totalQuantity: number;
-  unit: string;
   teuHandled: number;
+  totalQuantity: number;
+  unit: "kWh" | "Liters";
+  intensityPerTeu: number;
   intensityLabel: string;
-  verified: boolean;
+  status: "LIVE_ACTIVE" | "COMPLETED_INVOICED";
+  berth: string;
 }
 
-export interface MeterDevice {
+export interface PortMeterDevice {
   id: string;
+  linkedEntityId?: string; // Links to 3D/2D entity ID (e.g., STS-01, TRK-2481, BAY-B2, VSL-01)
   name: string;
-  category: MeterCategory;
-  medium: PhysicalMedium;
-  primaryUnit: string; // "kW", "kWh", "L", "L/h", "%"
+  category: "OPS_SHORE" | "STS_CRANE" | "REEFER_YARD" | "BESS_STORAGE" | "TUGBOAT_FUEL" | "TRACTOR_FUEL";
+  medium: MeterMedium;
+  location: string;
+  protocol: string;
+  serialNumber: string;
+  nominalRating: string;
+  primaryUnit: "kW" | "L/h";
+  cumulativeUnit: "kWh" | "Liters";
+  totalPeriodRecorded: number;
+  openingReading: number;
+  closingReading: number;
+  recordingWindow: string;
+  emissionFactorLabel: string;
+  scopeType: "SCOPE_1" | "SCOPE_2" | "ZERO_CARBON_OFFSET";
+  co2eMetricTons: number;
+  recordStatus: "LIVE_RECORDING" | "COMPLETED_SEALED";
   chartYMax: number;
   chartYUnit: string;
-  nominalRating: string;
-  protocol: string;
-  totalPeriodRecorded: number;
-  totalPeriodUnit: string;
   description: string;
-  telemetry: TelemetryPoint[];
-  historicalCalls: HistoricalCallRecord[];
+  telemetry: MeterTimePoint[];
+  historicalCalls: HistoricalPortCallRecord[];
 }
 
 export interface PortCallMeterGroup {
-  useCaseId: "UC-01" | "UC-02" | "UC-03" | "UC-04";
-  invoiceNumber: string;
+  useCaseId: string;
+  vesselEntityId: string; // "VSL-01" | "VSL-02" | "VSL-03"
   vesselName: string;
   voyageNumber: string;
   imoNumber: string;
-  carrierName: string;
+  carrier: string;
   berth: string;
+  arrivalWindow: string;
+  departureWindow: string;
   hotelingHours: number;
-  servicePackage: string;
+  teuHandled: number;
+  invoiceNumber: string;
+  portCallState: "LIVE_MONITORING" | "COMPLETED_INVOICE";
+  dcsaHash: string;
   totalElectricityKwh: number;
   totalFuelLiters: number;
-  meters: MeterDevice[];
+  totalScope1Tons: number;
+  totalScope2Tons: number;
+  meters: PortMeterDevice[];
 }
 
-// ============================================================================
-// MULTI-METER DATABASE ACROSS 4 CORE OPERATIONAL PORT CALLS
-// ============================================================================
 export const PORT_CALL_METERS: PortCallMeterGroup[] = [
-  // --------------------------------------------------------------------------
-  // UC-01: SPIRIT OF MUMBAI (High-Density Reefer - Cat Lai B2)
-  // --------------------------------------------------------------------------
+  // ============================================================================
+  // UC-01: MV SPIRIT OF MUMBAI (Voyage 056N) — Berth B2 (Container Mainline)
+  // ============================================================================
   {
     useCaseId: "UC-01",
-    invoiceNumber: "GPORT-INV-2026-0901",
-    vesselName: "SPIRIT OF MUMBAI",
+    vesselEntityId: "VSL-01",
+    vesselName: "MV SPIRIT OF MUMBAI",
     voyageNumber: "056N",
-    imoNumber: "9845210",
-    carrierName: "Ocean Network Express (ONE) / Tan Cang Shipping",
-    berth: "Cat Lai Terminal - Berth B2 (OPS Ready)",
-    hotelingHours: 34.75,
-    servicePackage: "GREEN_OPS_CERTIFIED",
-    totalElectricityKwh: 53400,
-    totalFuelLiters: 4200,
+    imoNumber: "9482104",
+    carrier: "Maersk Line",
+    berth: "Berth B2 (Deep-Water Container Wharf)",
+    arrivalWindow: "2026-05-15 08:00",
+    departureWindow: "2026-05-16 04:30",
+    hotelingHours: 20.5,
+    teuHandled: 3420,
+    invoiceNumber: "GPORT-INV-2026-0901",
+    portCallState: "LIVE_MONITORING",
+    dcsaHash: "0x8f4e2c9b10a4d7f3e5c1a9b8d4e6f2a1c3e5b7d9",
+    totalElectricityKwh: 56220,
+    totalFuelLiters: 4160,
+    totalScope1Tons: 11.15,
+    totalScope2Tons: 31.93,
     meters: [
       {
-        id: "MTR-OPS-CATLAI-B2",
-        name: "Shore Power (OPS) 6.6kV Substation Meter",
-        category: "ELECTRICITY_OPS",
+        id: "MTR-OPS-B2-01",
+        linkedEntityId: "VSL-01",
+        name: "Berth B2 Cavotec Shore Power (OPS) Substation",
+        category: "OPS_SHORE",
         medium: "ELECTRICITY",
+        location: "Quay Substation B2 · Pit #04",
+        protocol: "IEC 61850 MMS · Class 0.2S",
+        serialNumber: "ABB-M4M-2026-8801",
+        nominalRating: "6.6 kV / 60 Hz · 2,500 kW",
         primaryUnit: "kW",
-        chartYMax: 700,
-        chartYUnit: "kW (Active Load)",
-        nominalRating: "6.6 kV / 1,500 kVA / 50 Hz",
-        protocol: "IEC 61850 MMS & Modbus TCP",
-        totalPeriodRecorded: 18200,
-        totalPeriodUnit: "kWh",
-        description: "Auxiliary cold ironing connection eliminating vessel auxiliary generator combustion at berth.",
+        cumulativeUnit: "kWh",
+        totalPeriodRecorded: 28400,
+        openingReading: 814200,
+        closingReading: 842600,
+        recordingWindow: "15/05 08:30 → 16/05 04:00 (19.5h)",
+        emissionFactorLabel: "0.7221 kgCO₂e/kWh (EVN Grid)",
+        scopeType: "SCOPE_2",
+        co2eMetricTons: 20.51,
+        recordStatus: "COMPLETED_SEALED",
+        chartYMax: 2000,
+        chartYUnit: "Active Power (kW)",
+        description: "High-voltage 6.6kV Onshore Power Supply feeding MV SPIRIT OF MUMBAI hoteling & onboard reefer racks at Berth B2.",
         telemetry: [
-          { time: "07:15", hour: 7.25, primaryVal: 0, secondaryVal: 6.6, tertiaryVal: 0, quaternaryVal: 0.95, statusText: "Cables connecting", locationNote: "Berth B2 Quay Pit" },
-          { time: "08:00", hour: 8.0, primaryVal: 380, secondaryVal: 6.61, tertiaryVal: 33.2, quaternaryVal: 0.94, statusText: "Synchronized & energized", locationNote: "OPS Substation B2" },
-          { time: "10:00", hour: 10.0, primaryVal: 540, secondaryVal: 6.59, tertiaryVal: 47.3, quaternaryVal: 0.95, statusText: "Aux steady hoteling", locationNote: "Vessel Switchboard" },
-          { time: "12:00", hour: 12.0, primaryVal: 520, secondaryVal: 6.60, tertiaryVal: 45.5, quaternaryVal: 0.95, statusText: "Aux steady hoteling", locationNote: "Vessel Switchboard" },
-          { time: "14:00", hour: 14.0, primaryVal: 580, secondaryVal: 6.58, tertiaryVal: 50.8, quaternaryVal: 0.96, statusText: "Peak hoteling + blowers", locationNote: "Vessel Switchboard" },
-          { time: "16:00", hour: 16.0, primaryVal: 530, secondaryVal: 6.60, tertiaryVal: 46.4, quaternaryVal: 0.95, statusText: "Aux steady hoteling", locationNote: "Vessel Switchboard" },
-          { time: "18:00", hour: 18.0, primaryVal: 520, secondaryVal: 6.61, tertiaryVal: 45.5, quaternaryVal: 0.95, statusText: "Aux steady hoteling", locationNote: "Vessel Switchboard" },
-          { time: "20:00", hour: 20.0, primaryVal: 510, secondaryVal: 6.60, tertiaryVal: 44.6, quaternaryVal: 0.95, statusText: "Aux steady hoteling", locationNote: "Vessel Switchboard" },
-          { time: "22:00", hour: 22.0, primaryVal: 490, secondaryVal: 6.62, tertiaryVal: 42.8, quaternaryVal: 0.94, statusText: "Night baseline load", locationNote: "Vessel Switchboard" },
-          { time: "02:00", hour: 26.0, primaryVal: 480, secondaryVal: 6.62, tertiaryVal: 41.9, quaternaryVal: 0.94, statusText: "Night baseline load", locationNote: "Vessel Switchboard" },
-          { time: "06:00", hour: 30.0, primaryVal: 510, secondaryVal: 6.60, tertiaryVal: 44.6, quaternaryVal: 0.95, statusText: "Morning readiness", locationNote: "Vessel Switchboard" },
-          { time: "12:00", hour: 36.0, primaryVal: 530, secondaryVal: 6.59, tertiaryVal: 46.4, quaternaryVal: 0.95, statusText: "Final cargo moves", locationNote: "Vessel Switchboard" },
-          { time: "17:30", hour: 41.5, primaryVal: 120, secondaryVal: 6.60, tertiaryVal: 10.5, quaternaryVal: 0.92, statusText: "Disconnection ramp down", locationNote: "Berth B2 Quay Pit" }
+          { time: "08:00", hour: 0, primaryVal: 420, secondaryVal: 6.62, tertiaryVal: 42, quaternaryVal: 0.96, cumulativeTotal: 420, statusText: "Auto-Sync & Breaker Closed" },
+          { time: "10:00", hour: 2, primaryVal: 1450, secondaryVal: 6.60, tertiaryVal: 138, quaternaryVal: 0.97, cumulativeTotal: 3320, statusText: "Auxiliary Diesel Engines OFF" },
+          { time: "12:00", hour: 4, primaryVal: 1580, secondaryVal: 6.59, tertiaryVal: 151, quaternaryVal: 0.98, cumulativeTotal: 6480, statusText: "Peak Onboard Hotel Load" },
+          { time: "16:00", hour: 8, primaryVal: 1490, secondaryVal: 6.60, tertiaryVal: 142, quaternaryVal: 0.97, cumulativeTotal: 12660, statusText: "Steady Hotel & Galley Load" },
+          { time: "20:00", hour: 12, primaryVal: 1420, secondaryVal: 6.61, tertiaryVal: 135, quaternaryVal: 0.98, cumulativeTotal: 18520, statusText: "Night Shift Steady OPS" },
+          { time: "00:00", hour: 16, primaryVal: 1380, secondaryVal: 6.61, tertiaryVal: 131, quaternaryVal: 0.98, cumulativeTotal: 24200, statusText: "Pre-Departure Load Tapering" },
+          { time: "04:00", hour: 20, primaryVal: 840, secondaryVal: 6.63, tertiaryVal: 80, quaternaryVal: 0.96, cumulativeTotal: 28400, statusText: "OPS Disconnection Sequence" },
         ],
         historicalCalls: [
-          { voyage: "Voyage 056N (Current)", date: "28/09/2026", totalQuantity: 18200, unit: "kWh", teuHandled: 2850, intensityLabel: "6.39 kWh/TEU", verified: true },
-          { voyage: "Voyage 055N", date: "14/09/2026", totalQuantity: 17950, unit: "kWh", teuHandled: 2800, intensityLabel: "6.41 kWh/TEU", verified: true },
-          { voyage: "Voyage 054N", date: "31/08/2026", totalQuantity: 18600, unit: "kWh", teuHandled: 2910, intensityLabel: "6.39 kWh/TEU", verified: true },
-          { voyage: "Voyage 053N", date: "17/08/2026", totalQuantity: 17400, unit: "kWh", teuHandled: 2720, intensityLabel: "6.40 kWh/TEU", verified: true }
-        ]
+          { voyage: "056N", vesselName: "MV SPIRIT OF MUMBAI", invoiceNumber: "GPORT-INV-2026-0901", date: "15 May 2026", teuHandled: 3420, totalQuantity: 28400, unit: "kWh", intensityPerTeu: 8.3, intensityLabel: "8.30 kWh/TEU", status: "LIVE_ACTIVE", berth: "Berth B2" },
+          { voyage: "052N", vesselName: "MV SPIRIT OF MUMBAI", invoiceNumber: "GPORT-INV-2026-0842", date: "18 Apr 2026", teuHandled: 3290, totalQuantity: 27150, unit: "kWh", intensityPerTeu: 8.25, intensityLabel: "8.25 kWh/TEU", status: "COMPLETED_INVOICED", berth: "Berth B2" },
+          { voyage: "048N", vesselName: "MV SPIRIT OF MUMBAI", invoiceNumber: "GPORT-INV-2026-0791", date: "21 Mar 2026", teuHandled: 3180, totalQuantity: 26800, unit: "kWh", intensityPerTeu: 8.42, intensityLabel: "8.42 kWh/TEU", status: "COMPLETED_INVOICED", berth: "Berth B2" },
+        ],
       },
       {
-        id: "MTR-STS-CATLAI-B2",
-        name: "STS Quay Crane Substation Feeder #04-#07",
-        category: "ELECTRICITY_STS",
+        id: "MTR-STS-B2-04",
+        linkedEntityId: "STS-02",
+        name: "STS-01 & STS-02 Quay Cranes Feeder (Berth B2)",
+        category: "STS_CRANE",
         medium: "ELECTRICITY",
+        location: "Berth B2 Crane Rail Trench",
+        protocol: "Modbus TCP/IP · Regen Bi-Directional",
+        serialNumber: "SCHNEIDER-PM8000-04",
+        nominalRating: "3.3 kV · 3,200 kW Peak",
         primaryUnit: "kW",
-        chartYMax: 3200,
-        chartYUnit: "kW (Total Hoist Power)",
-        nominalRating: "22 kV / 4 x 800 kW Drives",
-        protocol: "Profinet / Modbus RTU",
-        totalPeriodRecorded: 22800,
-        totalPeriodUnit: "kWh",
-        description: "High-voltage electricity consumed by 4 quay cranes during discharge & loading cycles.",
+        cumulativeUnit: "kWh",
+        totalPeriodRecorded: 18620,
+        openingReading: 521040,
+        closingReading: 539660,
+        recordingWindow: "15/05 08:45 → 16/05 03:45 (19.0h)",
+        emissionFactorLabel: "0.7221 kgCO₂e/kWh (-18.4% Regen Credit)",
+        scopeType: "SCOPE_2",
+        co2eMetricTons: 13.45,
+        recordStatus: "COMPLETED_SEALED",
+        chartYMax: 1600,
+        chartYUnit: "Net Crane Demand (kW)",
+        description: "Bi-directional meter tracking twin-lift hoist demand and regenerative lowering recovery for STS-01 & STS-02 on Berth B2.",
         telemetry: [
-          { time: "07:30", hour: 7.5, primaryVal: 200, secondaryVal: 22.1, tertiaryVal: 24, quaternaryVal: 0.88, statusText: "Positioning spreaders", locationNote: "STS #04-#07" },
-          { time: "08:30", hour: 8.5, primaryVal: 2450, secondaryVal: 21.9, tertiaryVal: 64, quaternaryVal: 0.90, statusText: "Full-speed twin-lift hoisting", locationNote: "Quayside Berth B2" },
-          { time: "10:30", hour: 10.5, primaryVal: 2680, secondaryVal: 21.8, tertiaryVal: 70, quaternaryVal: 0.91, statusText: "Peak loading cycles", locationNote: "Quayside Berth B2" },
-          { time: "12:00", hour: 12.0, primaryVal: 650, secondaryVal: 22.2, tertiaryVal: 17, quaternaryVal: 0.85, statusText: "Shift handover lull", locationNote: "Cabin standby" },
-          { time: "13:30", hour: 13.5, primaryVal: 2520, secondaryVal: 21.9, tertiaryVal: 66, quaternaryVal: 0.90, statusText: "Afternoon discharge run", locationNote: "Quayside Berth B2" },
-          { time: "15:30", hour: 15.5, primaryVal: 2780, secondaryVal: 21.8, tertiaryVal: 73, quaternaryVal: 0.92, statusText: "Peak loading cycles", locationNote: "Quayside Berth B2" },
-          { time: "18:00", hour: 18.0, primaryVal: 1100, secondaryVal: 22.0, tertiaryVal: 29, quaternaryVal: 0.87, statusText: "Hatch cover repositioning", locationNote: "Bay 12-16" },
-          { time: "20:00", hour: 20.0, primaryVal: 2350, secondaryVal: 21.9, tertiaryVal: 61, quaternaryVal: 0.89, statusText: "Night shift container moves", locationNote: "Quayside Berth B2" },
-          { time: "23:00", hour: 23.0, primaryVal: 2100, secondaryVal: 22.0, tertiaryVal: 55, quaternaryVal: 0.89, statusText: "Steady twin hoisting", locationNote: "Quayside Berth B2" },
-          { time: "03:00", hour: 27.0, primaryVal: 1850, secondaryVal: 22.1, tertiaryVal: 48, quaternaryVal: 0.88, statusText: "Graveyard shift cycles", locationNote: "Quayside Berth B2" },
-          { time: "07:00", hour: 31.0, primaryVal: 2400, secondaryVal: 21.9, tertiaryVal: 63, quaternaryVal: 0.90, statusText: "Morning outbound loading", locationNote: "Quayside Berth B2" },
-          { time: "12:00", hour: 36.0, primaryVal: 2150, secondaryVal: 22.0, tertiaryVal: 56, quaternaryVal: 0.89, statusText: "Last tier stacking", locationNote: "Quayside Berth B2" },
-          { time: "16:00", hour: 40.0, primaryVal: 350, secondaryVal: 22.2, tertiaryVal: 9, quaternaryVal: 0.86, statusText: "Lashing & securing completed", locationNote: "Quayside Berth B2" }
+          { time: "08:00", hour: 0, primaryVal: 320, secondaryVal: 3.31, tertiaryVal: 62, quaternaryVal: 0.93, cumulativeTotal: 320, statusText: "Boom Lowered & Gantry Locked" },
+          { time: "10:00", hour: 2, primaryVal: 1180, secondaryVal: 3.28, tertiaryVal: 224, quaternaryVal: 0.94, cumulativeTotal: 2680, statusText: "Twin-Lift Bay 14 Discharge" },
+          { time: "12:00", hour: 4, primaryVal: 1290, secondaryVal: 3.27, tertiaryVal: 245, quaternaryVal: 0.95, cumulativeTotal: 5260, statusText: "Peak Crane Hoist (68 MPH)" },
+          { time: "16:00", hour: 8, primaryVal: 1040, secondaryVal: 3.29, tertiaryVal: 198, quaternaryVal: 0.95, cumulativeTotal: 9640, statusText: "Regen Lowering Recovery (-210 kW)" },
+          { time: "20:00", hour: 12, primaryVal: 1120, secondaryVal: 3.28, tertiaryVal: 212, quaternaryVal: 0.94, cumulativeTotal: 14120, statusText: "Export Bay Loading Operations" },
+          { time: "00:00", hour: 16, primaryVal: 920, secondaryVal: 3.30, tertiaryVal: 174, quaternaryVal: 0.95, cumulativeTotal: 17500, statusText: "Final Hatch Cover Handling" },
+          { time: "04:00", hour: 20, primaryVal: 180, secondaryVal: 3.32, tertiaryVal: 34, quaternaryVal: 0.92, cumulativeTotal: 18620, statusText: "Boom Stowed · Standby" },
         ],
         historicalCalls: [
-          { voyage: "Voyage 056N (Current)", date: "28/09/2026", totalQuantity: 22800, unit: "kWh", teuHandled: 2850, intensityLabel: "8.00 kWh/TEU", verified: true },
-          { voyage: "Voyage 055N", date: "14/09/2026", totalQuantity: 21900, unit: "kWh", teuHandled: 2800, intensityLabel: "7.82 kWh/TEU", verified: true },
-          { voyage: "Voyage 054N", date: "31/08/2026", totalQuantity: 23400, unit: "kWh", teuHandled: 2910, intensityLabel: "8.04 kWh/TEU", verified: true },
-          { voyage: "Voyage 053N", date: "17/08/2026", totalQuantity: 20800, unit: "kWh", teuHandled: 2720, intensityLabel: "7.65 kWh/TEU", verified: true }
-        ]
+          { voyage: "056N", vesselName: "MV SPIRIT OF MUMBAI", invoiceNumber: "GPORT-INV-2026-0901", date: "15 May 2026", teuHandled: 3420, totalQuantity: 18620, unit: "kWh", intensityPerTeu: 5.44, intensityLabel: "5.44 kWh/TEU", status: "LIVE_ACTIVE", berth: "Berth B2" },
+          { voyage: "052N", vesselName: "MV SPIRIT OF MUMBAI", invoiceNumber: "GPORT-INV-2026-0842", date: "18 Apr 2026", teuHandled: 3290, totalQuantity: 17980, unit: "kWh", intensityPerTeu: 5.46, intensityLabel: "5.46 kWh/TEU", status: "COMPLETED_INVOICED", berth: "Berth B2" },
+          { voyage: "048N", vesselName: "MV SPIRIT OF MUMBAI", invoiceNumber: "GPORT-INV-2026-0791", date: "21 Mar 2026", teuHandled: 3180, totalQuantity: 17490, unit: "kWh", intensityPerTeu: 5.50, intensityLabel: "5.50 kWh/TEU", status: "COMPLETED_INVOICED", berth: "Berth B2" },
+        ],
       },
       {
-        id: "MTR-REEFER-ZONE3",
-        name: "Reefer Yard Substation Meter (Zone 03 Cold Chain)",
-        category: "ELECTRICITY_REEFER",
+        id: "MTR-RF-Y3-02",
+        linkedEntityId: "BAY-B2",
+        name: "Container Bay B2 e-RTG & Reefer Rack Sub-Meter",
+        category: "REEFER_YARD",
         medium: "REEFER_THERMAL",
+        location: "Container Bay B2 (Stacking Block B2)",
+        protocol: "OPC-UA / PLC Telemetry",
+        serialNumber: "SIEMENS-PAC4200-B2",
+        nominalRating: "400V 3P · 850 kW Rated",
         primaryUnit: "kW",
-        chartYMax: 600,
-        chartYUnit: "kW (Cooling Load)",
-        nominalRating: "380 V / 450 Plug Receptacles",
-        protocol: "Modbus TCP / Cold-Chain IoT",
-        totalPeriodRecorded: 12400,
-        totalPeriodUnit: "kWh",
-        description: "Continuous power and thermal compliance for 240 seafood export containers at -22.0°C.",
+        cumulativeUnit: "kWh",
+        totalPeriodRecorded: 9200,
+        openingReading: 190400,
+        closingReading: 199600,
+        recordingWindow: "15/05 08:00 → 16/05 04:30 (20.5h)",
+        emissionFactorLabel: "0.7221 kgCO₂e/kWh (Solar Offset Applied)",
+        scopeType: "SCOPE_2",
+        co2eMetricTons: 6.64,
+        recordStatus: "COMPLETED_SEALED",
+        chartYMax: 700,
+        chartYUnit: "Bay B2 Power (kW)",
+        description: "Dedicated sub-meter for Container Bay B2 e-RTG stacking gantries and reefer buffer plugs assigned to MV SPIRIT OF MUMBAI (056N).",
         telemetry: [
-          { time: "07:15", hour: 7.25, primaryVal: 280, secondaryVal: -22.1, tertiaryVal: 210, quaternaryVal: 0, statusText: "210 active reefer plugs", locationNote: "Zone 3 Rows A-D" },
-          { time: "09:00", hour: 9.0, primaryVal: 340, secondaryVal: -22.0, tertiaryVal: 225, quaternaryVal: 0, statusText: "225 active plugs plugged", locationNote: "Zone 3 Rows A-D" },
-          { time: "11:00", hour: 11.0, primaryVal: 380, secondaryVal: -21.9, tertiaryVal: 240, quaternaryVal: 0, statusText: "All 240 units connected", locationNote: "Zone 3 Complete" },
-          { time: "13:00", hour: 13.0, primaryVal: 420, secondaryVal: -21.8, tertiaryVal: 240, quaternaryVal: 0, statusText: "Diurnal midday heat peak", locationNote: "Zone 3 Complete" },
-          { time: "15:00", hour: 15.0, primaryVal: 410, secondaryVal: -22.0, tertiaryVal: 240, quaternaryVal: 0, statusText: "Compressors modulating", locationNote: "Zone 3 Complete" },
-          { time: "18:00", hour: 18.0, primaryVal: 360, secondaryVal: -22.1, tertiaryVal: 240, quaternaryVal: 0, statusText: "Cooling stabilized", locationNote: "Zone 3 Complete" },
-          { time: "22:00", hour: 22.0, primaryVal: 320, secondaryVal: -22.2, tertiaryVal: 240, quaternaryVal: 0, statusText: "Night ambient temperature", locationNote: "Zone 3 Complete" },
-          { time: "04:00", hour: 28.0, primaryVal: 310, secondaryVal: -22.2, tertiaryVal: 240, quaternaryVal: 0, statusText: "Night ambient temperature", locationNote: "Zone 3 Complete" },
-          { time: "09:00", hour: 33.0, primaryVal: 370, secondaryVal: -22.0, tertiaryVal: 240, quaternaryVal: 0, statusText: "Daytime ramp", locationNote: "Zone 3 Complete" },
-          { time: "14:00", hour: 38.0, primaryVal: 290, secondaryVal: -22.1, tertiaryVal: 180, quaternaryVal: 0, statusText: "Transferring to vessel hold", locationNote: "Zone 3 Loading Out" },
-          { time: "17:00", hour: 41.0, primaryVal: 80, secondaryVal: -22.0, tertiaryVal: 45, quaternaryVal: 0, statusText: "Final containers loaded", locationNote: "Zone 3 Cleared" }
+          { time: "08:00", hour: 0, primaryVal: 380, secondaryVal: -21.8, tertiaryVal: 140, quaternaryVal: 0, cumulativeTotal: 380, statusText: "Bay B2 Pre-Stacking Ready" },
+          { time: "12:00", hour: 4, primaryVal: 520, secondaryVal: -21.5, tertiaryVal: 185, quaternaryVal: 0, cumulativeTotal: 2460, statusText: "Peak Container Stacking in Bay B2" },
+          { time: "16:00", hour: 8, primaryVal: 490, secondaryVal: -21.7, tertiaryVal: 195, quaternaryVal: 0, cumulativeTotal: 4480, statusText: "Solar PV + BESS Assisting Bay B2" },
+          { time: "20:00", hour: 12, primaryVal: 450, secondaryVal: -22.0, tertiaryVal: 210, quaternaryVal: 0, cumulativeTotal: 6360, statusText: "Night Shift Dwell & Stacking" },
+          { time: "00:00", hour: 16, primaryVal: 430, secondaryVal: -22.1, tertiaryVal: 210, quaternaryVal: 0, cumulativeTotal: 8120, statusText: "Thermal Equilibrium Held" },
+          { time: "04:00", hour: 20, primaryVal: 410, secondaryVal: -22.1, tertiaryVal: 190, quaternaryVal: 0, cumulativeTotal: 9200, statusText: "Voyage 056N Bay B2 Cut-off" },
         ],
         historicalCalls: [
-          { voyage: "Voyage 056N (Current)", date: "28/09/2026", totalQuantity: 12400, unit: "kWh", teuHandled: 240, intensityLabel: "51.6 kWh/Box", verified: true },
-          { voyage: "Voyage 055N", date: "14/09/2026", totalQuantity: 12100, unit: "kWh", teuHandled: 235, intensityLabel: "51.5 kWh/Box", verified: true },
-          { voyage: "Voyage 054N", date: "31/08/2026", totalQuantity: 12850, unit: "kWh", teuHandled: 245, intensityLabel: "52.4 kWh/Box", verified: true },
-          { voyage: "Voyage 053N", date: "17/08/2026", totalQuantity: 11900, unit: "kWh", teuHandled: 230, intensityLabel: "51.7 kWh/Box", verified: true }
-        ]
+          { voyage: "056N", vesselName: "MV SPIRIT OF MUMBAI", invoiceNumber: "GPORT-INV-2026-0901", date: "15 May 2026", teuHandled: 3420, totalQuantity: 9200, unit: "kWh", intensityPerTeu: 2.69, intensityLabel: "2.69 kWh/TEU", status: "LIVE_ACTIVE", berth: "Berth B2 · Bay B2" },
+          { voyage: "052N", vesselName: "MV SPIRIT OF MUMBAI", invoiceNumber: "GPORT-INV-2026-0842", date: "18 Apr 2026", teuHandled: 3290, totalQuantity: 8940, unit: "kWh", intensityPerTeu: 2.71, intensityLabel: "2.71 kWh/TEU", status: "COMPLETED_INVOICED", berth: "Berth B2 · Bay B2" },
+        ],
       },
       {
-        id: "MTR-TUG-TANCANG01",
-        name: "Harbor Tug Tan Cang 01 (Coriolis Mass Flowmeter)",
-        category: "FUEL_TUGBOAT",
+        id: "MTR-TRK-088",
+        linkedEntityId: "TRK-2481",
+        name: "Berth B2 ↔ Bay B2 Prime Mover Fleet Fuel Telemetry",
+        category: "TRACTOR_FUEL",
         medium: "FUEL",
-        primaryUnit: "L",
-        chartYMax: 35,
-        chartYUnit: "L/min (Fuel Flow Rate)",
-        nominalRating: "Twin CAT 3516C (4,000 BHP) · MGO 0.1%S",
-        protocol: "Micro Motion Coriolis / NMEA 0183",
-        totalPeriodRecorded: 1800,
-        totalPeriodUnit: "Liters MGO",
-        description: "Direct metered bunker burn for inward berthing push (920 L) and outward cast-off assist (880 L).",
+        location: "TRK-2481 & TRK-2205 (Assigned to Berth B2)",
+        protocol: "CAN-Bus J1939 Ultrasonic Fuel Sensor",
+        serialNumber: "OMNICOMM-LLS5-088",
+        nominalRating: "18 Tractors · Euro V Diesel",
+        primaryUnit: "L/h",
+        cumulativeUnit: "Liters",
+        totalPeriodRecorded: 2280,
+        openingReading: 44120,
+        closingReading: 46400,
+        recordingWindow: "15/05 08:30 → 16/05 04:00 (19.5h)",
+        emissionFactorLabel: "2.680 kgCO₂e/L (ISO 14083 Diesel)",
+        scopeType: "SCOPE_1",
+        co2eMetricTons: 6.11,
+        recordStatus: "COMPLETED_SEALED",
+        chartYMax: 180,
+        chartYUnit: "Fleet Burn Rate (L/h)",
+        description: "Aggregated CAN-Bus fuel telemetry for terminal tractors (TRK-2481, TRK-2205) shuttling containers strictly between Berth B2 and Container Bay B2.",
         telemetry: [
-          { time: "06:30", hour: 6.5, primaryVal: 8.5, secondaryVal: 4.8, tertiaryVal: 38.2, quaternaryVal: 850, statusText: "Departing tug jetty", locationNote: "Cat Lai Tug Basin" },
-          { time: "07:00", hour: 7.0, primaryVal: 28.5, secondaryVal: 5.2, tertiaryVal: 39.5, quaternaryVal: 1650, statusText: "Full push into Berth B2", locationNote: "Berth B2 Starboard" },
-          { time: "07:20", hour: 7.33, primaryVal: 24.0, secondaryVal: 5.1, tertiaryVal: 39.1, quaternaryVal: 1480, statusText: "Holding vessel along quay", locationNote: "Mooring lines fast" },
-          { time: "07:45", hour: 7.75, primaryVal: 4.2, secondaryVal: 4.6, tertiaryVal: 37.8, quaternaryVal: 650, statusText: "Standby idle at berth", locationNote: "Standby Zone" },
-          { time: "08:30", hour: 8.5, primaryVal: 2.1, secondaryVal: 4.5, tertiaryVal: 36.5, quaternaryVal: 500, statusText: "Engines secured at jetty", locationNote: "Tug Jetty Cat Lai" },
-          { time: "16:00", hour: 40.0, primaryVal: 7.8, secondaryVal: 4.7, tertiaryVal: 38.0, quaternaryVal: 800, statusText: "Engine warm-up & transit", locationNote: "Cat Lai Reach" },
-          { time: "17:15", hour: 41.25, primaryVal: 26.5, secondaryVal: 5.2, tertiaryVal: 39.4, quaternaryVal: 1600, statusText: "Pulling vessel into fairway", locationNote: "Fairway Turning Basin" },
-          { time: "17:50", hour: 41.83, primaryVal: 18.0, secondaryVal: 5.0, tertiaryVal: 38.8, quaternaryVal: 1200, statusText: "Escort to pilot station", locationNote: "Vung Tau Channel Entrance" },
-          { time: "18:15", hour: 42.25, primaryVal: 4.0, secondaryVal: 4.5, tertiaryVal: 37.5, quaternaryVal: 650, statusText: "Returning to jetty", locationNote: "Cat Lai Tug Basin" }
+          { time: "08:00", hour: 0, primaryVal: 45, secondaryVal: 4.1, tertiaryVal: 34, quaternaryVal: 1150, cumulativeTotal: 45, statusText: "Fleet Dispatch to Berth B2 Apron" },
+          { time: "12:00", hour: 4, primaryVal: 138, secondaryVal: 4.5, tertiaryVal: 39, quaternaryVal: 1680, cumulativeTotal: 590, statusText: "Peak Shuttle Loop: Berth B2 ↔ Bay B2" },
+          { time: "16:00", hour: 8, primaryVal: 126, secondaryVal: 4.4, tertiaryVal: 40, quaternaryVal: 1620, cumulativeTotal: 1110, statusText: "Active Yard Transfer Loop" },
+          { time: "20:00", hour: 12, primaryVal: 118, secondaryVal: 4.3, tertiaryVal: 37, quaternaryVal: 1580, cumulativeTotal: 1600, statusText: "Night Shift Container Shuttling" },
+          { time: "00:00", hour: 16, primaryVal: 110, secondaryVal: 4.3, tertiaryVal: 36, quaternaryVal: 1520, cumulativeTotal: 2050, statusText: "Final Export Load Shuttle" },
+          { time: "04:00", hour: 20, primaryVal: 55, secondaryVal: 4.0, tertiaryVal: 33, quaternaryVal: 1100, cumulativeTotal: 2280, statusText: "Voyage 056N Loop Completed" },
         ],
         historicalCalls: [
-          { voyage: "Voyage 056N (Current)", date: "28/09/2026", totalQuantity: 1800, unit: "Liters", teuHandled: 2850, intensityLabel: "0.63 L/TEU", verified: true },
-          { voyage: "Voyage 055N", date: "14/09/2026", totalQuantity: 1750, unit: "Liters", teuHandled: 2800, intensityLabel: "0.62 L/TEU", verified: true },
-          { voyage: "Voyage 054N", date: "31/08/2026", totalQuantity: 1920, unit: "Liters", teuHandled: 2910, intensityLabel: "0.66 L/TEU", verified: true },
-          { voyage: "Voyage 053N", date: "17/08/2026", totalQuantity: 1810, unit: "Liters", teuHandled: 2720, intensityLabel: "0.67 L/TEU", verified: true }
-        ]
+          { voyage: "056N", vesselName: "MV SPIRIT OF MUMBAI", invoiceNumber: "GPORT-INV-2026-0901", date: "15 May 2026", teuHandled: 3420, totalQuantity: 2280, unit: "Liters", intensityPerTeu: 0.67, intensityLabel: "0.67 L/TEU", status: "LIVE_ACTIVE", berth: "Berth B2 ↔ Bay B2" },
+          { voyage: "052N", vesselName: "MV SPIRIT OF MUMBAI", invoiceNumber: "GPORT-INV-2026-0842", date: "18 Apr 2026", teuHandled: 3290, totalQuantity: 2190, unit: "Liters", intensityPerTeu: 0.66, intensityLabel: "0.66 L/TEU", status: "COMPLETED_INVOICED", berth: "Berth B2 ↔ Bay B2" },
+        ],
       },
       {
-        id: "MTR-TRK-FLEET-B2",
-        name: "Terminal Tractor Fleet Telemetry (32 Haulers)",
-        category: "FUEL_TRACTOR",
+        id: "MTR-TUG-012",
+        linkedEntityId: "VSL-01",
+        name: "Harbor Assist Tugs (TC-01 & TC-02) Coriolis Mass Flow",
+        category: "TUGBOAT_FUEL",
         medium: "FUEL",
-        primaryUnit: "L",
-        chartYMax: 2600,
-        chartYUnit: "Liters (Cumulative Tank Burn)",
-        nominalRating: "Cummins QSB6.7 Diesel (220 HP) · Kalmar Ottawa",
-        protocol: "CAN Bus J1939 / Teltonika FMB640",
-        totalPeriodRecorded: 2400,
-        totalPeriodUnit: "Liters Diesel",
-        description: "Cumulative diesel fuel consumed by 32 internal tractors shuttling containers between STS quay and Reefer Block 3.",
+        location: "Cat Lai / Cai Mep Basin",
+        protocol: "Endress+Hauser Promass F300 · NMEA 2000",
+        serialNumber: "EH-CORIOLIS-2026-12",
+        nominalRating: "2 × 4,200 BHP ASD Tugs",
+        primaryUnit: "L/h",
+        cumulativeUnit: "Liters",
+        totalPeriodRecorded: 1880,
+        openingReading: 91200,
+        closingReading: 93080,
+        recordingWindow: "Berthing (07:30–08:30) & Unberthing (03:45–04:30)",
+        emissionFactorLabel: "2.680 kgCO₂e/L (Marine MGO)",
+        scopeType: "SCOPE_1",
+        co2eMetricTons: 5.04,
+        recordStatus: "COMPLETED_SEALED",
+        chartYMax: 950,
+        chartYUnit: "Bollard Pull Fuel Flow (L/h)",
+        description: "Precision Coriolis fuel mass meter recording tugboat escort, turning basin assist, and berthing/unberthing for MV SPIRIT OF MUMBAI.",
         telemetry: [
-          { time: "07:30", hour: 7.5, primaryVal: 120, secondaryVal: 12.0, tertiaryVal: 32, quaternaryVal: 0, statusText: "Initial queue deployment", locationNote: "Quayside Berth B2" },
-          { time: "09:30", hour: 9.5, primaryVal: 480, secondaryVal: 19.5, tertiaryVal: 32, quaternaryVal: 0, statusText: "Continuous shuttle cycles", locationNote: "Transfer Route R1" },
-          { time: "12:00", hour: 12.0, primaryVal: 820, secondaryVal: 8.5, tertiaryVal: 16, quaternaryVal: 0, statusText: "Lunch break rotation", locationNote: "Yard C Buffer" },
-          { time: "15:00", hour: 15.0, primaryVal: 1350, secondaryVal: 21.0, tertiaryVal: 32, quaternaryVal: 0, statusText: "Full cycle haulage", locationNote: "Transfer Route R1" },
-          { time: "18:00", hour: 18.0, primaryVal: 1680, secondaryVal: 17.5, tertiaryVal: 28, quaternaryVal: 0, statusText: "Evening shift handoff", locationNote: "Gate 2 Transit" },
-          { time: "22:00", hour: 22.0, primaryVal: 1980, secondaryVal: 16.0, tertiaryVal: 24, quaternaryVal: 0, statusText: "Night shuttle loading", locationNote: "Berth B2 Quay" },
-          { time: "04:00", hour: 28.0, primaryVal: 2180, secondaryVal: 14.5, tertiaryVal: 20, quaternaryVal: 0, statusText: "Graveyard shift moves", locationNote: "Berth B2 Quay" },
-          { time: "11:00", hour: 35.0, primaryVal: 2360, secondaryVal: 11.0, tertiaryVal: 12, quaternaryVal: 0, statusText: "Final yard stowage", locationNote: "Reefer Zone 3" },
-          { time: "16:00", hour: 40.0, primaryVal: 2400, secondaryVal: 0.0, tertiaryVal: 0, quaternaryVal: 0, statusText: "Operation complete", locationNote: "Fleet Parking D" }
+          { time: "07:30", hour: 0, primaryVal: 790, secondaryVal: 5.4, tertiaryVal: 41, quaternaryVal: 1760, cumulativeTotal: 790, statusText: "Inbound Berthing Bollard Push (Berth B2)" },
+          { time: "08:30", hour: 2, primaryVal: 180, secondaryVal: 4.2, tertiaryVal: 36, quaternaryVal: 950, cumulativeTotal: 970, statusText: "All Fast Berth B2 · Tugs Released" },
+          { time: "16:00", hour: 10, primaryVal: 0, secondaryVal: 0, tertiaryVal: 29, quaternaryVal: 0, cumulativeTotal: 970, statusText: "Tugs Standby at Basin" },
+          { time: "03:45", hour: 19, primaryVal: 740, secondaryVal: 5.3, tertiaryVal: 40, quaternaryVal: 1710, cumulativeTotal: 1710, statusText: "Outbound Unberthing Pull" },
+          { time: "04:30", hour: 20.5, primaryVal: 170, secondaryVal: 4.1, tertiaryVal: 35, quaternaryVal: 900, cumulativeTotal: 1880, statusText: "Vessel Clear of Channel" },
         ],
         historicalCalls: [
-          { voyage: "Voyage 056N (Current)", date: "28/09/2026", totalQuantity: 2400, unit: "Liters", teuHandled: 2850, intensityLabel: "0.84 L/TEU", verified: true },
-          { voyage: "Voyage 055N", date: "14/09/2026", totalQuantity: 2350, unit: "Liters", teuHandled: 2800, intensityLabel: "0.84 L/TEU", verified: true },
-          { voyage: "Voyage 054N", date: "31/08/2026", totalQuantity: 2510, unit: "Liters", teuHandled: 2910, intensityLabel: "0.86 L/TEU", verified: true },
-          { voyage: "Voyage 053N", date: "17/08/2026", totalQuantity: 2290, unit: "Liters", teuHandled: 2720, intensityLabel: "0.84 L/TEU", verified: true }
-        ]
-      }
-    ]
+          { voyage: "056N", vesselName: "MV SPIRIT OF MUMBAI", invoiceNumber: "GPORT-INV-2026-0901", date: "15 May 2026", teuHandled: 3420, totalQuantity: 1880, unit: "Liters", intensityPerTeu: 0.55, intensityLabel: "0.55 L/TEU", status: "LIVE_ACTIVE", berth: "Berth B2" },
+          { voyage: "052N", vesselName: "MV SPIRIT OF MUMBAI", invoiceNumber: "GPORT-INV-2026-0842", date: "18 Apr 2026", teuHandled: 3290, totalQuantity: 1840, unit: "Liters", intensityPerTeu: 0.56, intensityLabel: "0.56 L/TEU", status: "COMPLETED_INVOICED", berth: "Berth B2" },
+        ],
+      },
+    ],
   },
 
-  // --------------------------------------------------------------------------
-  // UC-02: ONE APUS (14,000 TEU ULCV - Cai Mep TCIT Berth 01)
-  // --------------------------------------------------------------------------
+  // ============================================================================
+  // UC-02: MV ONE APUS (Voyage 012W) — Berth B3 (Reefer Cold-Chain Call)
+  // ============================================================================
   {
     useCaseId: "UC-02",
-    invoiceNumber: "GPORT-INV-2026-0902",
-    vesselName: "ONE APUS",
+    vesselEntityId: "VSL-02",
+    vesselName: "MV ONE APUS",
     voyageNumber: "012W",
     imoNumber: "9806079",
-    carrierName: "Ocean Network Express (ONE) / The Alliance",
-    berth: "Cai Mep TCIT - Berth 01",
-    hotelingHours: 41.67,
-    servicePackage: "NET_ZERO_PORT_CALL",
-    totalElectricityKwh: 70300,
-    totalFuelLiters: 5000,
+    carrier: "Ocean Network Express (ONE)",
+    berth: "Berth B3 (East Deep-Sea Reefer Quay)",
+    arrivalWindow: "2026-05-14 06:00",
+    departureWindow: "2026-05-15 08:00",
+    hotelingHours: 26.0,
+    teuHandled: 4850,
+    invoiceNumber: "GPORT-INV-2026-0902",
+    portCallState: "COMPLETED_INVOICE",
+    dcsaHash: "0x3c9a7b2e5d1f8a4c6e0b9d2f4a7c1e3b5d8f0a2c",
+    totalElectricityKwh: 89300,
+    totalFuelLiters: 5560,
+    totalScope1Tons: 14.90,
+    totalScope2Tons: 51.05,
     meters: [
       {
-        id: "MTR-OPS-TCIT-B01",
-        name: "Deep-Sea Dual-Bus Shore Power OPS Meter (22kV/6.6kV)",
-        category: "ELECTRICITY_OPS",
+        id: "MTR-OPS-B3-01",
+        linkedEntityId: "VSL-02",
+        name: "Berth B3 Dual-Cable Shore Power (OPS) Feeder",
+        category: "OPS_SHORE",
         medium: "ELECTRICITY",
+        location: "Quay Substation B3 · Dual Pit #08",
+        protocol: "IEC 61850 MMS · Class 0.2S",
+        serialNumber: "ABB-M4M-2026-8809",
+        nominalRating: "6.6 kV / 60 Hz · 3,500 kW",
         primaryUnit: "kW",
-        chartYMax: 1200,
-        chartYUnit: "kW (Active Load)",
-        nominalRating: "22 kV / 6.6 kV Dual-Bus / 4.0 MVA",
-        protocol: "IEC 61850 Station Bus",
-        totalPeriodRecorded: 24500,
-        totalPeriodUnit: "kWh",
-        description: "ULCV 14,000 TEU high-capacity shore power supply covering massive refrigeration and hoteling loads.",
-        telemetry: [
-          { time: "14:20", hour: 14.33, primaryVal: 0, secondaryVal: 6.6, tertiaryVal: 0, quaternaryVal: 0.95, statusText: "Dual cable booms connected", locationNote: "TCIT Berth 01 Pit" },
-          { time: "15:30", hour: 15.5, primaryVal: 680, secondaryVal: 6.6, tertiaryVal: 59.5, quaternaryVal: 0.96, statusText: "Main breaker synchronized", locationNote: "OPS Station TCIT" },
-          { time: "18:00", hour: 18.0, primaryVal: 840, secondaryVal: 6.58, tertiaryVal: 73.8, quaternaryVal: 0.96, statusText: "Reefer holds online", locationNote: "Vessel Switchboard" },
-          { time: "22:00", hour: 22.0, primaryVal: 790, secondaryVal: 6.60, tertiaryVal: 69.1, quaternaryVal: 0.96, statusText: "Steady auxiliary load", locationNote: "Vessel Switchboard" },
-          { time: "06:00", hour: 30.0, primaryVal: 810, secondaryVal: 6.60, tertiaryVal: 70.8, quaternaryVal: 0.96, statusText: "Steady auxiliary load", locationNote: "Vessel Switchboard" },
-          { time: "14:00", hour: 38.0, primaryVal: 860, secondaryVal: 6.57, tertiaryVal: 75.8, quaternaryVal: 0.96, statusText: "Air conditioning peak load", locationNote: "Vessel Switchboard" },
-          { time: "20:00", hour: 44.0, primaryVal: 780, secondaryVal: 6.60, tertiaryVal: 68.2, quaternaryVal: 0.96, statusText: "Cargo holds closing", locationNote: "Vessel Switchboard" },
-          { time: "06:30", hour: 54.5, primaryVal: 150, secondaryVal: 6.61, tertiaryVal: 13.1, quaternaryVal: 0.93, statusText: "Disconnecting shore power", locationNote: "TCIT Berth 01 Pit" }
-        ],
-        historicalCalls: [
-          { voyage: "Voyage 012W (Current)", date: "28/09/2026", totalQuantity: 24500, unit: "kWh", teuHandled: 3400, intensityLabel: "7.21 kWh/TEU", verified: true },
-          { voyage: "Voyage 011W", date: "10/09/2026", totalQuantity: 24100, unit: "kWh", teuHandled: 3350, intensityLabel: "7.19 kWh/TEU", verified: true },
-          { voyage: "Voyage 010W", date: "24/08/2026", totalQuantity: 25200, unit: "kWh", teuHandled: 3480, intensityLabel: "7.24 kWh/TEU", verified: true }
-        ]
-      },
-      {
-        id: "MTR-STS-TCIT-SPP",
-        name: "5 Super Post-Panamax STS Cranes Feeder Meter",
-        category: "ELECTRICITY_STS",
-        medium: "ELECTRICITY",
-        primaryUnit: "kW",
-        chartYMax: 4500,
-        chartYUnit: "kW (5 Cranes Total)",
-        nominalRating: "22 kV / 5 x 1,200 kW Inverters",
-        protocol: "IEC 61850 / SCADA Feeder F01",
-        totalPeriodRecorded: 29000,
-        totalPeriodUnit: "kWh",
-        description: "Simultaneous container handling across 5 cranes. Peak spikes at 14:00-16:00 trigger Cai Mep BESS discharge.",
-        telemetry: [
-          { time: "14:30", hour: 14.5, primaryVal: 500, secondaryVal: 22.0, tertiaryVal: 13.1, quaternaryVal: 0.88, statusText: "Boom down position", locationNote: "Cai Mep TCIT Quay" },
-          { time: "16:00", hour: 16.0, primaryVal: 3400, secondaryVal: 21.8, tertiaryVal: 90.1, quaternaryVal: 0.91, statusText: "5 Cranes intensive unloading", locationNote: "Bays 18-42" },
-          { time: "20:00", hour: 20.0, primaryVal: 3650, secondaryVal: 21.7, tertiaryVal: 97.2, quaternaryVal: 0.92, statusText: "Maximum hoist ramp", locationNote: "Bays 18-42" },
-          { time: "02:00", hour: 26.0, primaryVal: 2800, secondaryVal: 22.0, tertiaryVal: 73.5, quaternaryVal: 0.90, statusText: "Night shift loading", locationNote: "Bays 18-42" },
-          { time: "08:00", hour: 32.0, primaryVal: 3200, secondaryVal: 21.8, tertiaryVal: 84.8, quaternaryVal: 0.91, statusText: "Day shift loading", locationNote: "Bays 18-42" },
-          { time: "14:30", hour: 38.5, primaryVal: 3950, secondaryVal: 21.6, tertiaryVal: 105.4, quaternaryVal: 0.93, statusText: "P90 Peak (BESS Peak Shaving Active)", locationNote: "Bays 18-42" },
-          { time: "22:00", hour: 46.0, primaryVal: 2600, secondaryVal: 22.0, tertiaryVal: 68.2, quaternaryVal: 0.90, statusText: "Last hold completion", locationNote: "Bays 18-42" },
-          { time: "05:00", hour: 53.0, primaryVal: 400, secondaryVal: 22.2, tertiaryVal: 10.4, quaternaryVal: 0.86, statusText: "Securing cranes", locationNote: "Cai Mep TCIT Quay" }
-        ],
-        historicalCalls: [
-          { voyage: "Voyage 012W (Current)", date: "28/09/2026", totalQuantity: 29000, unit: "kWh", teuHandled: 3400, intensityLabel: "8.53 kWh/TEU", verified: true },
-          { voyage: "Voyage 011W", date: "10/09/2026", totalQuantity: 28400, unit: "kWh", teuHandled: 3350, intensityLabel: "8.48 kWh/TEU", verified: true },
-          { voyage: "Voyage 010W", date: "24/08/2026", totalQuantity: 29800, unit: "kWh", teuHandled: 3480, intensityLabel: "8.56 kWh/TEU", verified: true }
-        ]
-      },
-      {
-        id: "MTR-BESS-TCIT-1.5MW",
-        name: "Cai Mep BESS Storage Substation (1.5MW / 3MWh)",
-        category: "STORAGE_BESS",
-        medium: "BATTERY",
-        primaryUnit: "kW",
-        chartYMax: 1600,
-        chartYUnit: "kW (Discharge Power)",
-        nominalRating: "1.5 MW / 3.0 MWh LFP Cells",
-        protocol: "Modbus TCP / BESS EMS",
-        totalPeriodRecorded: 3450,
-        totalPeriodUnit: "kWh Discharged",
-        description: "Utility-scale BESS discharging 1,500 kW during EVN peak tariff and STS crane spikes to shave demand charges.",
-        telemetry: [
-          { time: "14:00", hour: 14.0, primaryVal: 0, secondaryVal: 92.5, tertiaryVal: 26.5, quaternaryVal: 99.2, statusText: "SOC 92.5% - Standby", locationNote: "BESS Container #01-#02" },
-          { time: "14:15", hour: 14.25, primaryVal: 1450, secondaryVal: 84.0, tertiaryVal: 28.2, quaternaryVal: 99.2, statusText: "Discharging Peak Shaving", locationNote: "PCS 1.5MW Online" },
-          { time: "15:30", hour: 15.5, primaryVal: 1500, secondaryVal: 62.0, tertiaryVal: 31.0, quaternaryVal: 99.2, statusText: "Discharging Peak Shaving", locationNote: "PCS 1.5MW Online" },
-          { time: "16:00", hour: 16.0, primaryVal: 450, secondaryVal: 55.0, tertiaryVal: 29.5, quaternaryVal: 99.2, statusText: "Tapering discharge", locationNote: "PCS Standby Mode" },
-          { time: "22:00", hour: 22.0, primaryVal: -600, secondaryVal: 72.0, tertiaryVal: 26.0, quaternaryVal: 99.2, statusText: "Charging on Off-Peak Tariff", locationNote: "Grid Infeed 1,100 VND" },
-          { time: "04:00", hour: 28.0, primaryVal: -600, secondaryVal: 95.0, tertiaryVal: 25.5, quaternaryVal: 99.2, statusText: "Charging complete (95%)", locationNote: "Ready for Day Shift" }
-        ],
-        historicalCalls: [
-          { voyage: "Voyage 012W (Current)", date: "28/09/2026", totalQuantity: 3450, unit: "kWh", teuHandled: 3400, intensityLabel: "Peak Shaved: 1.5MW", verified: true },
-          { voyage: "Voyage 011W", date: "10/09/2026", totalQuantity: 3200, unit: "kWh", teuHandled: 3350, intensityLabel: "Peak Shaved: 1.4MW", verified: true },
-          { voyage: "Voyage 010W", date: "24/08/2026", totalQuantity: 3600, unit: "kWh", teuHandled: 3480, intensityLabel: "Peak Shaved: 1.5MW", verified: true }
-        ]
-      },
-      {
-        id: "MTR-TUG-CAIMEP-02",
-        name: "Cai Mep Deep-Sea Escort Tug #02 (Coriolis Flowmeter)",
-        category: "FUEL_TUGBOAT",
-        medium: "FUEL",
-        primaryUnit: "L",
-        chartYMax: 40,
-        chartYUnit: "L/min (Fuel Flow)",
-        nominalRating: "Twin Yanmar 6EY26W (5,000 BHP / 65T BP)",
-        protocol: "Emerson Coriolis / NMEA",
-        totalPeriodRecorded: 2100,
-        totalPeriodUnit: "Liters MGO",
-        description: "Heavy escort through Cai Mep deep-water fairway and precision docking maneuver for 14,000 TEU vessel.",
-        telemetry: [
-          { time: "13:30", hour: 13.5, primaryVal: 12.0, secondaryVal: 5.0, tertiaryVal: 40.1, quaternaryVal: 950, statusText: "Transit to fairway buoy 0", locationNote: "Cai Mep Fairway" },
-          { time: "14:15", hour: 14.25, primaryVal: 34.0, secondaryVal: 5.4, tertiaryVal: 42.5, quaternaryVal: 1750, statusText: "Heavy pushing against ebb current", locationNote: "Berth 01 Starboard" },
-          { time: "14:45", hour: 14.75, primaryVal: 22.0, secondaryVal: 5.1, tertiaryVal: 41.2, quaternaryVal: 1300, statusText: "Securing alongside", locationNote: "TCIT Berth 01" },
-          { time: "15:15", hour: 15.25, primaryVal: 3.5, secondaryVal: 4.6, tertiaryVal: 38.0, quaternaryVal: 600, statusText: "Standby idle", locationNote: "TCIT Jetty" }
-        ],
-        historicalCalls: [
-          { voyage: "Voyage 012W (Current)", date: "28/09/2026", totalQuantity: 2100, unit: "Liters", teuHandled: 3400, intensityLabel: "0.62 L/TEU", verified: true },
-          { voyage: "Voyage 011W", date: "10/09/2026", totalQuantity: 2050, unit: "Liters", teuHandled: 3350, intensityLabel: "0.61 L/TEU", verified: true },
-          { voyage: "Voyage 010W", date: "24/08/2026", totalQuantity: 2200, unit: "Liters", teuHandled: 3480, intensityLabel: "0.63 L/TEU", verified: true }
-        ]
-      }
-    ]
-  },
-
-  // --------------------------------------------------------------------------
-  // UC-03: GSL KITHIRA (Trans-Pacific Dry Cargo - Cat Lai Berth B1)
-  // --------------------------------------------------------------------------
-  {
-    useCaseId: "UC-03",
-    invoiceNumber: "GPORT-INV-2026-0903",
-    vesselName: "GSL KITHIRA",
-    voyageNumber: "443S",
-    imoNumber: "9385609",
-    carrierName: "Tan Cang Intermodal & Maersk Partner",
-    berth: "Cat Lai Terminal - Berth B1",
-    hotelingHours: 44.0,
-    servicePackage: "GREEN_OPS_CERTIFIED",
-    totalElectricityKwh: 34600,
-    totalFuelLiters: 2800,
-    meters: [
-      {
-        id: "MTR-OPS-CATLAI-B1",
-        name: "Shore Power OPS Feeder Berth B1 (6.6kV)",
-        category: "ELECTRICITY_OPS",
-        medium: "ELECTRICITY",
-        primaryUnit: "kW",
-        chartYMax: 600,
-        chartYUnit: "kW (Active Load)",
-        nominalRating: "6.6 kV / 1,000 kVA",
-        protocol: "Modbus TCP",
-        totalPeriodRecorded: 12000,
-        totalPeriodUnit: "kWh",
-        description: "Auxiliary power supply to GSL KITHIRA during transshipment of industrial machinery.",
-        telemetry: [
-          { time: "02:00", hour: 2.0, primaryVal: 0, secondaryVal: 6.6, tertiaryVal: 0, quaternaryVal: 0.94, statusText: "Cable connection", locationNote: "Berth B1 Pit" },
-          { time: "03:00", hour: 3.0, primaryVal: 320, secondaryVal: 6.61, tertiaryVal: 28.0, quaternaryVal: 0.94, statusText: "Auxiliary load online", locationNote: "Vessel Switchboard" },
-          { time: "12:00", hour: 12.0, primaryVal: 350, secondaryVal: 6.59, tertiaryVal: 30.6, quaternaryVal: 0.95, statusText: "Steady hoteling", locationNote: "Vessel Switchboard" },
-          { time: "21:00", hour: 45.0, primaryVal: 100, secondaryVal: 6.61, tertiaryVal: 8.7, quaternaryVal: 0.92, statusText: "Ramp down", locationNote: "Berth B1 Pit" }
-        ],
-        historicalCalls: [
-          { voyage: "Voyage 443S (Current)", date: "29/09/2026", totalQuantity: 12000, unit: "kWh", teuHandled: 2100, intensityLabel: "5.71 kWh/TEU", verified: true },
-          { voyage: "Voyage 442S", date: "15/09/2026", totalQuantity: 11800, unit: "kWh", teuHandled: 2050, intensityLabel: "5.75 kWh/TEU", verified: true },
-          { voyage: "Voyage 441S", date: "01/09/2026", totalQuantity: 12300, unit: "kWh", teuHandled: 2150, intensityLabel: "5.72 kWh/TEU", verified: true }
-        ]
-      },
-      {
-        id: "MTR-STS-CATLAI-B1",
-        name: "STS Cranes Berth B1 (3 Units)",
-        category: "ELECTRICITY_STS",
-        medium: "ELECTRICITY",
-        primaryUnit: "kW",
+        cumulativeUnit: "kWh",
+        totalPeriodRecorded: 38200,
+        openingReading: 612000,
+        closingReading: 650200,
+        recordingWindow: "14/05 06:30 → 15/05 07:30 (25.0h)",
+        emissionFactorLabel: "0.7221 kgCO₂e/kWh (EVN Grid)",
+        scopeType: "SCOPE_2",
+        co2eMetricTons: 27.58,
+        recordStatus: "COMPLETED_SEALED",
         chartYMax: 2400,
-        chartYUnit: "kW (Total Hoist Power)",
-        nominalRating: "22 kV / 3 x 800 kW",
-        protocol: "Profinet / SCADA",
-        totalPeriodRecorded: 16800,
-        totalPeriodUnit: "kWh",
-        description: "Heavy machinery and dry container handling at Cat Lai Berth B1.",
+        chartYUnit: "Active Power (kW)",
+        description: "Dual-cable 6.6kV Shore Power supply serving MV ONE APUS high-density reefer racks and hoteling systems at Berth B3.",
         telemetry: [
-          { time: "03:30", hour: 3.5, primaryVal: 1650, secondaryVal: 22.0, tertiaryVal: 43.3, quaternaryVal: 0.89, statusText: "Heavy hoist cycles", locationNote: "Quayside B1" },
-          { time: "11:00", hour: 11.0, primaryVal: 1850, secondaryVal: 21.9, tertiaryVal: 48.8, quaternaryVal: 0.90, statusText: "Out-of-gauge handling", locationNote: "Quayside B1" },
-          { time: "20:00", hour: 20.0, primaryVal: 1400, secondaryVal: 22.1, tertiaryVal: 36.6, quaternaryVal: 0.88, statusText: "Standard dry 40ft loading", locationNote: "Quayside B1" }
+          { time: "06:00", hour: 0, primaryVal: 950, secondaryVal: 6.61, tertiaryVal: 92, quaternaryVal: 0.97, cumulativeTotal: 950, statusText: "Dual-Cable OPS Connected" },
+          { time: "10:00", hour: 4, primaryVal: 1620, secondaryVal: 6.59, tertiaryVal: 155, quaternaryVal: 0.98, cumulativeTotal: 7100, statusText: "Full Reefer Rack Transfer to Shore" },
+          { time: "15:00", hour: 9, primaryVal: 1790, secondaryVal: 6.58, tertiaryVal: 171, quaternaryVal: 0.98, cumulativeTotal: 15800, statusText: "Afternoon Ambient Thermal Peak" },
+          { time: "21:00", hour: 15, primaryVal: 1540, secondaryVal: 6.60, tertiaryVal: 147, quaternaryVal: 0.98, cumulativeTotal: 25400, statusText: "Steady Overnight Cold-Chain Load" },
+          { time: "03:00", hour: 21, primaryVal: 1460, secondaryVal: 6.61, tertiaryVal: 139, quaternaryVal: 0.98, cumulativeTotal: 34200, statusText: "Pre-Sailing Reefer Verification" },
+          { time: "08:00", hour: 26, primaryVal: 800, secondaryVal: 6.62, tertiaryVal: 76, quaternaryVal: 0.96, cumulativeTotal: 38200, statusText: "OPS Disconnected & Sealed" },
         ],
         historicalCalls: [
-          { voyage: "Voyage 443S (Current)", date: "29/09/2026", totalQuantity: 16800, unit: "kWh", teuHandled: 2100, intensityLabel: "8.00 kWh/TEU", verified: true },
-          { voyage: "Voyage 442S", date: "15/09/2026", totalQuantity: 16400, unit: "kWh", teuHandled: 2050, intensityLabel: "8.00 kWh/TEU", verified: true }
-        ]
+          { voyage: "012W", vesselName: "MV ONE APUS", invoiceNumber: "GPORT-INV-2026-0902", date: "14 May 2026", teuHandled: 4850, totalQuantity: 38200, unit: "kWh", intensityPerTeu: 7.88, intensityLabel: "7.88 kWh/TEU", status: "COMPLETED_INVOICED", berth: "Berth B3" },
+          { voyage: "008W", vesselName: "MV ONE APUS", invoiceNumber: "GPORT-INV-2026-0819", date: "10 Apr 2026", teuHandled: 4620, totalQuantity: 36400, unit: "kWh", intensityPerTeu: 7.87, intensityLabel: "7.87 kWh/TEU", status: "COMPLETED_INVOICED", berth: "Berth B3" },
+        ],
       },
       {
-        id: "MTR-TUG-TANCANG05",
-        name: "Harbor Tug Tan Cang 05 (Coriolis Flowmeter)",
-        category: "FUEL_TUGBOAT",
-        medium: "FUEL",
-        primaryUnit: "L",
-        chartYMax: 25,
-        chartYUnit: "L/min (Fuel Flow)",
-        nominalRating: "3,200 BHP / MGO 0.1%S",
-        protocol: "Coriolis Mass Flow",
-        totalPeriodRecorded: 1200,
-        totalPeriodUnit: "Liters MGO",
-        description: "Tug assistance for berthing and unberthing at Cat Lai B1.",
+        id: "MTR-STS-B3-03",
+        linkedEntityId: "STS-03",
+        name: "STS-03 Quay Crane Feeder (Berth B3)",
+        category: "STS_CRANE",
+        medium: "ELECTRICITY",
+        location: "Berth B3 East Quay Rail",
+        protocol: "Modbus TCP/IP · Regen Active",
+        serialNumber: "SCHNEIDER-PM8000-09",
+        nominalRating: "3.3 kV · 2,800 kW",
+        primaryUnit: "kW",
+        cumulativeUnit: "kWh",
+        totalPeriodRecorded: 26900,
+        openingReading: 410200,
+        closingReading: 437100,
+        recordingWindow: "14/05 06:45 → 15/05 07:15 (24.5h)",
+        emissionFactorLabel: "0.7221 kgCO₂e/kWh",
+        scopeType: "SCOPE_2",
+        co2eMetricTons: 19.42,
+        recordStatus: "COMPLETED_SEALED",
+        chartYMax: 1600,
+        chartYUnit: "Crane Active Power (kW)",
+        description: "High-speed container crane metering on Berth B3 for MV ONE APUS reefer & dry container discharge.",
         telemetry: [
-          { time: "01:30", hour: 1.5, primaryVal: 18.5, secondaryVal: 4.9, tertiaryVal: 38.5, quaternaryVal: 1400, statusText: "Berthing assist push", locationNote: "Cat Lai B1 Basin" },
-          { time: "02:15", hour: 2.25, primaryVal: 2.8, secondaryVal: 4.5, tertiaryVal: 36.0, quaternaryVal: 550, statusText: "Idle at berth", locationNote: "Tug Jetty" }
+          { time: "06:00", hour: 0, primaryVal: 410, secondaryVal: 3.31, tertiaryVal: 78, quaternaryVal: 0.94, cumulativeTotal: 410, statusText: "STS-03 Boom Lowered" },
+          { time: "12:00", hour: 6, primaryVal: 1240, secondaryVal: 3.28, tertiaryVal: 236, quaternaryVal: 0.95, cumulativeTotal: 7400, statusText: "Reefer Bay Priority Discharge" },
+          { time: "18:00", hour: 12, primaryVal: 1180, secondaryVal: 3.29, tertiaryVal: 224, quaternaryVal: 0.95, cumulativeTotal: 14600, statusText: "Continuous Twin-Lift Operations" },
+          { time: "00:00", hour: 18, primaryVal: 1090, secondaryVal: 3.29, tertiaryVal: 207, quaternaryVal: 0.95, cumulativeTotal: 21400, statusText: "Export Cold-Chain Loading" },
+          { time: "08:00", hour: 26, primaryVal: 320, secondaryVal: 3.31, tertiaryVal: 60, quaternaryVal: 0.93, cumulativeTotal: 26900, statusText: "Operations Completed · Boom Up" },
         ],
         historicalCalls: [
-          { voyage: "Voyage 443S (Current)", date: "29/09/2026", totalQuantity: 1200, unit: "Liters", teuHandled: 2100, intensityLabel: "0.57 L/TEU", verified: true },
-          { voyage: "Voyage 442S", date: "15/09/2026", totalQuantity: 1180, unit: "Liters", teuHandled: 2050, intensityLabel: "0.58 L/TEU", verified: true }
-        ]
-      }
-    ]
+          { voyage: "012W", vesselName: "MV ONE APUS", invoiceNumber: "GPORT-INV-2026-0902", date: "14 May 2026", teuHandled: 4850, totalQuantity: 26900, unit: "kWh", intensityPerTeu: 5.55, intensityLabel: "5.55 kWh/TEU", status: "COMPLETED_INVOICED", berth: "Berth B3" },
+          { voyage: "008W", vesselName: "MV ONE APUS", invoiceNumber: "GPORT-INV-2026-0819", date: "10 Apr 2026", teuHandled: 4620, totalQuantity: 25600, unit: "kWh", intensityPerTeu: 5.54, intensityLabel: "5.54 kWh/TEU", status: "COMPLETED_INVOICED", berth: "Berth B3" },
+        ],
+      },
+      {
+        id: "MTR-RF-R1-01",
+        linkedEntityId: "BAY-R1",
+        name: "Reefer Bay R1 Cold-Chain Rack Feeder (620 Plugs)",
+        category: "REEFER_YARD",
+        medium: "REEFER_THERMAL",
+        location: "Reefer Bay R1 (East Cold-Chain Block)",
+        protocol: "OPC-UA / Danfoss Telematics",
+        serialNumber: "SIEMENS-PAC4200-R1",
+        nominalRating: "400V 3P · 1,500 kW",
+        primaryUnit: "kW",
+        cumulativeUnit: "kWh",
+        totalPeriodRecorded: 24200,
+        openingReading: 308400,
+        closingReading: 332600,
+        recordingWindow: "14/05 06:00 → 15/05 08:00 (26.0h)",
+        emissionFactorLabel: "0.7221 kgCO₂e/kWh (BESS Pre-Cool Assisted)",
+        scopeType: "SCOPE_2",
+        co2eMetricTons: 17.47,
+        recordStatus: "COMPLETED_SEALED",
+        chartYMax: 1200,
+        chartYUnit: "Reefer Rack Power (kW)",
+        description: "Dedicated cold-chain metering for Reefer Bay R1 (-22.4°C setpoints) serving MV ONE APUS pharmaceutical and frozen seafood boxes.",
+        telemetry: [
+          { time: "06:00", hour: 0, primaryVal: 820, secondaryVal: -22.1, tertiaryVal: 410, quaternaryVal: 0, cumulativeTotal: 820, statusText: "Inbound Reefer Plug-In Wave" },
+          { time: "14:00", hour: 8, primaryVal: 1060, secondaryVal: -21.8, tertiaryVal: 620, quaternaryVal: 0, cumulativeTotal: 8900, statusText: "Peak 620 Reefer Plugs Online" },
+          { time: "22:00", hour: 16, primaryVal: 940, secondaryVal: -22.4, tertiaryVal: 620, quaternaryVal: 0, cumulativeTotal: 16900, statusText: "Thermal Pre-Cool Setpoint Reached" },
+          { time: "08:00", hour: 26, primaryVal: 780, secondaryVal: -22.4, tertiaryVal: 540, quaternaryVal: 0, cumulativeTotal: 24200, statusText: "Voyage 012W Cold-Chain Audit Sealed" },
+        ],
+        historicalCalls: [
+          { voyage: "012W", vesselName: "MV ONE APUS", invoiceNumber: "GPORT-INV-2026-0902", date: "14 May 2026", teuHandled: 4850, totalQuantity: 24200, unit: "kWh", intensityPerTeu: 4.99, intensityLabel: "4.99 kWh/TEU", status: "COMPLETED_INVOICED", berth: "Berth B3 · Reefer Bay R1" },
+          { voyage: "008W", vesselName: "MV ONE APUS", invoiceNumber: "GPORT-INV-2026-0819", date: "10 Apr 2026", teuHandled: 4620, totalQuantity: 22950, unit: "kWh", intensityPerTeu: 4.97, intensityLabel: "4.97 kWh/TEU", status: "COMPLETED_INVOICED", berth: "Berth B3 · Reefer Bay R1" },
+        ],
+      },
+      {
+        id: "MTR-TRK-B3-01",
+        linkedEntityId: "TRK-2319",
+        name: "Berth B3 ↔ Reefer Bay R1 Tractor & Tug Fuel Total",
+        category: "TRACTOR_FUEL",
+        medium: "FUEL",
+        location: "TRK-2319 Fleet & Assist Tugs (Berth B3)",
+        protocol: "CAN-Bus J1939 + Coriolis Mass Flow",
+        serialNumber: "OMNICOMM-B3-2319",
+        nominalRating: "Euro V Diesel · Certified MRV",
+        primaryUnit: "L/h",
+        cumulativeUnit: "Liters",
+        totalPeriodRecorded: 5560,
+        openingReading: 112400,
+        closingReading: 117960,
+        recordingWindow: "14/05 06:00 → 15/05 08:00 (26.0h)",
+        emissionFactorLabel: "2.680 kgCO₂e/L (ISO 14083 Diesel)",
+        scopeType: "SCOPE_1",
+        co2eMetricTons: 14.90,
+        recordStatus: "COMPLETED_SEALED",
+        chartYMax: 350,
+        chartYUnit: "Fuel Flow Rate (L/h)",
+        description: "Consolidated Scope 1 fuel meter for TRK-2319 reefer transfer tractors (Berth B3 ↔ Bay R1) and harbor assist tugs.",
+        telemetry: [
+          { time: "06:00", hour: 0, primaryVal: 290, secondaryVal: 4.8, tertiaryVal: 38, quaternaryVal: 1650, cumulativeTotal: 290, statusText: "Berthing Assist + Initial Tractor Dispatch" },
+          { time: "14:00", hour: 8, primaryVal: 215, secondaryVal: 4.4, tertiaryVal: 39, quaternaryVal: 1580, cumulativeTotal: 2050, statusText: "Berth B3 ↔ Reefer Bay R1 Shuttle" },
+          { time: "22:00", hour: 16, primaryVal: 195, secondaryVal: 4.3, tertiaryVal: 37, quaternaryVal: 1520, cumulativeTotal: 3680, statusText: "Night Reefer Transfer Operations" },
+          { time: "08:00", hour: 26, primaryVal: 240, secondaryVal: 4.7, tertiaryVal: 38, quaternaryVal: 1620, cumulativeTotal: 5560, statusText: "Unberthing Completed & Meter Sealed" },
+        ],
+        historicalCalls: [
+          { voyage: "012W", vesselName: "MV ONE APUS", invoiceNumber: "GPORT-INV-2026-0902", date: "14 May 2026", teuHandled: 4850, totalQuantity: 5560, unit: "Liters", intensityPerTeu: 1.15, intensityLabel: "1.15 L/TEU", status: "COMPLETED_INVOICED", berth: "Berth B3 ↔ Bay R1" },
+          { voyage: "008W", vesselName: "MV ONE APUS", invoiceNumber: "GPORT-INV-2026-0819", date: "10 Apr 2026", teuHandled: 4620, totalQuantity: 5310, unit: "Liters", intensityPerTeu: 1.15, intensityLabel: "1.15 L/TEU", status: "COMPLETED_INVOICED", berth: "Berth B3 ↔ Bay R1" },
+        ],
+      },
+    ],
   },
 
-  // --------------------------------------------------------------------------
-  // UC-04: TAN CANG GLORY (Domestic Coastal Feeder - Cat Lai / Hiep Phuoc)
-  // --------------------------------------------------------------------------
+  // ============================================================================
+  // UC-04: MV TAN CANG GLORY (Voyage 104S) — Berth B1 (Completed Green Corridor)
+  // ============================================================================
   {
     useCaseId: "UC-04",
-    invoiceNumber: "GPORT-INV-2026-0904",
-    vesselName: "TAN CANG GLORY",
+    vesselEntityId: "VSL-03",
+    vesselName: "MV TAN CANG GLORY",
     voyageNumber: "104S",
-    imoNumber: "9632480",
-    carrierName: "Tan Cang Shipping / SNP Domestic",
-    berth: "Cat Lai B1 / Hiep Phuoc Terminal",
+    imoNumber: "9591210",
+    carrier: "Tan Cang Shipping (SNP)",
+    berth: "Berth B1 (West Domestic & Green Feeder Quay)",
+    arrivalWindow: "2026-05-14 10:15",
+    departureWindow: "2026-05-15 04:00",
     hotelingHours: 17.75,
-    servicePackage: "GREEN_OPS_CERTIFIED",
+    teuHandled: 1200,
+    invoiceNumber: "GPORT-INV-2026-0904",
+    portCallState: "COMPLETED_INVOICE",
+    dcsaHash: "0x1b8e4f6a2c0d9e3f7a5b1c8d4e2f6a0b3c9d1e5f",
     totalElectricityKwh: 18400,
     totalFuelLiters: 2050,
+    totalScope1Tons: 4.40,
+    totalScope2Tons: 5.20,
     meters: [
       {
-        id: "MTR-OPS-HIEPPHUOC",
-        name: "Shore Power OPS Feeder Hiep Phuoc (6.6kV)",
-        category: "ELECTRICITY_OPS",
+        id: "MTR-OPS-B1-01",
+        linkedEntityId: "VSL-03",
+        name: "Berth B1 Low-Voltage Shore Power (OPS) Dispenser",
+        category: "OPS_SHORE",
         medium: "ELECTRICITY",
+        location: "Berth B1 West Feeder Quay · Pit #01",
+        protocol: "IEC 61850 MMS · Class 0.2S",
+        serialNumber: "ABB-M4M-2026-8790",
+        nominalRating: "400V / 50 Hz · 1,000 kW",
         primaryUnit: "kW",
-        chartYMax: 500,
-        chartYUnit: "kW (Active Load)",
-        nominalRating: "6.6 kV / 800 kVA",
-        protocol: "Modbus TCP",
-        totalPeriodRecorded: 6400,
-        totalPeriodUnit: "kWh",
-        description: "Shore power connected for domestic feeder ship hoteling.",
+        cumulativeUnit: "kWh",
+        totalPeriodRecorded: 6800,
+        openingReading: 142810,
+        closingReading: 149610,
+        recordingWindow: "14/05 10:30 → 15/05 03:45 (17.25h)",
+        emissionFactorLabel: "100% Solar + BESS Green Corridor Matched",
+        scopeType: "SCOPE_2",
+        co2eMetricTons: 1.92,
+        recordStatus: "COMPLETED_SEALED",
+        chartYMax: 600,
+        chartYUnit: "Active Power (kW)",
+        description: "Finalized OPS electricity record for MV TAN CANG GLORY (Voyage 104S) at Berth B1, matched with rooftop Solar PV and BESS discharge.",
         telemetry: [
-          { time: "10:30", hour: 10.5, primaryVal: 0, secondaryVal: 6.6, tertiaryVal: 0, quaternaryVal: 0.94, statusText: "Shore cable energized", locationNote: "Hiep Phuoc Berth" },
-          { time: "11:30", hour: 11.5, primaryVal: 380, secondaryVal: 6.6, tertiaryVal: 33.2, quaternaryVal: 0.95, statusText: "Aux engine secured", locationNote: "Feeder Switchboard" },
-          { time: "18:00", hour: 18.0, primaryVal: 390, secondaryVal: 6.59, tertiaryVal: 34.1, quaternaryVal: 0.95, statusText: "Stevedoring hoteling", locationNote: "Feeder Switchboard" },
-          { time: "03:30", hour: 27.5, primaryVal: 90, secondaryVal: 6.61, tertiaryVal: 7.9, quaternaryVal: 0.92, statusText: "Disconnecting", locationNote: "Hiep Phuoc Berth" }
+          { time: "10:15", hour: 0, primaryVal: 260, secondaryVal: 0.40, tertiaryVal: 390, quaternaryVal: 0.97, cumulativeTotal: 260, statusText: "OPS Plugged In at Berth B1" },
+          { time: "14:00", hour: 4, primaryVal: 420, secondaryVal: 0.40, tertiaryVal: 630, quaternaryVal: 0.98, cumulativeTotal: 1940, statusText: "100% Solar PV Supplied" },
+          { time: "18:00", hour: 8, primaryVal: 410, secondaryVal: 0.40, tertiaryVal: 615, quaternaryVal: 0.98, cumulativeTotal: 3580, statusText: "BESS Peak Shaving Supply" },
+          { time: "22:00", hour: 12, primaryVal: 390, secondaryVal: 0.40, tertiaryVal: 585, quaternaryVal: 0.98, cumulativeTotal: 5140, statusText: "Overnight Feeder Hoteling" },
+          { time: "04:00", hour: 17.75, primaryVal: 290, secondaryVal: 0.40, tertiaryVal: 435, quaternaryVal: 0.97, cumulativeTotal: 6800, statusText: "OPS Disconnected · Final Index Sealed" },
         ],
         historicalCalls: [
-          { voyage: "Voyage 104S (Current)", date: "27/09/2026", totalQuantity: 6400, unit: "kWh", teuHandled: 1200, intensityLabel: "5.33 kWh/TEU", verified: true },
-          { voyage: "Voyage 103S", date: "20/09/2026", totalQuantity: 6200, unit: "kWh", teuHandled: 1180, intensityLabel: "5.25 kWh/TEU", verified: true },
-          { voyage: "Voyage 102S", date: "13/09/2026", totalQuantity: 6500, unit: "kWh", teuHandled: 1220, intensityLabel: "5.33 kWh/TEU", verified: true }
-        ]
+          { voyage: "104S", vesselName: "MV TAN CANG GLORY", invoiceNumber: "GPORT-INV-2026-0904", date: "15 May 2026", teuHandled: 1200, totalQuantity: 6800, unit: "kWh", intensityPerTeu: 5.67, intensityLabel: "5.67 kWh/TEU", status: "COMPLETED_INVOICED", berth: "Berth B1" },
+          { voyage: "101S", vesselName: "MV TAN CANG GLORY", invoiceNumber: "GPORT-INV-2026-0861", date: "28 Apr 2026", teuHandled: 1150, totalQuantity: 6520, unit: "kWh", intensityPerTeu: 5.67, intensityLabel: "5.67 kWh/TEU", status: "COMPLETED_INVOICED", berth: "Berth B1" },
+          { voyage: "098S", vesselName: "MV TAN CANG GLORY", invoiceNumber: "GPORT-INV-2026-0804", date: "11 Apr 2026", teuHandled: 1180, totalQuantity: 6710, unit: "kWh", intensityPerTeu: 5.69, intensityLabel: "5.69 kWh/TEU", status: "COMPLETED_INVOICED", berth: "Berth B1" },
+        ],
       },
       {
-        id: "TC-GLORY_AUX",
-        name: "Tân Cảng Glory (Aux Marine Gas Oil Meter)",
-        category: "FUEL_TUGBOAT",
-        medium: "FUEL",
-        primaryUnit: "L",
-        chartYMax: 20,
-        chartYUnit: "L/min (Aux Flow)",
-        nominalRating: "Daihatsu 6DL-16 Marine Aux (450 kW)",
-        protocol: "Pulse Flow Sensor / Modbus RTU",
-        totalPeriodRecorded: 0, // Turned off thanks to OPS!
-        totalPeriodUnit: "Liters MGO (0L - 100% Cold Ironing)",
-        description: "Auxiliary engine meter confirming 0 Liters fuel consumed while berthed thanks to 100% OPS shore power connection.",
+        id: "MTR-STS-B1-04",
+        linkedEntityId: "STS-04",
+        name: "STS-B1-01 & STS-B1-02 Feeder Cranes (Berth B1)",
+        category: "STS_CRANE",
+        medium: "ELECTRICITY",
+        location: "Berth B1 West Feeder Wharf",
+        protocol: "Modbus TCP/IP · Regen Verified",
+        serialNumber: "SCHNEIDER-PM8000-01",
+        nominalRating: "3.3 kV · 1,600 kW",
+        primaryUnit: "kW",
+        cumulativeUnit: "kWh",
+        totalPeriodRecorded: 8400,
+        openingReading: 294100,
+        closingReading: 302500,
+        recordingWindow: "14/05 10:45 → 15/05 03:15 (16.5h)",
+        emissionFactorLabel: "0.7221 kgCO₂e/kWh (Solar Offset)",
+        scopeType: "SCOPE_2",
+        co2eMetricTons: 2.38,
+        recordStatus: "COMPLETED_SEALED",
+        chartYMax: 800,
+        chartYUnit: "Feeder Crane Power (kW)",
+        description: "Finalized electricity meter for Berth B1 feeder quay cranes (STS-B1-01/02) discharging and loading 1,200 TEU onto Bay A1.",
         telemetry: [
-          { time: "10:30", hour: 10.5, primaryVal: 4.5, secondaryVal: 4.5, tertiaryVal: 37.0, quaternaryVal: 600, statusText: "Docking engine test", locationNote: "Aux Generator #1" },
-          { time: "11:30", hour: 11.5, primaryVal: 0.0, secondaryVal: 0.0, tertiaryVal: 28.0, quaternaryVal: 0, statusText: "Secured · OPS Active", locationNote: "Zero Fuel Combustion" },
-          { time: "18:00", hour: 18.0, primaryVal: 0.0, secondaryVal: 0.0, tertiaryVal: 28.0, quaternaryVal: 0, statusText: "Secured · OPS Active", locationNote: "Zero Fuel Combustion" },
-          { time: "03:30", hour: 27.5, primaryVal: 0.0, secondaryVal: 0.0, tertiaryVal: 28.0, quaternaryVal: 0, statusText: "Secured · OPS Active", locationNote: "Zero Fuel Combustion" }
+          { time: "10:15", hour: 0, primaryVal: 220, secondaryVal: 3.31, tertiaryVal: 42, quaternaryVal: 0.94, cumulativeTotal: 220, statusText: "Feeder Cranes Positioned at Berth B1" },
+          { time: "14:00", hour: 4, primaryVal: 560, secondaryVal: 3.29, tertiaryVal: 108, quaternaryVal: 0.95, cumulativeTotal: 2460, statusText: "Unloading Feeder Boxes to TRK-2104" },
+          { time: "18:00", hour: 8, primaryVal: 540, secondaryVal: 3.29, tertiaryVal: 104, quaternaryVal: 0.95, cumulativeTotal: 4620, statusText: "Steady Berth B1 ↔ Bay A1 Cycle" },
+          { time: "22:00", hour: 12, primaryVal: 510, secondaryVal: 3.30, tertiaryVal: 98, quaternaryVal: 0.95, cumulativeTotal: 6660, statusText: "Export Feeder Stowing" },
+          { time: "04:00", hour: 17.75, primaryVal: 190, secondaryVal: 3.31, tertiaryVal: 36, quaternaryVal: 0.93, cumulativeTotal: 8400, statusText: "1,200 TEU Completed · Boom Stowed" },
         ],
         historicalCalls: [
-          { voyage: "Voyage 104S (Current)", date: "27/09/2026", totalQuantity: 0, unit: "Liters", teuHandled: 1200, intensityLabel: "0.0 L/TEU (100% OPS)", verified: true },
-          { voyage: "Voyage 103S", date: "20/09/2026", totalQuantity: 0, unit: "Liters", teuHandled: 1180, intensityLabel: "0.0 L/TEU (100% OPS)", verified: true }
-        ]
+          { voyage: "104S", vesselName: "MV TAN CANG GLORY", invoiceNumber: "GPORT-INV-2026-0904", date: "15 May 2026", teuHandled: 1200, totalQuantity: 8400, unit: "kWh", intensityPerTeu: 7.00, intensityLabel: "7.00 kWh/TEU", status: "COMPLETED_INVOICED", berth: "Berth B1" },
+          { voyage: "101S", vesselName: "MV TAN CANG GLORY", invoiceNumber: "GPORT-INV-2026-0861", date: "28 Apr 2026", teuHandled: 1150, totalQuantity: 8050, unit: "kWh", intensityPerTeu: 7.00, intensityLabel: "7.00 kWh/TEU", status: "COMPLETED_INVOICED", berth: "Berth B1" },
+        ],
       },
       {
-        id: "60H03961_C",
-        name: "Tractor 60H03961_C (Container Haulage)",
-        category: "FUEL_TRACTOR",
-        medium: "FUEL",
-        primaryUnit: "L",
-        chartYMax: 380,
-        chartYUnit: "Liters (Tank Volume)",
-        nominalRating: "Heavy Tractor 400L Tank · QL53 Route",
-        protocol: "GPS & Ultrasonic Fuel Sensor",
-        totalPeriodRecorded: 1100,
-        totalPeriodUnit: "Liters Diesel",
-        description: "Direct vehicle fuel level drop and speed profile over 122.69 km haulage route.",
+        id: "MTR-BAY-A1-01",
+        linkedEntityId: "BAY-A1",
+        name: "Container Bay A1 e-RTG & Reefer Plugs Sub-Meter",
+        category: "REEFER_YARD",
+        medium: "ELECTRICITY",
+        location: "Container Bay A1 (West Yard Block)",
+        protocol: "OPC-UA / Siemens PAC4200",
+        serialNumber: "SIEMENS-PAC4200-A1",
+        nominalRating: "400V 3P · 500 kW",
+        primaryUnit: "kW",
+        cumulativeUnit: "kWh",
+        totalPeriodRecorded: 3200,
+        openingReading: 88100,
+        closingReading: 91300,
+        recordingWindow: "14/05 10:15 → 15/05 04:00 (17.75h)",
+        emissionFactorLabel: "0.7221 kgCO₂e/kWh (Solar Offset)",
+        scopeType: "SCOPE_2",
+        co2eMetricTons: 0.90,
+        recordStatus: "COMPLETED_SEALED",
+        chartYMax: 350,
+        chartYUnit: "Bay A1 Power (kW)",
+        description: "Finalized sub-meter for Container Bay A1 stacking gantries and domestic cold-chain plugs serving MV TAN CANG GLORY (104S).",
         telemetry: [
-          { time: "00:00", hour: 0.0, primaryVal: 365, secondaryVal: 0, tertiaryVal: 0, quaternaryVal: 0, statusText: "Parked at Gate 2", locationNote: "Cat Lai Gate 2" },
-          { time: "01:00", hour: 1.0, primaryVal: 355, secondaryVal: 38, tertiaryVal: 12.4, quaternaryVal: 0, statusText: "Highway transit", locationNote: "Long Thanh Expressway" },
-          { time: "02:00", hour: 2.0, primaryVal: 310, secondaryVal: 45, tertiaryVal: 58.1, quaternaryVal: 0, statusText: "Haulage running", locationNote: "QL1A Tien Giang" },
-          { time: "03:00", hour: 3.0, primaryVal: 286, secondaryVal: 0, tertiaryVal: 104.5, quaternaryVal: 0, statusText: "Rest stop idling", locationNote: "Vinh Long Rest Area" },
-          { time: "07:55", hour: 7.92, primaryVal: 281.8, secondaryVal: 0, tertiaryVal: 117.2, quaternaryVal: 0, statusText: "Engine off at depot", locationNote: "X. Nhi Long, Vinh Long" },
-          { time: "15:00", hour: 15.0, primaryVal: 262, secondaryVal: 25, tertiaryVal: 122.69, quaternaryVal: 0, statusText: "Return journey", locationNote: "National Route 53" },
-          { time: "17:30", hour: 17.5, primaryVal: 128, secondaryVal: 50, tertiaryVal: 195.2, quaternaryVal: 0, statusText: "Express haul", locationNote: "Ben Tre - QL60" },
-          { time: "21:00", hour: 21.0, primaryVal: 69.5, secondaryVal: 0, tertiaryVal: 275.0, quaternaryVal: 0, statusText: "Arrived at port", locationNote: "Cat Lai Port Yard D" }
+          { time: "10:15", hour: 0, primaryVal: 160, secondaryVal: 0.40, tertiaryVal: 240, quaternaryVal: 0.96, cumulativeTotal: 160, statusText: "Bay A1 Receiving Inbound Feeder Boxes" },
+          { time: "16:00", hour: 6, primaryVal: 210, secondaryVal: 0.40, tertiaryVal: 315, quaternaryVal: 0.97, cumulativeTotal: 1420, statusText: "Peak Bay A1 Stacking Cycle" },
+          { time: "22:00", hour: 12, primaryVal: 180, secondaryVal: 0.40, tertiaryVal: 270, quaternaryVal: 0.97, cumulativeTotal: 2500, statusText: "Bay A1 Export Retrieval" },
+          { time: "04:00", hour: 17.75, primaryVal: 120, secondaryVal: 0.40, tertiaryVal: 180, quaternaryVal: 0.96, cumulativeTotal: 3200, statusText: "Voyage 104S Bay A1 Tally Closed" },
         ],
         historicalCalls: [
-          { voyage: "Voyage 104S (Current)", date: "27/09/2026", totalQuantity: 1100, unit: "Liters", teuHandled: 1200, intensityLabel: "0.92 L/TEU", verified: true },
-          { voyage: "Voyage 103S", date: "20/09/2026", totalQuantity: 1080, unit: "Liters", teuHandled: 1180, intensityLabel: "0.91 L/TEU", verified: true }
-        ]
-      }
-    ]
-  }
+          { voyage: "104S", vesselName: "MV TAN CANG GLORY", invoiceNumber: "GPORT-INV-2026-0904", date: "15 May 2026", teuHandled: 1200, totalQuantity: 3200, unit: "kWh", intensityPerTeu: 2.67, intensityLabel: "2.67 kWh/TEU", status: "COMPLETED_INVOICED", berth: "Berth B1 · Bay A1" },
+          { voyage: "101S", vesselName: "MV TAN CANG GLORY", invoiceNumber: "GPORT-INV-2026-0861", date: "28 Apr 2026", teuHandled: 1150, totalQuantity: 3070, unit: "kWh", intensityPerTeu: 2.67, intensityLabel: "2.67 kWh/TEU", status: "COMPLETED_INVOICED", berth: "Berth B1 · Bay A1" },
+        ],
+      },
+      {
+        id: "MTR-BIO-B1-01",
+        linkedEntityId: "TRK-2104",
+        name: "Berth B1 ↔ Bay A1 B20 Biofuel Tractors (TRK-2104) & Tug",
+        category: "TRACTOR_FUEL",
+        medium: "FUEL",
+        location: "Berth B1 West Loop (TRK-2104)",
+        protocol: "CAN-Bus J1939 + Coriolis Biofuel Blend",
+        serialNumber: "OMNICOMM-B1-2104",
+        nominalRating: "B20 Bio-Diesel Blend (-20% Lifecycle CO₂)",
+        primaryUnit: "L/h",
+        cumulativeUnit: "Liters",
+        totalPeriodRecorded: 2050,
+        openingReading: 31400,
+        closingReading: 33450,
+        recordingWindow: "14/05 10:15 → 15/05 04:00 (17.75h)",
+        emissionFactorLabel: "2.144 kgCO₂e/L (Certified B20 Biofuel)",
+        scopeType: "SCOPE_1",
+        co2eMetricTons: 4.40,
+        recordStatus: "COMPLETED_SEALED",
+        chartYMax: 220,
+        chartYUnit: "Biofuel Flow (L/h)",
+        description: "Finalized B20 biofuel consumption record for TRK-2104 yard tractors operating strictly between Berth B1 and Bay A1, plus single tug assist.",
+        telemetry: [
+          { time: "10:15", hour: 0, primaryVal: 165, secondaryVal: 4.4, tertiaryVal: 36, quaternaryVal: 1550, cumulativeTotal: 165, statusText: "Berth B1 Tug Assist + TRK-2104 Loop Start" },
+          { time: "16:00", hour: 6, primaryVal: 115, secondaryVal: 4.2, tertiaryVal: 37, quaternaryVal: 1480, cumulativeTotal: 855, statusText: "Steady Shuttle: Berth B1 ↔ Bay A1" },
+          { time: "22:00", hour: 12, primaryVal: 105, secondaryVal: 4.1, tertiaryVal: 35, quaternaryVal: 1420, cumulativeTotal: 1485, statusText: "Night Export Loading to Berth B1" },
+          { time: "04:00", hour: 17.75, primaryVal: 140, secondaryVal: 4.3, tertiaryVal: 36, quaternaryVal: 1500, cumulativeTotal: 2050, statusText: "Unberthing Completed & Meter Sealed" },
+        ],
+        historicalCalls: [
+          { voyage: "104S", vesselName: "MV TAN CANG GLORY", invoiceNumber: "GPORT-INV-2026-0904", date: "15 May 2026", teuHandled: 1200, totalQuantity: 2050, unit: "Liters", intensityPerTeu: 1.71, intensityLabel: "1.71 L/TEU", status: "COMPLETED_INVOICED", berth: "Berth B1 ↔ Bay A1" },
+          { voyage: "101S", vesselName: "MV TAN CANG GLORY", invoiceNumber: "GPORT-INV-2026-0861", date: "28 Apr 2026", teuHandled: 1150, totalQuantity: 1965, unit: "Liters", intensityPerTeu: 1.71, intensityLabel: "1.71 L/TEU", status: "COMPLETED_INVOICED", berth: "Berth B1 ↔ Bay A1" },
+        ],
+      },
+    ],
+  },
+
+  // ============================================================================
+  // UC-03: MV HAI AN TIME (Voyage 088S) — Berth B1 (Completed Domestic Feeder)
+  // ============================================================================
+  {
+    useCaseId: "UC-03",
+    vesselEntityId: "VSL-03",
+    vesselName: "MV HAI AN TIME",
+    voyageNumber: "088S",
+    imoNumber: "9614288",
+    carrier: "Hai An Transport (HATS)",
+    berth: "Berth B1 (West Domestic Wharf)",
+    arrivalWindow: "2026-05-12 13:30",
+    departureWindow: "2026-05-13 01:00",
+    hotelingHours: 11.5,
+    teuHandled: 820,
+    invoiceNumber: "GPORT-INV-2026-0903",
+    portCallState: "COMPLETED_INVOICE",
+    dcsaHash: "0x7d2a9f4c1e8b3a6d0f5c2e9b4a1d7f3e8c0b5a2d",
+    totalElectricityKwh: 5670,
+    totalFuelLiters: 2560,
+    totalScope1Tons: 6.86,
+    totalScope2Tons: 4.09,
+    meters: [
+      {
+        id: "MTR-STS-B1-02",
+        linkedEntityId: "STS-04",
+        name: "Berth B1 Feeder Quay Cranes (STS-B1-01/02)",
+        category: "STS_CRANE",
+        medium: "ELECTRICITY",
+        location: "Berth B1 West Wharf",
+        protocol: "Modbus TCP/IP · Class 0.5S",
+        serialNumber: "SCHNEIDER-PM8000-02",
+        nominalRating: "3.3 kV · 1,600 kW",
+        primaryUnit: "kW",
+        cumulativeUnit: "kWh",
+        totalPeriodRecorded: 4420,
+        openingReading: 289680,
+        closingReading: 294100,
+        recordingWindow: "12/05 14:00 → 13/05 00:30 (10.5h)",
+        emissionFactorLabel: "0.7221 kgCO₂e/kWh (EVN Grid)",
+        scopeType: "SCOPE_2",
+        co2eMetricTons: 3.19,
+        recordStatus: "COMPLETED_SEALED",
+        chartYMax: 700,
+        chartYUnit: "Crane Power (kW)",
+        description: "Finalized crane electricity record for MV HAI AN TIME (088S) domestic container discharge/loading at Berth B1.",
+        telemetry: [
+          { time: "14:00", hour: 0, primaryVal: 380, secondaryVal: 3.30, tertiaryVal: 72, quaternaryVal: 0.94, cumulativeTotal: 380, statusText: "Voyage 088S Discharge Commenced" },
+          { time: "18:00", hour: 4, primaryVal: 460, secondaryVal: 3.29, tertiaryVal: 88, quaternaryVal: 0.95, cumulativeTotal: 2220, statusText: "Peak Feeder Crane Cycle" },
+          { time: "22:00", hour: 8, primaryVal: 420, secondaryVal: 3.30, tertiaryVal: 80, quaternaryVal: 0.95, cumulativeTotal: 3900, statusText: "Final Export Loading" },
+          { time: "01:00", hour: 11.5, primaryVal: 180, secondaryVal: 3.31, tertiaryVal: 34, quaternaryVal: 0.93, cumulativeTotal: 4420, statusText: "Completed & Sealed" },
+        ],
+        historicalCalls: [
+          { voyage: "088S", vesselName: "MV HAI AN TIME", invoiceNumber: "GPORT-INV-2026-0903", date: "13 May 2026", teuHandled: 820, totalQuantity: 4420, unit: "kWh", intensityPerTeu: 5.39, intensityLabel: "5.39 kWh/TEU", status: "COMPLETED_INVOICED", berth: "Berth B1" },
+          { voyage: "084S", vesselName: "MV HAI AN TIME", invoiceNumber: "GPORT-INV-2026-0831", date: "25 Apr 2026", teuHandled: 790, totalQuantity: 4260, unit: "kWh", intensityPerTeu: 5.39, intensityLabel: "5.39 kWh/TEU", status: "COMPLETED_INVOICED", berth: "Berth B1" },
+        ],
+      },
+      {
+        id: "MTR-RF-A1-02",
+        linkedEntityId: "BAY-A1",
+        name: "Container Bay A1 Yard & Reefer Sub-Meter",
+        category: "REEFER_YARD",
+        medium: "ELECTRICITY",
+        location: "Container Bay A1",
+        protocol: "OPC-UA / Siemens PAC4200",
+        serialNumber: "SIEMENS-PAC4200-A1",
+        nominalRating: "400V 3P · 500 kW",
+        primaryUnit: "kW",
+        cumulativeUnit: "kWh",
+        totalPeriodRecorded: 1250,
+        openingReading: 86850,
+        closingReading: 88100,
+        recordingWindow: "12/05 13:30 → 13/05 01:00 (11.5h)",
+        emissionFactorLabel: "0.7221 kgCO₂e/kWh (EVN Grid)",
+        scopeType: "SCOPE_2",
+        co2eMetricTons: 0.90,
+        recordStatus: "COMPLETED_SEALED",
+        chartYMax: 250,
+        chartYUnit: "Bay A1 Load (kW)",
+        description: "Finalized yard stacking and reefer sub-meter record for MV HAI AN TIME (088S) in Container Bay A1.",
+        telemetry: [
+          { time: "14:00", hour: 0, primaryVal: 110, secondaryVal: 0.40, tertiaryVal: 165, quaternaryVal: 0.96, cumulativeTotal: 110, statusText: "Bay A1 Domestic Stacking" },
+          { time: "19:00", hour: 5, primaryVal: 125, secondaryVal: 0.40, tertiaryVal: 188, quaternaryVal: 0.97, cumulativeTotal: 735, statusText: "Steady Yard Handling" },
+          { time: "01:00", hour: 11.5, primaryVal: 95, secondaryVal: 0.40, tertiaryVal: 142, quaternaryVal: 0.96, cumulativeTotal: 1250, statusText: "Voyage 088S Cut-off Sealed" },
+        ],
+        historicalCalls: [
+          { voyage: "088S", vesselName: "MV HAI AN TIME", invoiceNumber: "GPORT-INV-2026-0903", date: "13 May 2026", teuHandled: 820, totalQuantity: 1250, unit: "kWh", intensityPerTeu: 1.52, intensityLabel: "1.52 kWh/TEU", status: "COMPLETED_INVOICED", berth: "Berth B1 · Bay A1" },
+        ],
+      },
+      {
+        id: "MTR-FUEL-B1-03",
+        linkedEntityId: "TRK-2104",
+        name: "Berth B1 Tractor Fleet & Auxiliary Fuel Meter",
+        category: "TRACTOR_FUEL",
+        medium: "FUEL",
+        location: "Berth B1 ↔ Bay A1",
+        protocol: "CAN-Bus J1939 + Coriolis MRV",
+        serialNumber: "OMNICOMM-B1-088S",
+        nominalRating: "Marine MGO & Euro V Diesel",
+        primaryUnit: "L/h",
+        cumulativeUnit: "Liters",
+        totalPeriodRecorded: 2560,
+        openingReading: 28840,
+        closingReading: 31400,
+        recordingWindow: "12/05 13:30 → 13/05 01:00 (11.5h)",
+        emissionFactorLabel: "2.680 kgCO₂e/L (ISO 14083 Diesel)",
+        scopeType: "SCOPE_1",
+        co2eMetricTons: 6.86,
+        recordStatus: "COMPLETED_SEALED",
+        chartYMax: 300,
+        chartYUnit: "Fuel Flow (L/h)",
+        description: "Finalized Scope 1 fuel meter record for MV HAI AN TIME (088S) auxiliary berth generator, tug assist, and Berth B1 ↔ Bay A1 tractors.",
+        telemetry: [
+          { time: "14:00", hour: 0, primaryVal: 240, secondaryVal: 4.5, tertiaryVal: 38, quaternaryVal: 1580, cumulativeTotal: 240, statusText: "Berthing Assist + Aux Gen Active" },
+          { time: "19:00", hour: 5, primaryVal: 215, secondaryVal: 4.3, tertiaryVal: 39, quaternaryVal: 1520, cumulativeTotal: 1315, statusText: "Berth B1 ↔ Bay A1 Shuttle" },
+          { time: "01:00", hour: 11.5, primaryVal: 210, secondaryVal: 4.4, tertiaryVal: 38, quaternaryVal: 1540, cumulativeTotal: 2560, statusText: "Unberthing Completed & Meter Sealed" },
+        ],
+        historicalCalls: [
+          { voyage: "088S", vesselName: "MV HAI AN TIME", invoiceNumber: "GPORT-INV-2026-0903", date: "13 May 2026", teuHandled: 820, totalQuantity: 2560, unit: "Liters", intensityPerTeu: 3.12, intensityLabel: "3.12 L/TEU", status: "COMPLETED_INVOICED", berth: "Berth B1 ↔ Bay A1" },
+        ],
+      },
+    ],
+  },
 ];
 
-// ============================================================================
-// MAIN COMPONENT: METER TELEMETRY MODAL
-// ============================================================================
+// Helper to resolve which PortCallMeterGroup & specific meter match a given assetId / invoiceId / entityId
+export function resolvePortCallFromIdentifier(identifier?: string | null): {
+  portCallId: string;
+  matchedMeterId: string | null;
+  inferredMode: MeterModalMode;
+} {
+  if (!identifier) {
+    return { portCallId: "UC-01", matchedMeterId: null, inferredMode: "LIVE_MONITORING" };
+  }
+  const norm = identifier.toUpperCase();
+
+  // Check direct Invoice Number or UseCase ID
+  for (const call of PORT_CALL_METERS) {
+    if (
+      norm === call.useCaseId.toUpperCase() ||
+      norm === call.invoiceNumber.toUpperCase() ||
+      norm.includes(call.invoiceNumber.toUpperCase()) ||
+      norm.includes(call.voyageNumber.toUpperCase())
+    ) {
+      return {
+        portCallId: call.useCaseId,
+        matchedMeterId: null,
+        inferredMode: call.portCallState,
+      };
+    }
+  }
+
+  // Check 3D/2D entity IDs from Telemetry Feeds
+  if (norm === "VSL-01" || norm.includes("MUMBAI")) {
+    return { portCallId: "UC-01", matchedMeterId: null, inferredMode: "LIVE_MONITORING" };
+  }
+  if (norm === "STS-01" || norm === "STS-02") {
+    return { portCallId: "UC-01", matchedMeterId: "MTR-STS-B2-04", inferredMode: "LIVE_MONITORING" };
+  }
+  if (norm === "TRK-2481" || norm === "TRK-2205") {
+    return { portCallId: "UC-01", matchedMeterId: "MTR-TRK-088", inferredMode: "LIVE_MONITORING" };
+  }
+  if (norm === "BAY-B2" || norm === "BAY-B1") {
+    return { portCallId: "UC-01", matchedMeterId: "MTR-RF-Y3-02", inferredMode: "LIVE_MONITORING" };
+  }
+
+  if (norm === "VSL-02" || norm.includes("APUS")) {
+    return { portCallId: "UC-02", matchedMeterId: null, inferredMode: "LIVE_MONITORING" };
+  }
+  if (norm === "STS-03") {
+    return { portCallId: "UC-02", matchedMeterId: "MTR-STS-B3-03", inferredMode: "LIVE_MONITORING" };
+  }
+  if (norm === "TRK-2319") {
+    return { portCallId: "UC-02", matchedMeterId: "MTR-TRK-B3-01", inferredMode: "LIVE_MONITORING" };
+  }
+  if (norm === "BAY-R1") {
+    return { portCallId: "UC-02", matchedMeterId: "MTR-RF-R1-01", inferredMode: "LIVE_MONITORING" };
+  }
+
+  if (norm === "VSL-03" || norm.includes("GLORY")) {
+    return { portCallId: "UC-04", matchedMeterId: null, inferredMode: "COMPLETED_INVOICE" };
+  }
+  if (norm === "STS-04") {
+    return { portCallId: "UC-04", matchedMeterId: "MTR-STS-B1-04", inferredMode: "COMPLETED_INVOICE" };
+  }
+  if (norm === "TRK-2104") {
+    return { portCallId: "UC-04", matchedMeterId: "MTR-BIO-B1-01", inferredMode: "COMPLETED_INVOICE" };
+  }
+  if (norm === "BAY-A1") {
+    return { portCallId: "UC-04", matchedMeterId: "MTR-BAY-A1-01", inferredMode: "COMPLETED_INVOICE" };
+  }
+
+  if (norm.includes("HAI AN") || norm.includes("088S")) {
+    return { portCallId: "UC-03", matchedMeterId: null, inferredMode: "COMPLETED_INVOICE" };
+  }
+
+  return { portCallId: "UC-01", matchedMeterId: null, inferredMode: "LIVE_MONITORING" };
+}
+
 interface MeterTelemetryModalProps {
   isOpen: boolean;
   onClose: () => void;
-  initialAssetId?: string;
+  initialAssetId?: string | null;
+  initialMode?: MeterModalMode;
+  onOpenCarbonInvoice?: (invoiceNumber: string, useCaseId: string) => void;
+  onTraceVoyageInTelemetry?: (vesselEntityId: string, voyageNumber: string) => void;
 }
 
 export const MeterTelemetryModal: React.FC<MeterTelemetryModalProps> = ({
   isOpen,
   onClose,
-  initialAssetId = "UC-01"
+  initialAssetId,
+  initialMode,
+  onOpenCarbonInvoice,
+  onTraceVoyageInTelemetry,
 }) => {
-  const safeAssetId = typeof initialAssetId === "string" && initialAssetId.trim().length > 0
-    ? initialAssetId.trim()
-    : "UC-01";
-
-  // Determine matching port call based on safeAssetId (can be UC ID, invoiceNumber or meter ID)
-  const initialPortCall = useMemo(() => {
-    // 1. Direct match with useCaseId or invoiceNumber
-    const matchCase = PORT_CALL_METERS.find(p => 
-      p.useCaseId === safeAssetId || 
-      p.invoiceNumber === safeAssetId
-    );
-    if (matchCase) return matchCase;
-
-    // 2. Match with meter ID inside any port call
-    const matchMeter = PORT_CALL_METERS.find(p => 
-      p.meters.some(m => m.id === safeAssetId)
-    );
-    if (matchMeter) return matchMeter;
-
-    return PORT_CALL_METERS[0];
-  }, [safeAssetId]);
-
-  const [selectedPortCallId, setSelectedPortCallId] = useState<string>(initialPortCall.useCaseId);
-  const [showPortCallDropdown, setShowPortCallDropdown] = useState(false);
+  const [selectedPortCallId, setSelectedPortCallId] = useState<string>("UC-01");
+  const [viewMode, setViewMode] = useState<MeterModalMode>("LIVE_MONITORING");
+  const [inDepthMeterId, setInDepthMeterId] = useState<string | null>(null);
+  const [highlightedMeterId, setHighlightedMeterId] = useState<string | null>(null);
+  const [scrubIndex, setScrubIndex] = useState<number>(3);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  // In-Depth Single Meter Popup state: when set, popup is visible over the all-meters view
-  const [inDepthMeter, setInDepthMeter] = useState<MeterDevice | null>(() => {
-    // If safeAssetId matched a specific meter ID, open its in-depth popup directly
-    const directMeter = initialPortCall.meters.find(m => m.id === safeAssetId);
-    return directMeter || null;
-  });
+  useEffect(() => {
+    if (!isOpen) return;
+    const resolved = resolvePortCallFromIdentifier(initialAssetId);
+    setSelectedPortCallId(resolved.portCallId);
+    setHighlightedMeterId(resolved.matchedMeterId);
+    setViewMode(initialMode || resolved.inferredMode);
+    // Always start on the clean overview grid unless a specific single meter was requested
+    setInDepthMeterId(null);
+    setScrubIndex(3);
+  }, [isOpen, initialAssetId, initialMode]);
 
-  const [scrubIndex, setScrubIndex] = useState<number>(3); // Index in telemetry array for scrubber
-
-  // Synchronize when safeAssetId changes
-  React.useEffect(() => {
-    if (safeAssetId) {
-      const matchCase = PORT_CALL_METERS.find(p => 
-        p.useCaseId === safeAssetId || 
-        p.invoiceNumber === safeAssetId
-      );
-      if (matchCase) {
-        setSelectedPortCallId(matchCase.useCaseId);
-        setInDepthMeter(null);
-        return;
-      }
-      const matchMeterCase = PORT_CALL_METERS.find(p => 
-        p.meters.some(m => m.id === safeAssetId)
-      );
-      if (matchMeterCase) {
-        setSelectedPortCallId(matchMeterCase.useCaseId);
-        const m = matchMeterCase.meters.find(item => item.id === safeAssetId);
-        setInDepthMeter(m || null);
-        setScrubIndex(2);
-      }
-    }
-  }, [safeAssetId]);
-
-  // Current Port Call Group
   const currentPortCall = useMemo(() => {
-    return PORT_CALL_METERS.find(p => p.useCaseId === selectedPortCallId) || PORT_CALL_METERS[0];
+    return (
+      PORT_CALL_METERS.find((p) => p.useCaseId === selectedPortCallId) ||
+      PORT_CALL_METERS[0]
+    );
   }, [selectedPortCallId]);
+
+  const inDepthMeter = useMemo(() => {
+    if (!inDepthMeterId) return null;
+    return currentPortCall.meters.find((m) => m.id === inDepthMeterId) || null;
+  }, [currentPortCall, inDepthMeterId]);
 
   if (!isOpen) return null;
 
-  // Global SVG parameters for charts
-  const svgWidth = 520;
-  const svgHeight = 200;
-  const padLeft = 45;
+  const isCompletedMode = viewMode === "COMPLETED_INVOICE";
+
+  // SVG dimensions for In-Depth Curve
+  const svgWidth = 640;
+  const svgHeight = 165;
+  const padLeft = 44;
   const padRight = 20;
-  const padTop = 20;
-  const padBottom = 30;
+  const padTop = 18;
+  const padBottom = 26;
   const plotW = svgWidth - padLeft - padRight;
   const plotH = svgHeight - padTop - padBottom;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/70 backdrop-blur-xs animate-in fade-in overflow-y-auto">
-      <div 
-        className="w-full max-w-5xl bg-white rounded-3xl overflow-hidden shadow-2xl border border-slate-300 flex flex-col max-h-[92vh] my-4 relative"
-        style={{ fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}
+      <div
+        className="w-full max-w-5xl bg-white rounded-3xl overflow-hidden shadow-2xl border border-slate-300 flex flex-col max-h-[92vh] my-auto relative"
+        style={{
+          fontFamily:
+            "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+        }}
       >
         {/* ================================================================== */}
-        {/* 1. TOP HEADER: PORT CALL TITLE & SUMMARY */}
+        {/* 1. CLEAN TOP HEADER WITH CLEAR STATE DISTINCTION (LIVE vs COMPLETED) */}
         {/* ================================================================== */}
-        <div className="bg-[#002D62] text-white px-5 py-3.5 flex items-center justify-between shrink-0 select-none">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center text-sky-300 border border-white/15">
-              <Gauge className="w-5 h-5" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-[11px] font-mono font-bold px-2 py-0.5 rounded-full bg-white/20 text-white uppercase tracking-wider">
-                  {currentPortCall.useCaseId}
-                </span>
-                <h2 className="text-sm sm:text-base font-black tracking-tight">
-                  All Meters in Invoice / Tổng quan Toàn bộ Đồng hồ Đo đạc
-                </h2>
+        <div
+          className={`px-5 py-3.5 text-white flex items-center justify-between gap-3 shrink-0 select-none ${
+            isCompletedMode ? "bg-[#002D62]" : "bg-slate-900"
+          }`}
+        >
+          <div className="flex items-center gap-3 min-w-0">
+            {inDepthMeter ? (
+              <button
+                type="button"
+                onClick={() => setInDepthMeterId(null)}
+                className="px-2.5 py-1.5 rounded-xl bg-white/15 hover:bg-white/25 text-white font-bold text-xs flex items-center gap-1.5 transition-colors cursor-pointer shrink-0"
+              >
+                <ArrowLeft className="w-3.5 h-3.5" />
+                <span>All Voyage Meters</span>
+              </button>
+            ) : (
+              <div
+                className={`w-9 h-9 rounded-xl flex items-center justify-center border shrink-0 ${
+                  isCompletedMode
+                    ? "bg-emerald-500/20 text-emerald-300 border-emerald-400/30"
+                    : "bg-sky-500/20 text-sky-300 border-sky-400/30"
+                }`}
+              >
+                {isCompletedMode ? (
+                  <Lock className="w-4 h-4" />
+                ) : (
+                  <Gauge className="w-5 h-5" />
+                )}
               </div>
-              <p className="text-[11px] text-sky-200/80">
-                {currentPortCall.vesselName} ({currentPortCall.voyageNumber}) · {currentPortCall.berth} · {currentPortCall.hotelingHours}h Stay
-              </p>
+            )}
+
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
+                {isCompletedMode ? (
+                  <>
+                    <span className="inline-flex items-center gap-1 text-[10px] font-mono font-bold px-2 py-0.5 rounded-md bg-emerald-500/25 text-emerald-200 border border-emerald-400/30 uppercase tracking-wider">
+                      <CheckCircle2 className="w-3 h-3" />
+                      Completed Invoice Meter Records
+                    </span>
+                    <span className="text-[11px] font-mono text-white/75">
+                      #{currentPortCall.invoiceNumber}
+                    </span>
+                  </>
+                ) : (
+                  <span className="text-[11px] font-mono text-white/75">
+                    {currentPortCall.berth} · Voyage {currentPortCall.voyageNumber}
+                  </span>
+                )}
+              </div>
+
+              <h2 className="text-sm sm:text-base font-black tracking-tight truncate mt-0.5">
+                {inDepthMeter
+                  ? `${inDepthMeter.name} (${inDepthMeter.id})`
+                  : `${currentPortCall.vesselName} · Voyage ${currentPortCall.voyageNumber}`}
+              </h2>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 shrink-0">
             <button
               onClick={onClose}
-              className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors text-white"
-              title="Close Modal"
+              className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors text-white cursor-pointer"
+              title="Close"
             >
               <X className="w-4 h-4" />
             </button>
           </div>
         </div>
 
-        {/* Dynamic Toast Feedback Notification */}
+        {/* Toast Feedback */}
         {toastMessage && (
-          <div className="bg-emerald-600 text-white px-4 py-2 text-xs font-bold flex items-center justify-between shadow-xs animate-in slide-in-from-top duration-200">
+          <div className="bg-emerald-600 text-white px-5 py-2 text-xs font-bold flex items-center justify-between shrink-0">
             <div className="flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4" />
               <span>{toastMessage}</span>
             </div>
             <button
               onClick={() => setToastMessage(null)}
-              className="text-white/80 hover:text-white text-xs underline cursor-pointer"
+              className="text-white/80 hover:text-white underline cursor-pointer"
             >
               Dismiss
             </button>
@@ -739,690 +992,828 @@ export const MeterTelemetryModal: React.FC<MeterTelemetryModalProps> = ({
         )}
 
         {/* ================================================================== */}
-        {/* 2. PORT CALL SELECTOR & QUICK INVOICE TOTALS */}
+        {/* 2. VOYAGE SELECTOR & SYNCHRONIZED SUMMARY BAR */}
         {/* ================================================================== */}
-        <div className="px-5 py-3 bg-slate-50 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs shrink-0">
-          <div className="flex items-center gap-2 relative">
-            <span className="font-bold text-slate-500 uppercase tracking-wider text-[11px]">
-              Port Call:
-            </span>
-            <div className="relative">
-              <button
-                onClick={() => setShowPortCallDropdown(!showPortCallDropdown)}
-                className="px-3 py-1.5 bg-white border border-slate-300 rounded-xl font-bold text-slate-800 flex items-center gap-2 hover:bg-slate-100 shadow-2xs transition-colors"
-              >
-                <Ship className="w-3.5 h-3.5 text-[#002D62]" />
-                <span>{currentPortCall.vesselName} · {currentPortCall.voyageNumber}</span>
-                <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
-              </button>
-
-              {showPortCallDropdown && (
-                <div className="absolute left-0 top-full mt-1.5 w-72 bg-white rounded-2xl shadow-xl border border-slate-200 py-1.5 z-50">
-                  <div className="px-3 py-1 text-[10px] font-mono text-slate-400 font-bold uppercase border-b border-slate-100">
-                    Switch Port Call / e-Invoice
-                  </div>
-                  {PORT_CALL_METERS.map((call) => (
-                    <button
-                      key={call.useCaseId}
-                      onClick={() => {
-                        setSelectedPortCallId(call.useCaseId);
-                        setInDepthMeter(null);
-                        setShowPortCallDropdown(false);
-                      }}
-                      className={`w-full text-left px-3 py-2 flex items-start gap-2 hover:bg-slate-50 transition-colors ${
-                        selectedPortCallId === call.useCaseId ? "bg-blue-50 text-[#002D62] font-bold" : "text-slate-700"
-                      }`}
-                    >
-                      <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-slate-200 text-slate-700 mt-0.5">
-                        {call.useCaseId}
-                      </span>
-                      <div>
-                        <div className="font-bold text-xs">{call.vesselName} ({call.voyageNumber})</div>
-                        <div className="text-[10px] text-slate-400">{call.berth}</div>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Quick Invoice Totals */}
-          <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-xs">
-            <div className="flex items-center gap-1.5 px-3 py-1 bg-blue-50 rounded-lg border border-blue-200 text-blue-900 font-semibold">
-              <Zap className="w-3.5 h-3.5 text-blue-600" />
-              <span>Electricity:</span>
-              <strong className="font-mono">{currentPortCall.totalElectricityKwh.toLocaleString()} kWh</strong>
-            </div>
-
-            <div className="flex items-center gap-1.5 px-3 py-1 bg-amber-50 rounded-lg border border-amber-200 text-amber-900 font-semibold">
-              <Fuel className="w-3.5 h-3.5 text-amber-600" />
-              <span>Fuel:</span>
-              <strong className="font-mono">{currentPortCall.totalFuelLiters.toLocaleString()} Liters</strong>
-            </div>
-
-            <div className="flex items-center gap-1.5 px-2.5 py-1 bg-slate-100 rounded-lg border border-slate-200 text-slate-700 font-bold">
-              <span>{currentPortCall.meters.length} Active Meters</span>
-            </div>
-          </div>
-        </div>
-
-        {/* ================================================================== */}
-        {/* 3. MAIN BODY: ALL METERS IN INVOICE GRID VIEW */}
-        {/* ================================================================== */}
-        <div className="flex-1 overflow-y-auto p-5 space-y-4 bg-slate-50/50">
-          <div className="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div>
-              <h3 className="text-sm font-black text-slate-900">
-                Synchronized Multi-Meter Energy & Fuel Suite ({currentPortCall.meters.length} Devices)
-              </h3>
-              <p className="text-xs text-slate-500">
-                All physical metering points active during port stay {currentPortCall.vesselName} ({currentPortCall.invoiceNumber}). Click any meter&apos;s &quot;In-Depth Telemetry&quot; to inspect full interval curves and historical records.
-              </p>
-            </div>
-            <div className="flex items-center gap-2 shrink-0">
-              <span className="text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200 flex items-center gap-1">
-                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                <span>100% Calibrated & Verified</span>
+        <div className="px-5 py-3 bg-slate-50 border-b border-slate-200 flex flex-col lg:flex-row lg:items-center justify-between gap-3 text-xs shrink-0">
+          {isCompletedMode ? (
+            <div className="flex flex-wrap items-center gap-2 text-xs text-slate-700">
+              <span className="font-bold text-slate-900">
+                {currentPortCall.berth}
+              </span>
+              <span className="text-slate-300">·</span>
+              <span>
+                Recorded Window:{" "}
+                <strong className="font-mono text-slate-900">
+                  {currentPortCall.arrivalWindow} → {currentPortCall.departureWindow}
+                </strong>{" "}
+                ({currentPortCall.hotelingHours}h)
+              </span>
+              <span className="text-slate-300">·</span>
+              <span>
+                Volume:{" "}
+                <strong className="font-mono text-slate-900">
+                  {currentPortCall.teuHandled.toLocaleString()} TEU
+                </strong>
               </span>
             </div>
-          </div>
-
-          {/* Cards Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {currentPortCall.meters.map((meter) => {
-              const isElec = meter.medium === "ELECTRICITY";
-              const isFl = meter.medium === "FUEL";
-              const isRf = meter.medium === "REEFER_THERMAL";
-              const isBt = meter.medium === "BATTERY";
-
-              const themeClr = isElec ? "#0284C7" : isFl ? "#D97706" : isRf ? "#0D9488" : "#8B5CF6";
-              const badgeBg = isElec 
-                ? "bg-blue-50 text-blue-800 border-blue-200" 
-                : isFl 
-                ? "bg-amber-50 text-amber-800 border-amber-200" 
-                : isRf 
-                ? "bg-teal-50 text-teal-800 border-teal-200" 
-                : "bg-purple-50 text-purple-800 border-purple-200";
-
-              // Generate mini SVG path
-              const pts = meter.telemetry;
-              const minH = pts[0]?.hour || 0;
-              const maxH = pts[pts.length - 1]?.hour || 24;
-              const hSpan = Math.max(1, maxH - minH);
-
-              const miniCoords = pts.map(p => {
-                const x = padLeft + ((p.hour - minH) / hSpan) * plotW;
-                const y = padTop + plotH - (Math.min(p.primaryVal, meter.chartYMax) / meter.chartYMax) * plotH;
-                return { x, y, point: p };
-              });
-              const polyStr = miniCoords.map(c => `${c.x.toFixed(1)},${c.y.toFixed(1)}`).join(" ");
-
-              return (
-                <div
-                  key={meter.id}
-                  className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/90 shadow-2xs hover:shadow-md hover:border-slate-300 transition-all flex flex-col justify-between gap-3 group"
-                >
-                  {/* Card Header */}
-                  <div>
-                    <div className="flex items-start justify-between gap-2 border-b border-slate-100 pb-3">
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2">
-                          <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold border ${badgeBg}`}>
-                            {meter.category.replace("_", " ")}
-                          </span>
-                          <span className="text-[10px] font-mono text-slate-400 font-semibold">
-                            {meter.id}
-                          </span>
-                        </div>
-                        <h4 className="font-black text-slate-900 text-sm group-hover:text-[#002D62] transition-colors">
-                          {meter.name}
-                        </h4>
-                      </div>
-
-                      <div className="text-right shrink-0">
-                        <span className="text-[10px] font-bold text-slate-400 uppercase block">Port Call Total:</span>
-                        <strong className="text-base font-black font-mono text-slate-900">
-                          {meter.totalPeriodRecorded.toLocaleString()} <span className="text-xs font-semibold text-slate-600">{meter.primaryUnit === "kW" ? "kWh" : "L"}</span>
-                        </strong>
-                      </div>
-                    </div>
-
-                    {/* Technical details strip */}
-                    <div className="grid grid-cols-2 gap-2 text-[11px] py-2 text-slate-600">
-                      <div>
-                        <span className="text-slate-400 block text-[10px] uppercase">Rating / Medium:</span>
-                        <span className="font-semibold text-slate-800 font-mono truncate block" title={meter.nominalRating}>
-                          {meter.nominalRating}
-                        </span>
-                      </div>
-                      <div>
-                        <span className="text-slate-400 block text-[10px] uppercase">Protocol:</span>
-                        <span className="font-semibold text-slate-800 font-mono truncate block" title={meter.protocol}>
-                          {meter.protocol}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Mini SVG Diagram preview */}
-                    <div className="w-full h-24 bg-slate-50/70 rounded-xl p-2 border border-slate-100 relative select-none">
-                      <div className="absolute top-1.5 right-2 text-[10px] font-mono text-slate-400 font-semibold">
-                        Peak: {meter.chartYMax} {meter.primaryUnit}
-                      </div>
-                      <svg viewBox={`0 0 ${svgWidth} ${svgHeight}`} className="w-full h-full overflow-visible">
-                        {/* Horizontal reference baseline */}
-                        <line
-                          x1={padLeft}
-                          y1={padTop + plotH}
-                          x2={padLeft + plotW}
-                          y2={padTop + plotH}
-                          stroke="#CBD5E1"
-                          strokeWidth="1"
-                        />
-                        <polyline
-                          points={polyStr}
-                          fill="none"
-                          stroke={themeClr}
-                          strokeWidth="2.5"
-                          strokeLinejoin="round"
-                        />
-                        {miniCoords.map((c, i) => (
-                          <circle
-                            key={i}
-                            cx={c.x}
-                            cy={c.y}
-                            r="2"
-                            fill={themeClr}
-                          />
-                        ))}
-                      </svg>
-                    </div>
-                  </div>
-
-                  {/* Card Action: IN-DEPTH POPUP TRIGGER */}
-                  <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
-                    <span className="text-[11px] text-slate-500 font-medium">
-                      {meter.historicalCalls.length} Historical calls tracked
-                    </span>
-
+          ) : (
+            <div className="flex flex-wrap items-center gap-1.5">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mr-1">
+                Terminal Vessel:
+              </span>
+              {PORT_CALL_METERS.filter((c) => c.useCaseId !== "UC-03").map(
+                (call) => {
+                  const isSelected =
+                    call.useCaseId === currentPortCall.useCaseId;
+                  return (
                     <button
+                      key={call.useCaseId}
                       type="button"
                       onClick={() => {
-                        setInDepthMeter(meter);
-                        setScrubIndex(Math.min(scrubIndex, meter.telemetry.length - 1));
+                        setSelectedPortCallId(call.useCaseId);
+                        setInDepthMeterId(null);
+                        setHighlightedMeterId(null);
                       }}
-                      className="px-3.5 py-1.5 bg-[#002D62] hover:bg-[#002047] text-white text-xs font-bold rounded-xl shadow-2xs transition-all flex items-center gap-1.5 group-hover:scale-[1.02]"
+                      className={`px-2.5 py-1.5 rounded-xl font-bold text-[11px] flex items-center gap-1.5 transition-all cursor-pointer border ${
+                        isSelected
+                          ? "bg-[#002D62] text-white border-[#002D62] shadow-2xs"
+                          : "bg-white text-slate-700 border-slate-200 hover:bg-slate-100"
+                      }`}
                     >
-                      <Sliders className="w-3.5 h-3.5 text-sky-300" />
-                      <span>In-Depth Telemetry</span>
+                      <Ship className="w-3 h-3 shrink-0" />
+                      <span>
+                        {call.vesselName.replace("MV ", "")} ({call.voyageNumber})
+                      </span>
                     </button>
-                  </div>
-                </div>
-              );
-            })}
+                  );
+                }
+              )}
+            </div>
+          )}
+
+          {/* Certified Totals for this Port Call */}
+          <div className="flex flex-wrap items-center gap-2 text-xs">
+            <div className="px-2.5 py-1 rounded-lg bg-blue-50 border border-blue-200 text-blue-900 font-semibold flex items-center gap-1.5">
+              <Zap className="w-3.5 h-3.5 text-blue-600" />
+              <span>Scope 2 Elec:</span>
+              <strong className="font-mono">
+                {currentPortCall.totalElectricityKwh.toLocaleString()} kWh (
+                {currentPortCall.totalScope2Tons.toFixed(2)} tCO₂e)
+              </strong>
+            </div>
+            <div className="px-2.5 py-1 rounded-lg bg-amber-50 border border-amber-200 text-amber-900 font-semibold flex items-center gap-1.5">
+              <Fuel className="w-3.5 h-3.5 text-amber-600" />
+              <span>Scope 1 Fuel:</span>
+              <strong className="font-mono">
+                {currentPortCall.totalFuelLiters.toLocaleString()} L (
+                {currentPortCall.totalScope1Tons.toFixed(2)} tCO₂e)
+              </strong>
+            </div>
           </div>
         </div>
 
         {/* ================================================================== */}
-        {/* 4. MODAL FOOTER BAR */}
+        {/* 3. MAIN CONTENT: EITHER METER OVERVIEW GRID OR IN-DEPTH SINGLE METER */}
+        {/* ================================================================== */}
+        {!inDepthMeter ? (
+          <div className="flex-1 overflow-y-auto p-5 space-y-4 bg-slate-50/50">
+            {/* Contextual Banner */}
+            <div
+              className={`p-4 rounded-2xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
+                isCompletedMode
+                  ? "bg-emerald-50/70 border-emerald-200"
+                  : "bg-sky-50/70 border-sky-200"
+              }`}
+            >
+              <div className="space-y-0.5">
+                <div className="flex items-center gap-2">
+                  {isCompletedMode ? (
+                    <ShieldCheck className="w-4 h-4 text-emerald-700 shrink-0" />
+                  ) : (
+                    <Activity className="w-4 h-4 text-sky-700 shrink-0" />
+                  )}
+                  <h3 className="text-xs sm:text-sm font-black text-slate-900">
+                    {isCompletedMode
+                      ? `Completed & Sealed Meters for Carbon Invoice #${currentPortCall.invoiceNumber}`
+                      : `SCADA & Fuel Sub-Meters Serving ${currentPortCall.vesselName} (${currentPortCall.voyageNumber})`}
+                  </h3>
+                </div>
+                <p className="text-xs text-slate-600">
+                  {isCompletedMode
+                    ? `Showing the ${currentPortCall.meters.length} completed meters recorded during ${currentPortCall.arrivalWindow} → ${currentPortCall.departureWindow} (${currentPortCall.hotelingHours}h · ${currentPortCall.teuHandled.toLocaleString()} TEU). Click any meter for full recording audit & voyage history.`
+                    : `Real-time power & fuel telemetry at ${currentPortCall.berth}. Click any sub-meter card below to inspect its interval curve and compare past voyages for this vessel.`}
+                </p>
+              </div>
+            </div>
+
+            {/* Clean 2-Column Grid of Scoped Meters */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {currentPortCall.meters.map((meter) => {
+                const isElec = meter.medium === "ELECTRICITY";
+                const isFl = meter.medium === "FUEL";
+                const isRf = meter.medium === "REEFER_THERMAL";
+                const isHighlighted = highlightedMeterId === meter.id;
+
+                const themeClr = isElec
+                  ? "#0284C7"
+                  : isFl
+                  ? "#D97706"
+                  : isRf
+                  ? "#0D9488"
+                  : "#8B5CF6";
+                const badgeBg = isElec
+                  ? "bg-blue-50 text-blue-800 border-blue-200"
+                  : isFl
+                  ? "bg-amber-50 text-amber-800 border-amber-200"
+                  : "bg-teal-50 text-teal-800 border-teal-200";
+
+                const latestPt =
+                  meter.telemetry[meter.telemetry.length - 1] ||
+                  meter.telemetry[0];
+                const activeLivePt =
+                  meter.telemetry[Math.min(2, meter.telemetry.length - 1)] ||
+                  meter.telemetry[0];
+
+                return (
+                  <div
+                    key={meter.id}
+                    onClick={() => {
+                      setInDepthMeterId(meter.id);
+                      setScrubIndex(Math.min(2, meter.telemetry.length - 1));
+                    }}
+                    className={`bg-white p-4 sm:p-5 rounded-2xl border transition-all flex flex-col justify-between gap-3.5 cursor-pointer group ${
+                      isHighlighted
+                        ? "border-blue-500 ring-2 ring-blue-500/20 shadow-md"
+                        : "border-slate-200/90 hover:border-slate-300 hover:shadow-md"
+                    }`}
+                  >
+                    {/* Top Row: Category Badge, Meter ID, Status Pill */}
+                    <div>
+                      <div className="flex items-start justify-between gap-2 border-b border-slate-100 pb-3">
+                        <div className="space-y-1 min-w-0">
+                          <div className="flex flex-wrap items-center gap-1.5">
+                            <span
+                              className={`px-2 py-0.5 rounded-md text-[10px] font-bold border ${badgeBg}`}
+                            >
+                              {meter.category.replace("_", " ")}
+                            </span>
+                            <span className="text-[10px] font-mono text-slate-400 font-bold">
+                              {meter.id}
+                            </span>
+                            {isHighlighted && (
+                              <span className="px-2 py-0.5 rounded bg-blue-600 text-white text-[10px] font-bold">
+                                Selected Equipment
+                              </span>
+                            )}
+                          </div>
+                          <h4 className="font-black text-slate-900 text-sm group-hover:text-[#002D62] transition-colors leading-snug">
+                            {meter.name}
+                          </h4>
+                          <p className="text-[11px] text-slate-500 truncate">
+                            {meter.location} · {meter.protocol}
+                          </p>
+                        </div>
+
+                        {/* Primary Figure: Either Live Reading or Completed Recorded Total */}
+                        <div className="text-right shrink-0">
+                          {isCompletedMode ? (
+                            <>
+                              <span className="text-[10px] font-bold text-emerald-700 uppercase block">
+                                Certified Total
+                              </span>
+                              <strong className="text-base font-black font-mono text-slate-900">
+                                {meter.totalPeriodRecorded.toLocaleString()}{" "}
+                                <span className="text-xs font-semibold text-slate-500">
+                                  {meter.cumulativeUnit === "kWh" ? "kWh" : "L"}
+                                </span>
+                              </strong>
+                              <span className="text-[10px] font-mono font-bold text-emerald-700 block">
+                                {meter.co2eMetricTons.toFixed(2)} tCO₂e
+                              </span>
+                            </>
+                          ) : (
+                            <>
+                              <span className="text-[10px] font-bold text-sky-700 uppercase block">
+                                Live Load
+                              </span>
+                              <strong className="text-base font-black font-mono text-slate-900">
+                                {activeLivePt.primaryVal.toLocaleString()}{" "}
+                                <span className="text-xs font-semibold text-slate-500">
+                                  {meter.primaryUnit}
+                                </span>
+                              </strong>
+                              <span className="text-[10px] font-mono text-slate-500 block">
+                                Acc:{" "}
+                                {meter.totalPeriodRecorded.toLocaleString()}{" "}
+                                {meter.cumulativeUnit === "kWh" ? "kWh" : "L"}
+                              </span>
+                            </>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Recording Audit Box (Distinct for Completed Invoice vs Live Monitoring) */}
+                      {isCompletedMode ? (
+                        <div className="mt-3 p-3 rounded-xl bg-slate-50 border border-slate-200/80 grid grid-cols-2 gap-2 text-[11px]">
+                          <div>
+                            <span className="text-slate-400 text-[10px] uppercase font-bold block">
+                              Meter Index (Start → End):
+                            </span>
+                            <span className="font-mono font-bold text-slate-800">
+                              {meter.openingReading.toLocaleString()} →{" "}
+                              {meter.closingReading.toLocaleString()}{" "}
+                              {meter.cumulativeUnit === "kWh" ? "kWh" : "L"}
+                            </span>
+                          </div>
+                          <div>
+                            <span className="text-slate-400 text-[10px] uppercase font-bold block">
+                              Recorded Window:
+                            </span>
+                            <span className="font-mono font-semibold text-slate-700 truncate block">
+                              {meter.recordingWindow}
+                            </span>
+                          </div>
+                          <div className="col-span-2 pt-1.5 border-t border-slate-200/70 flex items-center justify-between">
+                            <span className="text-slate-500 text-[10px]">
+                              EF: {meter.emissionFactorLabel}
+                            </span>
+                            <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700">
+                              <CheckCircle2 className="w-3 h-3" />
+                              DCSA Sealed
+                            </span>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="mt-3 p-3 rounded-xl bg-slate-50 border border-slate-200/80 flex items-center justify-between gap-3 text-[11px]">
+                          <div>
+                            <span className="text-slate-400 text-[10px] uppercase font-bold block">
+                              Current Operational State:
+                            </span>
+                            <span className="font-bold text-slate-800">
+                              {activeLivePt.statusText}
+                            </span>
+                          </div>
+                          <div className="text-right shrink-0">
+                            <span className="text-slate-400 text-[10px] uppercase font-bold block">
+                              Peak / Rating:
+                            </span>
+                            <span className="font-mono font-semibold text-slate-700">
+                              {meter.nominalRating}
+                            </span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Footer Action inside Card */}
+                    <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs">
+                      <span className="text-[11px] text-slate-500 font-medium flex items-center gap-1.5">
+                        <span
+                          className="w-2 h-2 rounded-full"
+                          style={{ backgroundColor: themeClr }}
+                        />
+                        {meter.historicalCalls.length} related voyages for{" "}
+                        {currentPortCall.vesselName.replace("MV ", "")}
+                      </span>
+
+                      <span className="font-bold text-[#002D62] group-hover:translate-x-0.5 transition-transform flex items-center gap-1">
+                        <span>Inspect In-Depth</span>
+                        <ChevronRight className="w-3.5 h-3.5" />
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        ) : (
+          /* ================================================================== */
+          /* 4. IN-DEPTH SINGLE METER & RELATED VOYAGES VIEW (INSIDE SAME MODAL) */
+          /* ================================================================== */
+          (() => {
+            const isElec = inDepthMeter.medium === "ELECTRICITY";
+            const isFl = inDepthMeter.medium === "FUEL";
+            const isRf = inDepthMeter.medium === "REEFER_THERMAL";
+
+            const themeColor = isElec
+              ? "#0284C7"
+              : isFl
+              ? "#D97706"
+              : isRf
+              ? "#0D9488"
+              : "#8B5CF6";
+            const gradStart = isElec
+              ? "#38BDF8"
+              : isFl
+              ? "#FBBF24"
+              : isRf
+              ? "#2DD4BF"
+              : "#A78BFA";
+
+            const pts = inDepthMeter.telemetry;
+            const minHour = pts[0]?.hour || 0;
+            const maxHour = pts[pts.length - 1]?.hour || 24;
+            const hourSpan = Math.max(1, maxHour - minHour);
+            const maxY = inDepthMeter.chartYMax;
+
+            const coordinates = pts.map((p) => {
+              const x = padLeft + ((p.hour - minHour) / hourSpan) * plotW;
+              const y =
+                padTop +
+                plotH -
+                (Math.min(p.primaryVal, maxY) / maxY) * plotH;
+              return { x, y, point: p };
+            });
+
+            const polylineStr = coordinates
+              .map((c) => `${c.x.toFixed(1)},${c.y.toFixed(1)}`)
+              .join(" ");
+            const firstPt = coordinates[0] || {
+              x: padLeft,
+              y: padTop + plotH,
+            };
+            const lastPt = coordinates[coordinates.length - 1] || {
+              x: padLeft + plotW,
+              y: padTop + plotH,
+            };
+            const polygonStr = `${firstPt.x.toFixed(1)},${(
+              padTop + plotH
+            ).toFixed(1)} ${polylineStr} ${lastPt.x.toFixed(1)},${(
+              padTop + plotH
+            ).toFixed(1)}`;
+
+            const safeIdx = Math.min(Math.max(0, scrubIndex), pts.length - 1);
+            const currentPt = pts[safeIdx] || pts[0];
+            const activeCoord = coordinates[safeIdx] || firstPt;
+
+            return (
+              <div className="flex-1 overflow-y-auto p-5 space-y-4 bg-slate-50/50">
+                {/* SECTION A: HOW THIS METER WAS RECORDED (AUDIT & HARDWARE RECORD) */}
+                <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/90 shadow-2xs space-y-3">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-800 font-mono font-bold text-[10px]">
+                          {inDepthMeter.id}
+                        </span>
+                        <span className="text-xs font-bold text-slate-500">
+                          SN: {inDepthMeter.serialNumber} · {inDepthMeter.protocol}
+                        </span>
+                      </div>
+                      <h3 className="text-sm font-black text-slate-900 mt-1">
+                        {inDepthMeter.name}
+                      </h3>
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        {inDepthMeter.description}
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span
+                        className={`px-3 py-1 rounded-xl text-xs font-bold border flex items-center gap-1.5 ${
+                          isCompletedMode
+                            ? "bg-emerald-50 text-emerald-800 border-emerald-200"
+                            : "bg-sky-50 text-sky-800 border-sky-200"
+                        }`}
+                      >
+                        <CheckCircle2 className="w-3.5 h-3.5" />
+                        <span>
+                          {isCompletedMode
+                            ? "Sealed for Carbon Invoice"
+                            : "Live Telemetry Active"}
+                        </span>
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* 4 Audit Metrics explaining exact recording */}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+                    <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/80">
+                      <span className="text-[10px] font-bold uppercase text-slate-400 block">
+                        Meter Index Register
+                      </span>
+                      <strong className="font-mono text-slate-900 text-xs sm:text-sm block mt-0.5">
+                        {inDepthMeter.openingReading.toLocaleString()} →{" "}
+                        {inDepthMeter.closingReading.toLocaleString()}
+                      </strong>
+                      <span className="text-[10px] text-slate-500">
+                        Opening → Closing ({inDepthMeter.cumulativeUnit})
+                      </span>
+                    </div>
+
+                    <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/80">
+                      <span className="text-[10px] font-bold uppercase text-slate-400 block">
+                        Net Voyage Recorded
+                      </span>
+                      <strong className="font-mono text-slate-900 text-sm block mt-0.5">
+                        {inDepthMeter.totalPeriodRecorded.toLocaleString()}{" "}
+                        {inDepthMeter.cumulativeUnit}
+                      </strong>
+                      <span className="text-[10px] text-slate-500">
+                        {inDepthMeter.recordingWindow}
+                      </span>
+                    </div>
+
+                    <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/80">
+                      <span className="text-[10px] font-bold uppercase text-slate-400 block">
+                        Carbon Accounting
+                      </span>
+                      <strong className="font-mono text-emerald-700 text-sm block mt-0.5">
+                        {inDepthMeter.co2eMetricTons.toFixed(2)} tCO₂e
+                      </strong>
+                      <span className="text-[10px] text-slate-500 truncate block">
+                        {inDepthMeter.emissionFactorLabel}
+                      </span>
+                    </div>
+
+                    <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/80">
+                      <span className="text-[10px] font-bold uppercase text-slate-400 block">
+                        Voyage Intensity
+                      </span>
+                      <strong className="font-mono text-slate-900 text-sm block mt-0.5">
+                        {(
+                          inDepthMeter.totalPeriodRecorded /
+                          Math.max(1, currentPortCall.teuHandled)
+                        ).toFixed(2)}{" "}
+                        {inDepthMeter.cumulativeUnit === "kWh"
+                          ? "kWh/TEU"
+                          : "L/TEU"}
+                      </strong>
+                      <span className="text-[10px] text-slate-500">
+                        Across {currentPortCall.teuHandled.toLocaleString()} TEU
+                        handled
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* SECTION B: INTERACTIVE TIME-SERIES CURVE FOR THIS VOYAGE */}
+                <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/90 shadow-2xs space-y-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
+                    <div className="flex items-center gap-2">
+                      <Activity className="w-4 h-4 text-[#002D62]" />
+                      <span className="font-extrabold text-slate-900 text-xs uppercase tracking-wider">
+                        Voyage {currentPortCall.voyageNumber} Interval Telemetry
+                        Profile ({inDepthMeter.chartYUnit})
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-3 text-xs text-slate-500">
+                      <span className="flex items-center gap-1.5">
+                        <span
+                          className="w-2.5 h-2.5 rounded-full"
+                          style={{ backgroundColor: themeColor }}
+                        />
+                        <strong className="text-slate-800">
+                          {inDepthMeter.primaryUnit} Profile
+                        </strong>
+                      </span>
+                      <span>·</span>
+                      <span>{currentPortCall.berth}</span>
+                    </div>
+                  </div>
+
+                  {/* SVG Curve */}
+                  <div className="w-full select-none relative">
+                    <svg
+                      viewBox={`0 0 ${svgWidth} ${svgHeight}`}
+                      className="w-full h-auto overflow-visible"
+                    >
+                      <defs>
+                        <linearGradient
+                          id={`meterGrad-${inDepthMeter.id}`}
+                          x1="0"
+                          y1="0"
+                          x2="0"
+                          y2="1"
+                        >
+                          <stop
+                            offset="0%"
+                            stopColor={gradStart}
+                            stopOpacity="0.65"
+                          />
+                          <stop
+                            offset="100%"
+                            stopColor={themeColor}
+                            stopOpacity="0.08"
+                          />
+                        </linearGradient>
+                      </defs>
+
+                      {[1, 0.75, 0.5, 0.25, 0].map((ratio) => {
+                        const val = Math.round(maxY * ratio);
+                        const y = padTop + plotH - ratio * plotH;
+                        return (
+                          <g key={ratio}>
+                            <line
+                              x1={padLeft}
+                              y1={y}
+                              x2={padLeft + plotW}
+                              y2={y}
+                              stroke="#E2E8F0"
+                              strokeWidth="1"
+                              strokeDasharray={ratio === 0 ? "0" : "2 2"}
+                            />
+                            <text
+                              x={padLeft - 6}
+                              y={y + 3.5}
+                              textAnchor="end"
+                              fontSize="9"
+                              fill="#64748B"
+                              fontWeight="600"
+                              className="font-mono"
+                            >
+                              {val}
+                            </text>
+                          </g>
+                        );
+                      })}
+
+                      <polygon
+                        points={polygonStr}
+                        fill={`url(#meterGrad-${inDepthMeter.id})`}
+                      />
+                      <polyline
+                        points={polylineStr}
+                        fill="none"
+                        stroke={themeColor}
+                        strokeWidth="2.5"
+                        strokeLinejoin="round"
+                      />
+
+                      {coordinates.map((c, i) => (
+                        <circle
+                          key={i}
+                          cx={c.x}
+                          cy={c.y}
+                          r={i === safeIdx ? "5" : "3"}
+                          fill={i === safeIdx ? "#FFFFFF" : themeColor}
+                          stroke={i === safeIdx ? themeColor : "#FFFFFF"}
+                          strokeWidth="2"
+                          className="cursor-pointer transition-all"
+                          onClick={() => setScrubIndex(i)}
+                        />
+                      ))}
+
+                      <line
+                        x1={activeCoord.x}
+                        y1={padTop}
+                        x2={activeCoord.x}
+                        y2={padTop + plotH}
+                        stroke="#0F172A"
+                        strokeWidth="1.5"
+                        strokeDasharray="3 3"
+                      />
+
+                      <g
+                        transform={`translate(${Math.min(
+                          activeCoord.x,
+                          padLeft + plotW - 75
+                        )}, ${Math.max(padTop + 10, activeCoord.y - 25)})`}
+                      >
+                        <rect
+                          x="-38"
+                          y="-12"
+                          width="76"
+                          height="20"
+                          rx="6"
+                          fill="#0F172A"
+                        />
+                        <text
+                          x="0"
+                          y="1.5"
+                          textAnchor="middle"
+                          fontSize="9"
+                          fill="#FFFFFF"
+                          fontWeight="bold"
+                          className="font-mono"
+                        >
+                          {currentPt.primaryVal} {inDepthMeter.primaryUnit}
+                        </text>
+                      </g>
+
+                      {coordinates.map((c, i) => (
+                        <text
+                          key={i}
+                          x={c.x}
+                          y={padTop + plotH + 16}
+                          textAnchor="middle"
+                          fontSize="9"
+                          fill="#64748B"
+                          fontWeight="600"
+                          className="font-mono"
+                        >
+                          {c.point.time}
+                        </text>
+                      ))}
+                    </svg>
+                  </div>
+
+                  {/* Scrubber Bar */}
+                  <div className="pt-2 border-t border-slate-100 space-y-1.5">
+                    <div className="flex items-center justify-between text-xs text-slate-600">
+                      <span className="font-semibold flex items-center gap-1.5">
+                        <Clock className="w-3.5 h-3.5 text-slate-500" />
+                        Timestamp:{" "}
+                        <strong className="text-slate-900 font-mono">
+                          {currentPt.time}
+                        </strong>{" "}
+                        ·{" "}
+                        <span className="text-slate-700 font-bold">
+                          {currentPt.statusText}
+                        </span>
+                      </span>
+                      <span className="text-[11px] font-mono text-slate-500">
+                        Cumulative: {currentPt.cumulativeTotal.toLocaleString()}{" "}
+                        {inDepthMeter.cumulativeUnit}
+                      </span>
+                    </div>
+
+                    <input
+                      type="range"
+                      min="0"
+                      max={pts.length - 1}
+                      value={safeIdx}
+                      onChange={(e) => setScrubIndex(parseInt(e.target.value))}
+                      className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-[#002D62]"
+                    />
+                  </div>
+
+                  {/* 4 Physical Readouts at Scrubbed Interval */}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-1">
+                    <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/90">
+                      <span className="text-slate-400 block text-[10px] uppercase font-bold">
+                        {isElec
+                          ? "Active Load (P):"
+                          : isFl
+                          ? "Fuel Flow Rate:"
+                          : "Cooling Demand:"}
+                      </span>
+                      <strong className="text-base font-black text-slate-900 font-mono">
+                        {currentPt.primaryVal} {inDepthMeter.primaryUnit}
+                      </strong>
+                    </div>
+
+                    <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/90">
+                      <span className="text-slate-400 block text-[10px] uppercase font-bold">
+                        {isElec
+                          ? "Bus Voltage:"
+                          : isFl
+                          ? "Line Pressure:"
+                          : "Core Temp:"}
+                      </span>
+                      <strong className="text-base font-black text-slate-900 font-mono">
+                        {currentPt.secondaryVal}{" "}
+                        {isElec ? "kV" : isFl ? "bar" : "°C"}
+                      </strong>
+                    </div>
+
+                    <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/90">
+                      <span className="text-slate-400 block text-[10px] uppercase font-bold">
+                        {isElec
+                          ? "Phase Current (I):"
+                          : isFl
+                          ? "Fuel Temp:"
+                          : "Active Plugs:"}
+                      </span>
+                      <strong className="text-base font-black text-slate-900 font-mono">
+                        {currentPt.tertiaryVal}{" "}
+                        {isElec ? "Amps" : isFl ? "°C" : "Plugs"}
+                      </strong>
+                    </div>
+
+                    <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/90">
+                      <span className="text-slate-400 block text-[10px] uppercase font-bold">
+                        {isElec
+                          ? "Power Factor:"
+                          : isFl
+                          ? "Engine Speed:"
+                          : "Excursions:"}
+                      </span>
+                      <strong className="text-base font-black text-emerald-700 font-mono">
+                        {currentPt.quaternaryVal}{" "}
+                        {isElec ? "cos φ" : isFl ? "RPM" : "Alerts"}
+                      </strong>
+                    </div>
+                  </div>
+                </div>
+
+                {/* SECTION C: RELATED VOYAGES FOR THIS EXACT VESSEL / EQUIPMENT ONLY */}
+                <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/90 shadow-2xs space-y-3">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
+                    <div className="flex items-center gap-2">
+                      <BarChart3 className="w-4 h-4 text-[#002D62]" />
+                      <span className="font-extrabold text-slate-900 text-xs uppercase tracking-wider">
+                        Related Voyages for {currentPortCall.vesselName} on This
+                        Meter ({inDepthMeter.id})
+                      </span>
+                    </div>
+                    <span className="text-[11px] text-slate-500">
+                      Strictly scoped to {currentPortCall.vesselName} ·{" "}
+                      {currentPortCall.berth}
+                    </span>
+                  </div>
+
+                  <div className="space-y-2">
+                    {inDepthMeter.historicalCalls.map((hist) => {
+                      const isCurrentVoyage =
+                        hist.voyage === currentPortCall.voyageNumber;
+                      return (
+                        <div
+                          key={hist.voyage}
+                          className={`p-3.5 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-all ${
+                            isCurrentVoyage
+                              ? "bg-blue-50/70 border-blue-300"
+                              : "bg-slate-50/70 border-slate-200"
+                          }`}
+                        >
+                          <div className="space-y-0.5">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <span className="font-mono font-black text-xs text-slate-900">
+                                {hist.vesselName} · Voyage {hist.voyage}
+                              </span>
+                              <span
+                                className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                                  hist.status === "LIVE_ACTIVE"
+                                    ? "bg-sky-100 text-sky-800"
+                                    : "bg-emerald-100 text-emerald-800"
+                                }`}
+                              >
+                                {hist.status === "LIVE_ACTIVE"
+                                  ? "In Progress (Live)"
+                                  : "Completed & Invoiced"}
+                              </span>
+                              <span className="text-[11px] font-mono text-slate-500">
+                                #{hist.invoiceNumber}
+                              </span>
+                            </div>
+                            <div className="text-[11px] text-slate-500">
+                              {hist.date} · {hist.berth} ·{" "}
+                              {hist.teuHandled.toLocaleString()} TEU Handled
+                            </div>
+                          </div>
+
+                          <div className="flex flex-wrap items-center gap-3">
+                            <div className="text-right">
+                              <div className="text-sm font-black font-mono text-slate-900">
+                                {hist.totalQuantity.toLocaleString()}{" "}
+                                {hist.unit}
+                              </div>
+                              <div className="text-[10px] font-mono text-slate-500">
+                                Intensity: {hist.intensityLabel}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            );
+          })()
+        )}
+
+        {/* ================================================================== */}
+        {/* 5. MODAL FOOTER */}
         {/* ================================================================== */}
         <div className="px-5 py-3 bg-white border-t border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs shrink-0">
           <div className="flex items-center gap-2 text-slate-600">
             <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
             <span>
-              Telemetry verified against ISO 14083 & IMO DCS requirements. IEC 61850 MMS data integrity active.
+              DCSA Hash:{" "}
+              <code className="font-mono text-[11px] text-slate-800">
+                {currentPortCall.dcsaHash.slice(0, 22)}...
+              </code>{" "}
+              · ISO 14083 Verified
             </span>
           </div>
 
-          <div className="flex items-center gap-2 self-end sm:self-auto">
+          <div className="flex flex-wrap items-center gap-2 self-end sm:self-auto">
             <button
+              type="button"
               onClick={() => {
-                setToastMessage(`Exported interval logs for all ${currentPortCall.meters.length} meters (${currentPortCall.invoiceNumber}) to CSV successfully.`);
-                setTimeout(() => setToastMessage(null), 4000);
+                setToastMessage(
+                  `Exported meter log for ${currentPortCall.vesselName} (${currentPortCall.voyageNumber}) to CSV.`
+                );
+                setTimeout(() => setToastMessage(null), 3500);
               }}
-              className="px-3.5 py-1.5 rounded-xl border border-slate-300 text-slate-700 hover:bg-slate-50 font-bold text-xs flex items-center gap-1.5 transition-colors shadow-2xs"
+              className="px-3 py-1.5 rounded-xl border border-slate-300 text-slate-700 hover:bg-slate-50 font-bold text-xs flex items-center gap-1.5 transition-colors cursor-pointer"
             >
               <Download className="w-3.5 h-3.5 text-slate-500" />
-              <span>Export All Meters CSV</span>
+              <span>Export CSV</span>
             </button>
 
             <button
+              type="button"
               onClick={onClose}
-              className="px-4 py-1.5 rounded-xl bg-[#002D62] hover:bg-[#002047] text-white font-bold text-xs transition-colors shadow-2xs"
+              className="px-4 py-1.5 rounded-xl bg-[#002D62] hover:bg-[#002047] text-white font-bold text-xs transition-colors cursor-pointer"
             >
               Done
             </button>
           </div>
         </div>
-
-        {/* ================================================================== */}
-        {/* 5. IN-DEPTH SINGLE METER POPUP MODAL (NESTED POPUP OVERLAY) */}
-        {/* ================================================================== */}
-        {inDepthMeter && (
-          <div className="fixed inset-0 z-60 flex items-center justify-center p-3 sm:p-5 bg-slate-950/70 backdrop-blur-xs animate-in fade-in">
-            <div className="w-full max-w-4xl bg-white rounded-3xl overflow-hidden shadow-2xl border border-slate-300 flex flex-col max-h-[90vh] animate-in zoom-in-95">
-              {/* In-Depth Popup Header */}
-              {(() => {
-                const isElec = inDepthMeter.medium === "ELECTRICITY";
-                const isFl = inDepthMeter.medium === "FUEL";
-                const isRf = inDepthMeter.medium === "REEFER_THERMAL";
-                const isBt = inDepthMeter.medium === "BATTERY";
-
-                const themeColor = isElec ? "#0284C7" : isFl ? "#D97706" : isRf ? "#0D9488" : "#8B5CF6";
-                const gradStart = isElec ? "#38BDF8" : isFl ? "#FBBF24" : isRf ? "#2DD4BF" : "#A78BFA";
-
-                const pts = inDepthMeter.telemetry;
-                const minHour = pts[0]?.hour || 0;
-                const maxHour = pts[pts.length - 1]?.hour || 24;
-                const hourSpan = Math.max(1, maxHour - minHour);
-                const maxY = inDepthMeter.chartYMax;
-
-                const coordinates = pts.map(p => {
-                  const x = padLeft + ((p.hour - minHour) / hourSpan) * plotW;
-                  const y = padTop + plotH - (Math.min(p.primaryVal, maxY) / maxY) * plotH;
-                  return { x, y, point: p };
-                });
-
-                const polylineStr = coordinates.map(c => `${c.x.toFixed(1)},${c.y.toFixed(1)}`).join(" ");
-                const firstPt = coordinates[0] || { x: padLeft, y: padTop + plotH };
-                const lastPt = coordinates[coordinates.length - 1] || { x: padLeft + plotW, y: padTop + plotH };
-                const polygonStr = `${firstPt.x.toFixed(1)},${(padTop + plotH).toFixed(1)} ${polylineStr} ${lastPt.x.toFixed(1)},${(padTop + plotH).toFixed(1)}`;
-
-                const safeIdx = Math.min(Math.max(0, scrubIndex), pts.length - 1);
-                const currentPt = pts[safeIdx] || pts[0];
-                const activeCoord = coordinates[safeIdx] || firstPt;
-
-                return (
-                  <>
-                    <div className="bg-[#002D62] text-white px-5 py-3.5 flex items-center justify-between shrink-0 select-none">
-                      <div className="flex items-center gap-3">
-                        <button
-                          type="button"
-                          onClick={() => setInDepthMeter(null)}
-                          className="px-2.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs flex items-center gap-1.5 transition-colors border border-white/15"
-                          title="Back to All Meters"
-                        >
-                          <ChevronDown className="w-3.5 h-3.5 rotate-90" />
-                          <span>All Meters</span>
-                        </button>
-                        <div className="h-4 w-[1px] bg-white/20" />
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-white/20 text-white">
-                              {inDepthMeter.id}
-                            </span>
-                            <h3 className="text-sm font-black tracking-tight truncate max-w-md">
-                              {inDepthMeter.name}
-                            </h3>
-                          </div>
-                          <p className="text-[11px] text-sky-200/80">
-                            Detailed Physical Telemetry & Profile · {currentPortCall.vesselName} ({currentPortCall.voyageNumber})
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => setInDepthMeter(null)}
-                          className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors text-white"
-                          title="Close In-Depth Popup"
-                        >
-                          <X className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Popup Body */}
-                    <div className="flex-1 overflow-y-auto p-5 space-y-4 bg-slate-50/50">
-                      {/* Meter Metadata Strip */}
-                      <div className="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-3">
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-2">
-                            <span className={`w-2.5 h-2.5 rounded-full ${
-                              isElec ? "bg-blue-500 animate-pulse" :
-                              isFl ? "bg-amber-500 animate-pulse" :
-                              isRf ? "bg-teal-500 animate-pulse" : "bg-purple-500 animate-pulse"
-                            }`} />
-                            <h4 className="text-xs font-black text-slate-900 tracking-tight">
-                              Device Specifications & Telemetry Description
-                            </h4>
-                          </div>
-                          <p className="text-xs text-slate-600 max-w-2xl">
-                            {inDepthMeter.description}
-                          </p>
-                        </div>
-
-                        <div className="flex items-center gap-4 text-xs font-semibold self-start md:self-auto border-t md:border-t-0 md:border-l border-slate-100 pt-2 md:pt-0 md:pl-4">
-                          <div>
-                            <span className="text-slate-400 block text-[10px] uppercase">Rating / Medium:</span>
-                            <strong className="text-slate-800 font-mono text-xs">{inDepthMeter.nominalRating}</strong>
-                          </div>
-                          <div>
-                            <span className="text-slate-400 block text-[10px] uppercase">Protocol:</span>
-                            <strong className="text-slate-800 font-mono text-xs">{inDepthMeter.protocol}</strong>
-                          </div>
-                          <div>
-                            <span className="text-slate-400 block text-[10px] uppercase">Port Call Total:</span>
-                            <strong className="text-slate-900 font-mono text-xs">{inDepthMeter.totalPeriodRecorded.toLocaleString()} {inDepthMeter.primaryUnit === "kW" ? "kWh" : "L"}</strong>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* HIGH-FIDELITY TIME-SERIES DIAGRAM CARD */}
-                      <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/90 shadow-2xs space-y-4">
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
-                          <div className="flex items-center gap-2">
-                            <Activity className="w-4 h-4 text-[#002D62]" />
-                            <span className="font-extrabold text-slate-900 text-xs uppercase tracking-wider">
-                              Operational Time-Series Telemetry ({inDepthMeter.chartYUnit})
-                            </span>
-                          </div>
-
-                          <div className="flex items-center gap-3 text-xs text-slate-500">
-                            <span className="flex items-center gap-1.5">
-                              <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: themeColor }} />
-                              <strong className="text-slate-800">{inDepthMeter.primaryUnit} Telemetry Curve</strong>
-                            </span>
-                            <span className="flex items-center gap-1.5 text-slate-400">
-                              <span>Duration: {currentPortCall.hotelingHours} Hours</span>
-                            </span>
-                          </div>
-                        </div>
-
-                        {/* SVG Time-Series Chart */}
-                        <div className="w-full select-none relative">
-                          <svg
-                            viewBox={`0 0 ${svgWidth} ${svgHeight}`}
-                            className="w-full h-auto overflow-visible"
-                          >
-                            <defs>
-                              <linearGradient id={`meterGrad-${inDepthMeter.id}`} x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="0%" stopColor={gradStart} stopOpacity="0.75" />
-                                <stop offset="100%" stopColor={themeColor} stopOpacity="0.10" />
-                              </linearGradient>
-                            </defs>
-
-                            {/* Horizontal Y-Grid lines and values */}
-                            {[1, 0.75, 0.5, 0.25, 0].map((ratio) => {
-                              const val = Math.round(maxY * ratio);
-                              const y = padTop + plotH - ratio * plotH;
-                              return (
-                                <g key={ratio}>
-                                  <line
-                                    x1={padLeft}
-                                    y1={y}
-                                    x2={padLeft + plotW}
-                                    y2={y}
-                                    stroke="#E2E8F0"
-                                    strokeWidth="1"
-                                    strokeDasharray={ratio === 0 ? "0" : "2 2"}
-                                  />
-                                  <text
-                                    x={padLeft - 6}
-                                    y={y + 3.5}
-                                    textAnchor="end"
-                                    fontSize="9"
-                                    fill="#64748B"
-                                    fontWeight="600"
-                                    className="font-mono"
-                                  >
-                                    {val}
-                                  </text>
-                                </g>
-                              );
-                            })}
-
-                            {/* Plot filled area polygon */}
-                            <polygon
-                              points={polygonStr}
-                              fill={`url(#meterGrad-${inDepthMeter.id})`}
-                            />
-
-                            {/* Primary Curve Polyline */}
-                            <polyline
-                              points={polylineStr}
-                              fill="none"
-                              stroke={themeColor}
-                              strokeWidth="2.5"
-                              strokeLinejoin="round"
-                            />
-
-                            {/* Data Points on Curve */}
-                            {coordinates.map((c, i) => (
-                              <circle
-                                key={i}
-                                cx={c.x}
-                                cy={c.y}
-                                r={i === scrubIndex ? "5" : "2.5"}
-                                fill={i === scrubIndex ? "#FFFFFF" : themeColor}
-                                stroke={i === scrubIndex ? themeColor : "#FFFFFF"}
-                                strokeWidth="2"
-                                className="cursor-pointer transition-all"
-                                onClick={() => setScrubIndex(i)}
-                              />
-                            ))}
-
-                            {/* Active Scrubber Vertical Line */}
-                            <line
-                              x1={activeCoord.x}
-                              y1={padTop}
-                              x2={activeCoord.x}
-                              y2={padTop + plotH}
-                              stroke="#0F172A"
-                              strokeWidth="1.5"
-                              strokeDasharray="3 3"
-                            />
-
-                            {/* Scrubber Tooltip Badge */}
-                            <g transform={`translate(${Math.min(activeCoord.x, padLeft + plotW - 75)}, ${Math.max(padTop + 10, activeCoord.y - 25)})`}>
-                              <rect
-                                x="-35"
-                                y="-12"
-                                width="70"
-                                height="20"
-                                rx="6"
-                                fill="#0F172A"
-                                className="shadow-md"
-                              />
-                              <text
-                                x="0"
-                                y="1.5"
-                                textAnchor="middle"
-                                fontSize="9"
-                                fill="#FFFFFF"
-                                fontWeight="bold"
-                                className="font-mono"
-                              >
-                                {currentPt.primaryVal} {inDepthMeter.primaryUnit}
-                              </text>
-                            </g>
-
-                            {/* X-axis Time Marks */}
-                            {coordinates.map((c, i) => {
-                              if (i % 2 !== 0 && i !== coordinates.length - 1) return null;
-                              return (
-                                <text
-                                  key={i}
-                                  x={c.x}
-                                  y={padTop + plotH + 16}
-                                  textAnchor="middle"
-                                  fontSize="9"
-                                  fill="#64748B"
-                                  fontWeight="600"
-                                  className="font-mono"
-                                >
-                                  {c.point.time}
-                                </text>
-                              );
-                            })}
-                          </svg>
-                        </div>
-
-                        {/* Scrubber Slider Control */}
-                        <div className="pt-2 border-t border-slate-100 space-y-1.5">
-                          <div className="flex items-center justify-between text-xs text-slate-600">
-                            <span className="font-semibold flex items-center gap-1.5">
-                              <Clock className="w-3.5 h-3.5 text-slate-500" />
-                              Interactive Interval Scrubber: <strong className="text-slate-900 font-mono">{currentPt.time}</strong>
-                            </span>
-                            <span className="text-[11px] text-slate-400">
-                              Step {scrubIndex + 1} of {pts.length} recorded intervals
-                            </span>
-                          </div>
-
-                          <input
-                            type="range"
-                            min="0"
-                            max={pts.length - 1}
-                            value={scrubIndex}
-                            onChange={(e) => setScrubIndex(parseInt(e.target.value))}
-                            className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-[#002D62]"
-                          />
-                        </div>
-
-                        {/* LIVE TELEMETRY READOUT CARDS (TAILORED TO PHYSICAL MEDIUM) */}
-                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
-                          <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/90 shadow-2xs">
-                            <span className="text-slate-400 block text-[10px] uppercase font-bold">
-                              {isElec ? "Active Load (P):" : isFl ? "Instantaneous Flow:" : isRf ? "Cooling Demand:" : "PCS Output:"}
-                            </span>
-                            <strong className="text-lg font-black text-slate-900 font-mono">
-                              {currentPt.primaryVal} <span className="text-xs">{inDepthMeter.primaryUnit}</span>
-                            </strong>
-                            <div className="text-[10px] text-slate-500 mt-0.5 truncate">
-                              Status: {currentPt.statusText}
-                            </div>
-                          </div>
-
-                          <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/90 shadow-2xs">
-                            <span className="text-slate-400 block text-[10px] uppercase font-bold">
-                              {isElec ? "Bus Voltage:" : isFl ? "Line Pressure:" : isRf ? "Cold Core Temp:" : "Battery SOC:"}
-                            </span>
-                            <strong className="text-lg font-black text-slate-900 font-mono">
-                              {currentPt.secondaryVal} <span className="text-xs">
-                                {isElec ? "kV" : isFl ? "bar" : isRf ? "°C" : "%"}
-                              </span>
-                            </strong>
-                            <div className="text-[10px] text-slate-500 mt-0.5">
-                              {isElec ? "Grid Phase Voltage" : isFl ? "Fuel Line Pressure" : isRf ? "Core Target -22°C" : "State of Charge"}
-                            </div>
-                          </div>
-
-                          <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/90 shadow-2xs">
-                            <span className="text-slate-400 block text-[10px] uppercase font-bold">
-                              {isElec ? "Active Current (I):" : isFl ? "Fuel Temperature:" : isRf ? "Active Plugs:" : "Cell Temp:"}
-                            </span>
-                            <strong className="text-lg font-black text-slate-900 font-mono">
-                              {currentPt.tertiaryVal} <span className="text-xs">
-                                {isElec ? "Amps" : isFl ? "°C" : isRf ? "Units" : "°C"}
-                              </span>
-                            </strong>
-                            <div className="text-[10px] text-slate-500 mt-0.5">
-                              {isElec ? "3-Phase RMS Current" : isFl ? "Fuel Density Guard" : isRf ? "Yard Plugs Online" : "Thermal Guard"}
-                            </div>
-                          </div>
-
-                          <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/90 shadow-2xs">
-                            <span className="text-slate-400 block text-[10px] uppercase font-bold">
-                              {isElec ? "Power Factor (cos φ):" : isFl ? "Engine RPM / Speed:" : isRf ? "Temp Excursions:" : "Battery Health:"}
-                            </span>
-                            <strong className="text-lg font-black text-emerald-700 font-mono">
-                              {currentPt.quaternaryVal} <span className="text-xs">
-                                {isElec ? "cos φ" : isFl ? "RPM" : isRf ? "Alerts" : "% SOH"}
-                              </span>
-                            </strong>
-                            <div className="text-[10px] text-slate-500 mt-0.5 truncate">
-                              {isElec ? "Nominal 50.0 Hz" : isFl ? "Marine Governor" : isRf ? "Zero Excursions" : "Cycle Count: 142"}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* HISTORICAL PORT CALL COMPARISON FOR THIS EXACT METER */}
-                      <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/90 shadow-2xs space-y-3">
-                        <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                          <div className="flex items-center gap-2">
-                            <BarChart3 className="w-4 h-4 text-[#002D62]" />
-                            <span className="font-extrabold text-slate-900 text-xs uppercase tracking-wider">
-                              Historical Usage Across Port Calls (Voyages)
-                            </span>
-                          </div>
-                          <span className="text-xs text-slate-500 font-medium">
-                            Verified against Terminal Operating System (TOS)
-                          </span>
-                        </div>
-
-                        <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
-                          {inDepthMeter.historicalCalls.map((hist, idx) => (
-                            <div
-                              key={hist.voyage}
-                              className={`p-3.5 rounded-xl border transition-all ${
-                                idx === 0 
-                                  ? "bg-blue-50/60 border-blue-300 shadow-2xs" 
-                                  : "bg-slate-50/70 border-slate-200"
-                              }`}
-                            >
-                              <div className="flex items-center justify-between text-[11px] mb-1">
-                                <span className={`font-mono font-bold ${idx === 0 ? "text-blue-900" : "text-slate-700"}`}>
-                                  {hist.voyage}
-                                </span>
-                                {hist.verified && (
-                                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                                )}
-                              </div>
-                              <div className="text-base font-black text-slate-900 font-mono">
-                                {hist.totalQuantity.toLocaleString()} <span className="text-xs font-semibold text-slate-500">{hist.unit}</span>
-                              </div>
-                              <div className="text-[11px] text-slate-600 mt-1 flex justify-between">
-                                <span>Intensity:</span>
-                                <strong className="font-mono text-slate-900">{hist.intensityLabel}</strong>
-                              </div>
-                              <div className="text-[10px] text-slate-400 mt-0.5">
-                                Date: {hist.date} · {hist.teuHandled.toLocaleString()} TEU
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Popup Footer */}
-                    <div className="px-5 py-3 bg-white border-t border-slate-200 flex items-center justify-between gap-3 text-xs shrink-0">
-                      <div className="flex items-center gap-2 text-slate-600">
-                        <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                        <span>IEC 61850 MMS / Coriolis NMEA Telemetry Record Certified</span>
-                      </div>
-
-                      <div className="flex items-center gap-2">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setToastMessage(`Exported high-resolution telemetry log for meter ${inDepthMeter.id} to CSV successfully.`);
-                            setTimeout(() => setToastMessage(null), 4000);
-                          }}
-                          className="px-3.5 py-1.5 rounded-xl border border-slate-300 text-slate-700 hover:bg-slate-50 font-bold text-xs flex items-center gap-1.5 transition-colors shadow-2xs"
-                        >
-                          <Download className="w-3.5 h-3.5 text-slate-500" />
-                          <span>Export Meter CSV</span>
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={() => setInDepthMeter(null)}
-                          className="px-4 py-1.5 rounded-xl bg-[#002D62] hover:bg-[#002047] text-white font-bold text-xs transition-colors shadow-2xs"
-                        >
-                          Back to All Meters
-                        </button>
-                      </div>
-                    </div>
-                  </>
-                );
-              })()}
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );
 };
-

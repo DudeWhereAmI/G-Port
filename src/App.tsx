@@ -44,7 +44,7 @@ import { OptimizationPage } from "./pages/OptimizationPage";
 import { VesselCarbonInvoicePage } from "./pages/VesselCarbonInvoicePage";
 import { VesselSchedulePage } from "./pages/VesselSchedulePage";
 import { PartnersPage } from "./pages/PartnersPage";
-import { MeterTelemetryModal } from "./components/MeterTelemetryModal";
+import { MeterTelemetryModal, MeterModalMode } from "./components/MeterTelemetryModal";
 
 import { 
   X, 
@@ -78,19 +78,35 @@ export default function App() {
   const [assets, setAssets] = useState<Asset[]>(MOCK_INITIAL_ASSETS);
   const [opLogs, setOpLogs] = useState<OpLog[]>(MOCK_INITIAL_LOGS);
 
-  // Modals
+  // Modals & Cross-Page Deep-Linking States
   const [showAddAssetModal, setShowAddAssetModal] = useState(false);
   const [showAddLogModal, setShowAddLogModal] = useState(false);
   const [showMeterModal, setShowMeterModal] = useState(false);
-  const [meterAssetId, setMeterAssetId] = useState<string>("60H03961_C");
+  const [meterAssetId, setMeterAssetId] = useState<string>("UC-01");
+  const [meterModalMode, setMeterModalMode] = useState<MeterModalMode | undefined>(undefined);
+  const [focusedInvoiceId, setFocusedInvoiceId] = useState<string | null>(null);
+  const [focusedTelemetryEntityId, setFocusedTelemetryEntityId] = useState<string | null>(null);
 
-  const handleOpenMeterModal = (assetId?: any) => {
+  const handleOpenMeterModal = (assetId?: any, mode?: MeterModalMode) => {
     if (typeof assetId === "string" && assetId.trim().length > 0) {
       setMeterAssetId(assetId.trim());
     } else {
       setMeterAssetId("UC-01");
     }
+    setMeterModalMode(mode);
     setShowMeterModal(true);
+  };
+
+  const handleOpenCarbonInvoice = (invoiceOrUseCaseId?: string) => {
+    if (invoiceOrUseCaseId) {
+      setFocusedInvoiceId(invoiceOrUseCaseId);
+    }
+    setActiveSubPage("VESSEL_CARBON_INVOICE");
+  };
+
+  const handleTraceVoyageInTelemetry = (vesselEntityId: string) => {
+    setFocusedTelemetryEntityId(vesselEntityId);
+    setActiveSubPage("INPUT_LAYER");
   };
 
   // Asset Form State
@@ -174,43 +190,31 @@ export default function App() {
           onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
         />
 
-        {/* RIGHT MAIN CONTENT AREA - Independent Scrollbar */}
-        <main className="flex-1 h-full overflow-y-auto bg-slate-50/70 p-4 sm:p-6 lg:p-8">
-          {/* Microgrid Quick Telemetry Bar */}
-          <div className="mb-6 flex flex-wrap items-center justify-between gap-3 bg-white border border-slate-200/90 rounded-xl px-4 py-2.5 text-xs shadow-2xs">
-            <div className="flex items-center gap-3">
-              <span className="font-extrabold text-slate-800 flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                Microgrid Live:
-              </span>
-              <span className="text-slate-600">Grid Demand: <b className="text-slate-900">{scadaStatus.gridActivePowerKw.toLocaleString()} kW</b></span>
-              <span className="text-slate-300">|</span>
-              <span className="text-slate-600">Solar PV: <b className="text-emerald-600">+{pvStatus.currentPowerKw.toLocaleString()} kW</b></span>
-              <span className="text-slate-300">|</span>
-              <span className="text-slate-600">BESS SOC: <b className="text-blue-600">{bessStatus.socPercent}%</b></span>
-            </div>
-            <div className="flex items-center gap-2 text-[11px] text-slate-500 font-mono">
-              <span className="px-2 py-0.5 rounded bg-emerald-50 text-emerald-800 font-bold border border-emerald-200">
-                GLEC & IMO DCS Certified
-              </span>
-              <span className="hidden sm:inline">Telemetry Hash: #DCSA-9941-OK</span>
-            </div>
-          </div>
-
+        {/* RIGHT MAIN CONTENT AREA - Independent Scrollbar (Full-bleed flex container on INPUT_LAYER) */}
+        <main
+          className={
+            activeSubPage === "INPUT_LAYER"
+              ? "flex-1 h-full overflow-hidden bg-slate-50/70 p-2 sm:p-3 flex flex-col min-w-0 min-h-0"
+              : "flex-1 h-full overflow-y-auto bg-slate-50/70 p-4 sm:p-6 min-w-0"
+          }
+        >
           {/* Subpage Routing */}
-          <div className="max-w-7xl mx-auto">
+          <div
+            className={
+              activeSubPage === "INPUT_LAYER"
+                ? "w-full h-full flex-1 min-h-0 flex flex-col"
+                : "max-w-7xl mx-auto"
+            }
+          >
             {activeSubPage === "OVERVIEW" && (
               <OverviewPage
                 vessels={vessels}
                 tariff={tariff}
                 pvStatus={pvStatus}
                 bessStatus={bessStatus}
-                scadaStatus={scadaStatus}
-                weather={weather}
-                forecastData={forecastData}
                 zoneEmissions={zoneEmissions}
-                invoices={invoices}
                 onNavigate={setActiveSubPage}
+                onOpenCarbonInvoice={handleOpenCarbonInvoice}
               />
             )}
 
@@ -220,18 +224,13 @@ export default function App() {
 
             {activeSubPage === "INPUT_LAYER" && (
               <InputLayerPage
-                vessels={vessels}
-                containers={containers}
-                pvStatus={pvStatus}
-                bessStatus={bessStatus}
-                scadaStatus={scadaStatus}
-                weather={weather}
-                tariff={tariff}
-                feeders={feeders}
-                forecastData={forecastData}
-                onUpdateTariff={setTariff}
                 onOpenMeterModal={handleOpenMeterModal}
                 onNavigate={setActiveSubPage}
+                onOpenCarbonInvoice={handleOpenCarbonInvoice}
+                focusedTelemetryEntityId={focusedTelemetryEntityId}
+                onClearFocusedTelemetryEntity={() =>
+                  setFocusedTelemetryEntityId(null)
+                }
               />
             )}
 
@@ -276,6 +275,9 @@ export default function App() {
                 vessels={vessels}
                 onNavigate={(page) => setActiveSubPage(page)}
                 onOpenMeterModal={handleOpenMeterModal}
+                focusedInvoiceId={focusedInvoiceId}
+                onClearFocusedInvoice={() => setFocusedInvoiceId(null)}
+                onTraceVoyageInTelemetry={handleTraceVoyageInTelemetry}
               />
             )}
 
@@ -286,16 +288,18 @@ export default function App() {
         </main>
       </div>
 
-      {/* FLOATING CHAT / HELP WIDGET */}
-      <div className="fixed bottom-6 right-6 z-40">
-        <button
-          onClick={() => setActiveSubPage("ECO_CALCULATOR")}
-          title="Eco Routing & Technical Support"
-          className="w-12 h-12 rounded-full shadow-xl flex items-center justify-center text-white transition-transform hover:scale-105 active:scale-95 bg-[#004B91]"
-        >
-          <MessageSquare className="w-5 h-5" />
-        </button>
-      </div>
+      {/* FLOATING CHAT / HELP WIDGET (Hidden on INPUT_LAYER so it never overlaps the bottom-right HUD card) */}
+      {activeSubPage !== "INPUT_LAYER" && (
+        <div className="fixed bottom-6 right-6 z-40">
+          <button
+            onClick={() => setActiveSubPage("ECO_CALCULATOR")}
+            title="Eco Routing & Technical Support"
+            className="w-12 h-12 rounded-full shadow-xl flex items-center justify-center text-white transition-transform hover:scale-105 active:scale-95 bg-[#004B91]"
+          >
+            <MessageSquare className="w-5 h-5" />
+          </button>
+        </div>
+      )}
 
       {/* MODAL: ADD ASSET */}
       {showAddAssetModal && (
@@ -501,6 +505,11 @@ export default function App() {
         isOpen={showMeterModal}
         onClose={() => setShowMeterModal(false)}
         initialAssetId={meterAssetId}
+        initialMode={meterModalMode}
+        onOpenCarbonInvoice={(invoiceNo) => handleOpenCarbonInvoice(invoiceNo)}
+        onTraceVoyageInTelemetry={(vesselEntityId) =>
+          handleTraceVoyageInTelemetry(vesselEntityId)
+        }
       />
     </div>
   );

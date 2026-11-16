@@ -28,45 +28,51 @@ export const CheEventDetailModal: React.FC<CheEventDetailModalProps> = ({
   onClose,
   onNavigate
 }) => {
-  const evInfo = CHE_EVENT_COLORS[eventKey] || { label: eventKey, color: "#0284c7", bg: "bg-sky-600" };
+  const evInfo = CHE_EVENT_COLORS[eventKey] || {
+    label: eventKey,
+    plainLabel: eventKey,
+    description: "Active yard vehicle telemetry",
+    color: "#0284c7",
+    bg: "bg-sky-600"
+  };
 
   // Sample machine logs for this event type
   const machineLogs = [
     {
-      equipmentId: "PM-14 (Prime Mover)",
+      equipmentId: "Truck PM-14",
       driver: "Nguyen Van Hai",
       location: "Block 01D Lane 2",
       powerKw: 42,
       duration: "6.2 min",
       status: "RESOLVED",
-      note: "Slow crawl due to high container stack turnover at Bay 75."
+      note: "Slow traffic due to heavy container unloading from Bay 75."
     },
     {
-      equipmentId: "PM-22 (e-Haulier)",
+      equipmentId: "Electric Truck PM-22",
       driver: "Le Quang Minh",
-      location: "Block 03A North Bypass",
+      location: "Block 03A North Road",
       powerKw: 55,
       duration: "4.8 min",
       status: "ACTIVE",
-      note: "Queueing behind STS Crane S02 discharge chassis."
+      note: "Waiting in line behind Quay Crane S02."
     },
     {
-      equipmentId: "RTG-08 (e-RTG)",
+      equipmentId: "Yard Crane RTG-08",
       driver: "Tran Quoc Tuan",
       location: "Block 05B Stack Center",
       powerKw: 185,
       duration: "8.1 min",
-      status: "MONITORED",
-      note: "Twin-lift cycle onto external road tractor."
+      status: "WORKING",
+      note: "Lifting 40ft container onto yard truck."
     },
     {
-      equipmentId: "PM-07 (Prime Mover)",
+      equipmentId: "Truck PM-07",
       driver: "Pham Dinh Nam",
-      location: "Block 07D Feeder Road",
+      location: "Block 07D Main Road",
       powerKw: 38,
       duration: "3.5 min",
       status: "RESOLVED",
-      note: "Speed restricted to 15 km/h per terminal safety standard."
+      note: "Speed limited to 15 km/h in active crane zone."
     }
   ];
 
@@ -81,22 +87,22 @@ export const CheEventDetailModal: React.FC<CheEventDetailModalProps> = ({
               className="w-10 h-10 rounded-2xl flex items-center justify-center text-white font-mono font-black shadow-sm"
               style={{ backgroundColor: evInfo.color }}
             >
-              CHE
+              <Truck className="w-5 h-5" />
             </span>
             <div>
-              <div className="text-xs font-mono font-bold uppercase tracking-wider" style={{ color: evInfo.color }}>
-                CONTAINER HANDLING EQUIPMENT EVENT AUDIT
+              <div className="text-xs font-bold uppercase tracking-wider" style={{ color: evInfo.color }}>
+                Yard Vehicles &amp; Cranes Activity Log
               </div>
               <h2 className="text-base sm:text-lg font-black tracking-tight text-white flex items-center gap-2">
-                <span>Event: {evInfo.label}</span>
-                <span className="text-xs text-slate-400 font-normal">· Hour Window: {hour}</span>
+                <span>{evInfo.plainLabel || evInfo.label}</span>
+                <span className="text-xs text-slate-400 font-normal">· Time: {hour}</span>
               </h2>
             </div>
           </div>
 
           <button
             onClick={onClose}
-            className="p-1.5 rounded-full bg-white/10 hover:bg-white/20 text-slate-300 hover:text-white transition-colors"
+            className="p-1.5 rounded-full bg-white/10 hover:bg-white/20 text-slate-300 hover:text-white transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -104,12 +110,12 @@ export const CheEventDetailModal: React.FC<CheEventDetailModalProps> = ({
 
         {/* LOGS LIST */}
         <div className="flex-1 overflow-y-auto p-6 space-y-4 text-xs">
-          <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200 space-y-2">
-            <span className="text-[10px] font-mono text-slate-500 font-bold uppercase block">
-              Event Classification & Telemetry Dispatch Notes:
+          <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200 space-y-1">
+            <span className="text-[10px] font-bold text-slate-500 uppercase block">
+              Status Summary ({hour}):
             </span>
             <p className="text-slate-700">
-              During the <strong>{hour}</strong> operational window, <strong>{evInfo.label}</strong> events were recorded by the DCSA/TOS vehicle location engine. Prime movers and RTG cranes report positions via 5G Wi-Fi with sub-second accuracy.
+              {evInfo.description || `Vehicles recorded in ${evInfo.label} status during the ${hour} window.`}
             </p>
           </div>
 

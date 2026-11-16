@@ -1,51 +1,75 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { 
   CarbonInvoice, 
   TosVesselSchedule,
   SubPageId
 } from "../types/gport";
+import { MeterModalMode } from "../components/MeterTelemetryModal";
 import { 
   FileText, 
   Ship, 
   Search, 
-  Calendar, 
-  Clock, 
-  CheckCircle2, 
-  QrCode, 
-  Download, 
-  Printer, 
-  ExternalLink, 
-  ArrowRight, 
   ShieldCheck, 
-  Leaf, 
   Zap, 
   Fuel, 
-  Layers, 
-  Filter,
   X,
-  Anchor,
-  PlugZap, 
-  DollarSign,
-  Gauge
+  Gauge,
+  QrCode,
+  Download,
+  Printer,
+  Navigation,
+  CheckCircle2
 } from "lucide-react";
 
 interface VesselCarbonInvoicePageProps {
   invoices: CarbonInvoice[];
   vessels: TosVesselSchedule[];
   onNavigate?: (page: SubPageId) => void;
-  onOpenMeterModal?: (assetId?: string) => void;
+  onOpenMeterModal?: (assetId?: string, mode?: MeterModalMode) => void;
+  focusedInvoiceId?: string | null;
+  onClearFocusedInvoice?: () => void;
+  onTraceVoyageInTelemetry?: (vesselEntityId: string, voyageNumber: string) => void;
+}
+
+function resolveVesselEntityId(inv: CarbonInvoice): string {
+  const name = inv.vesselName.toUpperCase();
+  if (name.includes("MUMBAI") || inv.useCaseId === "UC-01") return "VSL-01";
+  if (name.includes("APUS") || inv.useCaseId === "UC-02") return "VSL-02";
+  return "VSL-03";
 }
 
 export const VesselCarbonInvoicePage: React.FC<VesselCarbonInvoicePageProps> = ({
   invoices,
-  vessels,
   onNavigate,
-  onOpenMeterModal
+  onOpenMeterModal,
+  focusedInvoiceId,
+  onClearFocusedInvoice,
+  onTraceVoyageInTelemetry,
 }) => {
   const [selectedInvoice, setSelectedInvoice] = useState<CarbonInvoice | null>(invoices[0]);
   const [showInvoiceModal, setShowInvoiceModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
+
+  // Highlight/select the invoice if focused, but NEVER auto-open the popup modal
+  useEffect(() => {
+    if (!focusedInvoiceId) return;
+    const norm = focusedInvoiceId.toUpperCase();
+    const matched = invoices.find(
+      (inv) =>
+        inv.invoiceNumber.toUpperCase() === norm ||
+        norm.includes(inv.invoiceNumber.toUpperCase()) ||
+        (inv.useCaseId && inv.useCaseId.toUpperCase() === norm) ||
+        inv.voyageNumber.toUpperCase() === norm ||
+        inv.vesselName.toUpperCase().includes(norm)
+    );
+    if (matched) {
+      setSelectedInvoice(matched);
+      setStatusFilter("ALL");
+      setSearchQuery("");
+    }
+    onClearFocusedInvoice?.();
+  }, [focusedInvoiceId, invoices, onClearFocusedInvoice]);
 
   const filteredInvoices = invoices.filter(inv => {
     const matchesSearch = inv.vesselName.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -69,107 +93,32 @@ export const VesselCarbonInvoicePage: React.FC<VesselCarbonInvoicePageProps> = (
     }
   };
 
-  // Aggregated KPIs
-  const totalInvoices = invoices.length;
-  const verifiedCount = invoices.filter(i => i.status === "VERIFIED_IMO").length;
-  const totalPortElectricityKwh = invoices.reduce((acc, i) => acc + (i.totalElectricityKwh || (i.opsElectricityKwh + i.stsCraneElectricityKwh + i.reeferElectricityKwh)), 0);
-  const totalMarineFuelLiters = invoices.reduce((acc, i) => acc + (i.totalFuelLiters || (i.terminalTractorFuelLiters + i.tugboatFuelLiters + i.auxEngineBerthFuelLiters)), 0);
-  const totalFeesUsd = invoices.reduce((acc, i) => acc + (i.carbonFeeTotalVnd / 25000), 0);
-
   return (
-    <div className="space-y-6 pb-12">
-      {/* 1. Header Banner */}
+    <div className="space-y-5 pb-12">
+      {/* 1. Clean Minimal Header Banner (No duplicate port-wide totals or extra nav buttons) */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200/90 shadow-2xs">
         <div>
           <div className="flex items-center gap-2 text-xs font-semibold text-slate-500 mb-1">
             <span className="font-bold text-[#004B91]">DCSA e-INVOICE · IMO DCS</span>
             <span aria-hidden="true">·</span>
-            <span>Electronic Energy, Fuel & Carbon Attestation</span>
+            <span>Completed Port Call Energy, Fuel & Carbon Attestation</span>
             <span aria-hidden="true">·</span>
             <span>ISO 14083 Compliant</span>
           </div>
           <h1 className="text-2xl font-black text-slate-900 tracking-tight">
-            Port Call Invoicing: Fuel, Energy & Emissions Attestation
+            Vessel Carbon Invoices
           </h1>
         </div>
 
-        <div className="flex items-center gap-2.5 self-start md:self-auto shrink-0">
-          {onNavigate && (
-            <button
-              onClick={() => onNavigate("VESSEL_SCHEDULE")}
-              className="px-3.5 py-2 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-50 text-xs font-bold flex items-center gap-1.5 transition-colors"
-            >
-              <Ship className="w-3.5 h-3.5 text-[#004B91]" />
-              <span>Vessel Schedule (TOS)</span>
-            </button>
-          )}
-
-          <button
-            onClick={() => handleOpenInvoice(invoices[0])}
-            className="px-4 py-2 rounded-xl bg-[#004B91] hover:bg-[#00386E] text-white text-xs font-bold flex items-center gap-1.5 shadow-2xs transition-colors"
-          >
-            <FileText className="w-3.5 h-3.5" />
-            <span>Open Latest Invoice</span>
-          </button>
+        <div className="flex items-center gap-2 self-start md:self-auto shrink-0">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
+            <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+            DCSA SHA-256 Verified Ledger
+          </span>
         </div>
       </div>
 
-      {/* 2. Top Stats Strip */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
-        <div className="bg-white p-4 rounded-xl border border-slate-200/90 shadow-2xs">
-          <div className="flex items-center justify-between text-slate-500 text-[11px] font-bold uppercase tracking-wider mb-1">
-            <span>Invoices Generated</span>
-            <FileText className="w-4 h-4 text-[#004B91]" />
-          </div>
-          <div className="text-xl sm:text-2xl font-black text-slate-900">
-            {totalInvoices} <span className="text-xs text-slate-500 font-semibold">Port Calls</span>
-          </div>
-          <div className="text-[11px] text-emerald-700 font-medium mt-0.5">
-            100% automated accounting
-          </div>
-        </div>
-
-        <div className="bg-white p-4 rounded-xl border border-slate-200/90 shadow-2xs">
-          <div className="flex items-center justify-between text-slate-500 text-[11px] font-bold uppercase tracking-wider mb-1">
-            <span>IMO DCS Certified</span>
-            <ShieldCheck className="w-4 h-4 text-emerald-600" />
-          </div>
-          <div className="text-xl sm:text-2xl font-black text-emerald-700">
-            {verifiedCount}/{totalInvoices} <span className="text-xs text-slate-500 font-semibold">Attested</span>
-          </div>
-          <div className="text-[11px] text-emerald-700 font-bold mt-0.5">
-            DCSA SHA-256 Hash Verified
-          </div>
-        </div>
-
-        <div className="bg-white p-4 rounded-xl border border-slate-200/90 shadow-2xs">
-          <div className="flex items-center justify-between text-slate-500 text-[11px] font-bold uppercase tracking-wider mb-1">
-            <span>Port Electricity (Scope 2)</span>
-            <Zap className="w-4 h-4 text-blue-600" />
-          </div>
-          <div className="text-xl sm:text-2xl font-black text-blue-700">
-            {(totalPortElectricityKwh / 1000).toFixed(1)} <span className="text-xs text-slate-500 font-semibold">MWh</span>
-          </div>
-          <div className="text-[11px] text-slate-500 font-medium mt-0.5">
-            {totalPortElectricityKwh.toLocaleString()} kWh (OPS + STS + Reefer)
-          </div>
-        </div>
-
-        <div className="bg-white p-4 rounded-xl border border-slate-200/90 shadow-2xs">
-          <div className="flex items-center justify-between text-slate-500 text-[11px] font-bold uppercase tracking-wider mb-1">
-            <span>Liquid Fuel (Scope 1)</span>
-            <Fuel className="w-4 h-4 text-amber-600" />
-          </div>
-          <div className="text-xl sm:text-2xl font-black text-amber-700">
-            {totalMarineFuelLiters.toLocaleString()} <span className="text-xs text-slate-500 font-semibold">Liters</span>
-          </div>
-          <div className="text-[11px] text-slate-500 font-medium mt-0.5">
-            {(totalMarineFuelLiters * 0.845 / 1000).toFixed(2)} MT (Tugboats & Tractors)
-          </div>
-        </div>
-      </div>
-
-      {/* 3. Search & Filter Bar */}
+      {/* 2. Search & Filter Bar */}
       <div className="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
         <div className="relative flex-1 max-w-md">
           <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -188,7 +137,7 @@ export const VesselCarbonInvoicePage: React.FC<VesselCarbonInvoicePageProps> = (
             <button
               key={st}
               onClick={() => setStatusFilter(st)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
                 statusFilter === st
                   ? "bg-[#004B91] text-white"
                   : "bg-slate-100 text-slate-600 hover:bg-slate-200"
@@ -202,104 +151,159 @@ export const VesselCarbonInvoicePage: React.FC<VesselCarbonInvoicePageProps> = (
 
       {/* 4. Invoices Cards Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {filteredInvoices.map((inv) => (
-          <div
-            key={inv.invoiceNumber}
-            className="bg-white rounded-2xl p-5 border border-slate-200/90 hover:border-slate-300 shadow-2xs transition-all flex flex-col justify-between space-y-4"
-          >
-            <div>
-              <div className="flex items-start justify-between gap-2 border-b border-slate-100 pb-3">
-                <div>
-                  <div className="flex items-center gap-1.5 mb-1">
-                    {inv.useCaseId && (
-                      <span className="text-[10px] font-mono font-bold text-[#004B91]">
-                        {inv.useCaseId}
+        {filteredInvoices.map((inv) => {
+          const isFocusedCard =
+            focusedInvoiceId &&
+            selectedInvoice?.invoiceNumber === inv.invoiceNumber;
+          return (
+            <div
+              key={inv.invoiceNumber}
+              className={`bg-white rounded-2xl p-5 border transition-all flex flex-col justify-between space-y-4 ${
+                isFocusedCard
+                  ? "border-emerald-500 ring-2 ring-emerald-500/20 shadow-md"
+                  : "border-slate-200/90 hover:border-slate-300 shadow-2xs"
+              }`}
+            >
+              <div>
+                <div className="flex items-start justify-between gap-2 border-b border-slate-100 pb-3">
+                  <div>
+                    <div className="flex items-center gap-1.5 mb-1">
+                      {inv.useCaseId && (
+                        <span className="text-[10px] font-mono font-bold text-[#004B91]">
+                          {inv.useCaseId}
+                        </span>
+                      )}
+                      <span className="text-[10px] font-mono text-slate-400 font-bold uppercase">
+                        {inv.invoiceNumber}
                       </span>
-                    )}
-                    <span className="text-[10px] font-mono text-slate-400 font-bold uppercase">{inv.invoiceNumber}</span>
+                    </div>
+                    <h3 className="font-black text-slate-900 text-sm mt-0.5">
+                      {inv.vesselName}
+                    </h3>
+                    <div className="text-xs text-slate-500 font-medium">
+                      {inv.carrierName}
+                    </div>
                   </div>
-                  <h3 className="font-black text-slate-900 text-sm mt-0.5">{inv.vesselName}</h3>
-                  <div className="text-xs text-slate-500 font-medium">{inv.carrierName}</div>
-                </div>
-                <span className={`text-[10px] font-mono font-bold uppercase ${
-                  inv.status === "VERIFIED_IMO" ? "text-emerald-700" :
-                  inv.status === "ISSUED" ? "text-blue-700" : "text-amber-700"
-                }`}>
-                  {inv.status === "VERIFIED_IMO" ? "IMO Verified" : inv.status === "ISSUED" ? "Issued" : "Draft"}
-                </span>
-              </div>
-
-              {/* Voyage parameters */}
-              <div className="py-3 space-y-1.5 text-xs">
-                <div className="flex justify-between text-slate-600">
-                  <span className="text-slate-400">IMO / Voyage:</span>
-                  <strong className="text-slate-800 font-mono">{inv.imoNumber} · {inv.voyageNumber}</strong>
-                </div>
-                <div className="flex justify-between text-slate-600">
-                  <span className="text-slate-400">Berth & Stay:</span>
-                  <strong className="text-slate-800">{inv.berth} ({inv.hotelingDurationHours}h)</strong>
-                </div>
-                <div className="flex justify-between text-slate-600">
-                  <span className="text-slate-400">Handled Volume:</span>
-                  <strong className="text-slate-800 font-mono">{inv.teuHandled.toLocaleString()} TEU</strong>
-                </div>
-                <div className="flex justify-between text-slate-600">
-                  <span className="text-slate-400">Port Electricity:</span>
-                  <strong className="text-blue-700 font-bold font-mono">
-                    {(inv.totalElectricityKwh || (inv.opsElectricityKwh + inv.stsCraneElectricityKwh + inv.reeferElectricityKwh)).toLocaleString()} kWh
-                  </strong>
-                </div>
-                <div className="flex justify-between text-slate-600">
-                  <span className="text-slate-400">Tug & Tractor Fuel:</span>
-                  <strong className="text-amber-700 font-bold font-mono">
-                    {(inv.totalFuelLiters || (inv.terminalTractorFuelLiters + inv.tugboatFuelLiters + inv.auxEngineBerthFuelLiters)).toLocaleString()} Liters
-                  </strong>
-                </div>
-              </div>
-
-              {/* Energy & Carbon Footprint Summary */}
-              <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 space-y-1.5 text-xs">
-                <div className="flex justify-between items-center">
-                  <span className="font-semibold text-slate-600">Direct Footprint:</span>
-                  <strong className="text-slate-900 font-mono text-xs">{(inv.totalEmissionsKg / 1000).toFixed(2)} tCO₂e</strong>
-                </div>
-                <div className="flex justify-between items-center text-[11px] text-slate-500">
-                  <span>Scope 1 / Scope 2:</span>
-                  <span className="font-mono font-semibold text-slate-700">
-                    {(inv.scope1EmissionsKg / 1000).toFixed(1)}t fuel · {(inv.scope2EmissionsKg / 1000).toFixed(1)}t grid
+                  <span
+                    className={`text-[10px] font-mono font-bold uppercase ${
+                      inv.status === "VERIFIED_IMO"
+                        ? "text-emerald-700"
+                        : inv.status === "ISSUED"
+                        ? "text-blue-700"
+                        : "text-amber-700"
+                    }`}
+                  >
+                    {inv.status === "VERIFIED_IMO"
+                      ? "IMO Verified"
+                      : inv.status === "ISSUED"
+                      ? "Issued"
+                      : "Draft"}
                   </span>
                 </div>
-                <div className="flex justify-between items-center pt-1 border-t border-slate-200">
-                  <span className="font-semibold text-emerald-800">Carbon Intensity:</span>
-                  <strong className="text-emerald-800 font-mono font-bold">{inv.emissionPerTeuKg} kgCO₂e/TEU</strong>
+
+                {/* Voyage parameters */}
+                <div className="py-3 space-y-1.5 text-xs">
+                  <div className="flex justify-between text-slate-600">
+                    <span className="text-slate-400">IMO / Voyage:</span>
+                    <strong className="text-slate-800 font-mono">
+                      {inv.imoNumber} · {inv.voyageNumber}
+                    </strong>
+                  </div>
+                  <div className="flex justify-between text-slate-600">
+                    <span className="text-slate-400">Berth & Stay:</span>
+                    <strong className="text-slate-800">
+                      {inv.berth} ({inv.hotelingDurationHours}h)
+                    </strong>
+                  </div>
+                  <div className="flex justify-between text-slate-600">
+                    <span className="text-slate-400">Handled Volume:</span>
+                    <strong className="text-slate-800 font-mono">
+                      {inv.teuHandled.toLocaleString()} TEU
+                    </strong>
+                  </div>
+                  <div className="flex justify-between text-slate-600">
+                    <span className="text-slate-400">Port Electricity:</span>
+                    <strong className="text-blue-700 font-bold font-mono">
+                      {(
+                        inv.totalElectricityKwh ||
+                        inv.opsElectricityKwh +
+                          inv.stsCraneElectricityKwh +
+                          inv.reeferElectricityKwh
+                      ).toLocaleString()}{" "}
+                      kWh
+                    </strong>
+                  </div>
+                  <div className="flex justify-between text-slate-600">
+                    <span className="text-slate-400">Tug & Tractor Fuel:</span>
+                    <strong className="text-amber-700 font-bold font-mono">
+                      {(
+                        inv.totalFuelLiters ||
+                        inv.terminalTractorFuelLiters +
+                          inv.tugboatFuelLiters +
+                          inv.auxEngineBerthFuelLiters
+                      ).toLocaleString()}{" "}
+                      Liters
+                    </strong>
+                  </div>
+                </div>
+
+                {/* Energy & Carbon Footprint Summary */}
+                <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 space-y-1.5 text-xs">
+                  <div className="flex justify-between items-center">
+                    <span className="font-semibold text-slate-600">
+                      Direct Footprint:
+                    </span>
+                    <strong className="text-slate-900 font-mono text-xs">
+                      {(inv.totalEmissionsKg / 1000).toFixed(2)} tCO₂e
+                    </strong>
+                  </div>
+                  <div className="flex justify-between items-center text-[11px] text-slate-500">
+                    <span>Scope 1 / Scope 2:</span>
+                    <span className="font-mono font-semibold text-slate-700">
+                      {(inv.scope1EmissionsKg / 1000).toFixed(1)}t fuel ·{" "}
+                      {(inv.scope2EmissionsKg / 1000).toFixed(1)}t grid
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center pt-1 border-t border-slate-200">
+                    <span className="font-semibold text-emerald-800">
+                      Carbon Intensity:
+                    </span>
+                    <strong className="text-emerald-800 font-mono font-bold">
+                      {inv.emissionPerTeuKg} kgCO₂e/TEU
+                    </strong>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div className="pt-2 grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={() => {
-                  if (onOpenMeterModal) onOpenMeterModal(inv.useCaseId || inv.invoiceNumber);
-                }}
-                className="py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-1.5 shadow-2xs"
-                title="View Fuel & Electricity Multi-Meter Diagrams for this Port Call"
-              >
-                <Gauge className="w-3.5 h-3.5 text-rose-600" />
-                <span>Meter Diagram</span>
-              </button>
+              <div className="pt-2 grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (onOpenMeterModal)
+                      onOpenMeterModal(
+                        inv.useCaseId || inv.invoiceNumber,
+                        "COMPLETED_INVOICE"
+                      );
+                  }}
+                  className="py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-200 rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer"
+                  title="Inspect completed & sealed meters recorded for this invoice"
+                >
+                  <Gauge className="w-3.5 h-3.5 text-[#002D62]" />
+                  <span>Completed Meters</span>
+                </button>
 
-              <button
-                type="button"
-                onClick={() => handleOpenInvoice(inv)}
-                className="py-2 bg-[#004B91] hover:bg-[#00386E] text-white rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-1.5 shadow-2xs"
-              >
-                <FileText className="w-3.5 h-3.5" />
-                <span>e-Invoice</span>
-              </button>
+                <button
+                  type="button"
+                  onClick={() => handleOpenInvoice(inv)}
+                  className="py-2 bg-[#004B91] hover:bg-[#00386E] text-white rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer"
+                >
+                  <FileText className="w-3.5 h-3.5" />
+                  <span>e-Invoice</span>
+                </button>
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* 5. MODAL: FORMAL E-CARBON INVOICE VIEW & PRINT CERTIFICATE */}
@@ -409,12 +413,16 @@ export const VesselCarbonInvoicePage: React.FC<VesselCarbonInvoicePageProps> = (
                     <button
                       type="button"
                       onClick={() => {
-                        onOpenMeterModal(selectedInvoice.useCaseId || selectedInvoice.invoiceNumber);
+                        setShowInvoiceModal(false);
+                        onOpenMeterModal(
+                          selectedInvoice.useCaseId || selectedInvoice.invoiceNumber,
+                          "COMPLETED_INVOICE"
+                        );
                       }}
-                      className="px-3 py-1.5 rounded-lg border border-rose-300 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-xs flex items-center gap-1.5 transition-colors self-start sm:self-auto shadow-2xs"
+                      className="px-3 py-1.5 rounded-lg border border-emerald-300 bg-emerald-50 hover:bg-emerald-100 text-emerald-900 font-bold text-xs flex items-center gap-1.5 transition-colors cursor-pointer"
                     >
-                      <Gauge className="w-3.5 h-3.5 text-rose-600" />
-                      <span>Inspect Multi-Meter Diagrams</span>
+                      <Gauge className="w-3.5 h-3.5 text-emerald-700" />
+                      <span>Completed Meter Records</span>
                     </button>
                   )}
                 </div>
