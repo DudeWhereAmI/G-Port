@@ -68,7 +68,7 @@ export const MASTER_USE_CASES: OperationalUseCase[] = [
     id: "UC-02",
     code: "UC-02-DEEP-SEA-EUROPE",
     title: "Deep-Sea Trans-Oceanic Route - Ultra Large Container Vessel (ULCV)",
-    subtitle: "14,000 TEU ocean carrier handling electronics & apparel at Cai Mep TCIT with BESS peak shaving",
+    subtitle: "14,000 TEU ocean carrier handling electronics & apparel at Cai Mep TCIT with Crane Regen & Smart Load Control",
     category: "EUROPE_DEEP_SEA",
     vesselName: "ONE APUS",
     voyageNumber: "012W",
@@ -99,7 +99,7 @@ export const MASTER_USE_CASES: OperationalUseCase[] = [
       stsPowerKw: 3200,
       reeferPowerKw: 1850,
       co2SavedByOpsKg: 38200,
-      peakHourImpact: "Induces P90 peak at 14:00 - 16:00 when 5 Super Post-Panamax STS cranes ramp up, triggering 1.5MW BESS discharge"
+      peakHourImpact: "Induces P90 peak at 14:00 - 16:00 when 5 Super Post-Panamax STS cranes ramp up, triggering 1.5MW Crane Regen & Smart Demand Control"
     },
     status: "BERTHED",
     timeWindow: {
@@ -110,7 +110,7 @@ export const MASTER_USE_CASES: OperationalUseCase[] = [
     },
     dcsaInvoiceNumber: "GPORT-INV-2026-0902",
     tariffUsd: 1760.00,
-    tags: ["Cai Mep TCIT", "ULCV 14,000 TEU", "BESS Peak Shaving", "EU ETS Ready", "Net-Zero Port Call"]
+    tags: ["Cai Mep TCIT", "ULCV 14,000 TEU", "Crane Regen Peak Shaving", "EU ETS Ready", "Net-Zero Port Call"]
   },
   {
     id: "UC-03",
@@ -163,7 +163,7 @@ export const MASTER_USE_CASES: OperationalUseCase[] = [
     id: "UC-04",
     code: "UC-04-GREEN-COASTAL-FEEDER",
     title: "Green Coastal Feeder Corridor & Electric Barge Logistics",
-    subtitle: "North-South agricultural corridor connecting Hai Phong, Cat Lai and Singapore with night-time BESS charging",
+    subtitle: "North-South agricultural corridor connecting Hai Phong, Cat Lai and Singapore with off-peak EV charging & reefer pre-cooling",
     category: "GREEN_COASTAL_FEEDER",
     vesselName: "TAN CANG GLORY",
     voyageNumber: "104S",
@@ -194,7 +194,7 @@ export const MASTER_USE_CASES: OperationalUseCase[] = [
       stsPowerKw: 1100,
       reeferPowerKw: 480,
       co2SavedByOpsKg: 14200,
-      peakHourImpact: "Stevedoring completed during night hours, utilizing off-peak TOU tariff to charge 3MWh BESS"
+      peakHourImpact: "Stevedoring completed during night hours, utilizing off-peak TOU tariff for EV tractor depot charging & reefer pre-cooling"
     },
     status: "DEPARTED",
     timeWindow: {
@@ -206,7 +206,7 @@ export const MASTER_USE_CASES: OperationalUseCase[] = [
     },
     dcsaInvoiceNumber: "GPORT-INV-2026-0904",
     tariffUsd: 1920.00,
-    tags: ["North-South Feeder", "Biofuel B24", "BESS Night Charge", "IMO DCS Certified", "Audit Complete"]
+    tags: ["North-South Feeder", "Biofuel B24", "Off-Peak EV Fast-Charge", "IMO DCS Certified", "Audit Complete"]
   }
 ];
 
@@ -442,13 +442,13 @@ export const MOCK_TARIFF_TOU: ElectricityTariffTou = {
 // ============================================================================
 export const MOCK_FORECAST_24H: ForecastInterval[] = [
   { time: "00:00", hour: 0, baselineDemandKw: 3100, lowScenarioKw: 2850, highScenarioKw: 3400, pvGenerationKw: 0, netDemandKw: 3100, thresholdKw: 8500, exceedanceProbabilityPercent: 0, berthActivityFactor: 0.4, note: "[UC-04] TAN CANG GLORY hoàn tất bốc dỡ, chuẩn bị rời bến" },
-  { time: "02:00", hour: 2, baselineDemandKw: 2900, lowScenarioKw: 2700, highScenarioKw: 3200, pvGenerationKw: 0, netDemandKw: 2900, thresholdKw: 8500, exceedanceProbabilityPercent: 0, berthActivityFactor: 0.35, note: "[UC-04] Giờ thấp điểm TOU: Nạp đầy pin BESS 1,200 kWh giá rẻ 1,100đ" },
+  { time: "02:00", hour: 2, baselineDemandKw: 2900, lowScenarioKw: 2700, highScenarioKw: 3200, pvGenerationKw: 0, netDemandKw: 2900, thresholdKw: 8500, exceedanceProbabilityPercent: 0, berthActivityFactor: 0.35, note: "[UC-04] Giờ thấp điểm TOU: Sạc nhanh đội xe đầu kéo điện EV & làm lạnh sâu Reefer giá 1,100đ" },
   { time: "04:00", hour: 4, baselineDemandKw: 3400, lowScenarioKw: 3100, highScenarioKw: 3800, pvGenerationKw: 0, netDemandKw: 3400, thresholdKw: 8500, exceedanceProbabilityPercent: 0, berthActivityFactor: 0.5, note: "[UC-04] Tàu rời bến an toàn lúc 04:15" },
   { time: "06:00", hour: 6, baselineDemandKw: 4800, lowScenarioKw: 4300, highScenarioKw: 5400, pvGenerationKw: 120, netDemandKw: 4680, thresholdKw: 8500, exceedanceProbabilityPercent: 1.2, berthActivityFactor: 0.7, note: "[UC-01] SPIRIT OF MUMBAI cập cầu B2, kết nối tủ nguồn điện bờ OPS" },
   { time: "08:00", hour: 8, baselineDemandKw: 6200, lowScenarioKw: 5600, highScenarioKw: 7100, pvGenerationKw: 850, netDemandKw: 5350, thresholdKw: 8500, exceedanceProbabilityPercent: 4.5, berthActivityFactor: 0.85, note: "[UC-01] 4 cẩu STS + 240 giàn lạnh Reefer VinaSeafood tăng tốc xếp dỡ" },
   { time: "10:00", hour: 10, baselineDemandKw: 7400, lowScenarioKw: 6800, highScenarioKw: 8300, pvGenerationKw: 1650, netDemandKw: 5750, thresholdKw: 8500, exceedanceProbabilityPercent: 12.0, berthActivityFactor: 0.95, note: "[UC-01] Phụ tải trưa cao điểm, Solar PV bù trừ 1,650 kW" },
   { time: "12:00", hour: 12, baselineDemandKw: 6800, lowScenarioKw: 6100, highScenarioKw: 7600, pvGenerationKw: 2100, netDemandKw: 4700, thresholdKw: 8500, exceedanceProbabilityPercent: 3.0, berthActivityFactor: 0.8, note: "Solar PV mái cảng đạt cực đại 2,100 kW, giảm phụ tải lưới" },
-  { time: "14:00", hour: 14, baselineDemandKw: 8100, lowScenarioKw: 7400, highScenarioKw: 9150, pvGenerationKw: 1750, netDemandKw: 6350, thresholdKw: 8500, exceedanceProbabilityPercent: 38.5, berthActivityFactor: 1.0, note: "[UC-02] ĐỈNH PHỤ TẢI: ONE APUS cập bến Cái Mép, 5 cẩu STS chạy đồng thời. Kích hoạt BESS xả 1.5MW" },
+  { time: "14:00", hour: 14, baselineDemandKw: 8100, lowScenarioKw: 7400, highScenarioKw: 9150, pvGenerationKw: 1750, netDemandKw: 6350, thresholdKw: 8500, exceedanceProbabilityPercent: 38.5, berthActivityFactor: 1.0, note: "[UC-02] ĐỈNH PHỤ TẢI: ONE APUS cập bến Cái Mép, 5 cẩu STS chạy đồng thời. Kích hoạt Thu hồi động năng cẩu 1.5MW" },
   { time: "16:00", hour: 16, baselineDemandKw: 7600, lowScenarioKw: 6900, highScenarioKw: 8550, pvGenerationKw: 980, netDemandKw: 6620, thresholdKw: 8500, exceedanceProbabilityPercent: 18.2, berthActivityFactor: 0.95, note: "[UC-02] Duy trì cấp điện bờ OPS cho ONE APUS, ghìm tải dưới 8,500 kW" },
   { time: "18:00", hour: 18, baselineDemandKw: 6900, lowScenarioKw: 6200, highScenarioKw: 7800, pvGenerationKw: 60, netDemandKw: 6840, thresholdKw: 8500, exceedanceProbabilityPercent: 8.4, berthActivityFactor: 0.9, note: "[UC-03] Chuẩn bị bãi và ca cẩu đón GSL KITHIRA hành trình từ Akita" },
   { time: "20:00", hour: 20, baselineDemandKw: 5800, lowScenarioKw: 5200, highScenarioKw: 6500, pvGenerationKw: 0, netDemandKw: 5800, thresholdKw: 8500, exceedanceProbabilityPercent: 2.1, berthActivityFactor: 0.75, note: "Ca tối: Duy trì ổn định 2 tàu mẹ đang neo đậu tại Cát Lái và Cái Mép" },
@@ -957,11 +957,11 @@ export const MOCK_PARTNERS = [
     name: "Siemens Energy",
     category: "Energy",
     logoText: "SIEMENS",
-    tagline: "Battery Energy Storage System (BESS) & Smart Microgrid",
-    description: "Grid-scale battery energy storage systems engineered for peak demand shaving, frequency regulation, and terminal solar PV smoothing.",
+    tagline: "Active Harmonic Power Conditioning & Smart Port Microgrid",
+    description: "Industrial power conditioning, crane regenerative braking recovery, and substation microgrid automation for peak demand shaving and solar PV smoothing.",
     impactMetric: "35% TOU electricity cost reduction",
     roiYears: "4.1 years",
-    featuredTech: "Siemens SIESTORAGE BESS 3MWh",
+    featuredTech: "Siemens SINAMICS S120 Active Regen & SIVACON Microgrid",
     contactEmail: "smartport.vn@siemens-energy.com"
   },
   {

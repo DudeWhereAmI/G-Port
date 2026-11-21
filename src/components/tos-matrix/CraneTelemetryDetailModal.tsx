@@ -567,7 +567,7 @@ export const CraneTelemetryDetailModal: React.FC<CraneTelemetryDetailModalProps>
                   className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white border border-slate-200 text-slate-700 hover:text-amber-700 hover:bg-amber-50 font-bold transition-colors shadow-2xs"
                 >
                   <Zap className="w-3.5 h-3.5 text-amber-500" />
-                  <span>Peak Shaving & BESS</span>
+                  <span>Peak Shaving &amp; Load Control</span>
                   <ArrowUpRight className="w-3 h-3 text-slate-400" />
                 </button>
 

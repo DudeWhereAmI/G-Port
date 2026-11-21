@@ -220,7 +220,7 @@ export const PORT_CALL_METERS: PortCallMeterGroup[] = [
         telemetry: [
           { time: "08:00", hour: 0, primaryVal: 380, secondaryVal: -21.8, tertiaryVal: 140, quaternaryVal: 0, cumulativeTotal: 380, statusText: "Bay B2 Pre-Stacking Ready" },
           { time: "12:00", hour: 4, primaryVal: 520, secondaryVal: -21.5, tertiaryVal: 185, quaternaryVal: 0, cumulativeTotal: 2460, statusText: "Peak Container Stacking in Bay B2" },
-          { time: "16:00", hour: 8, primaryVal: 490, secondaryVal: -21.7, tertiaryVal: 195, quaternaryVal: 0, cumulativeTotal: 4480, statusText: "Solar PV + BESS Assisting Bay B2" },
+          { time: "16:00", hour: 8, primaryVal: 490, secondaryVal: -21.7, tertiaryVal: 195, quaternaryVal: 0, cumulativeTotal: 4480, statusText: "Solar PV + Crane Regen Assisting Bay B2" },
           { time: "20:00", hour: 12, primaryVal: 450, secondaryVal: -22.0, tertiaryVal: 210, quaternaryVal: 0, cumulativeTotal: 6360, statusText: "Night Shift Dwell & Stacking" },
           { time: "00:00", hour: 16, primaryVal: 430, secondaryVal: -22.1, tertiaryVal: 210, quaternaryVal: 0, cumulativeTotal: 8120, statusText: "Thermal Equilibrium Held" },
           { time: "04:00", hour: 20, primaryVal: 410, secondaryVal: -22.1, tertiaryVal: 190, quaternaryVal: 0, cumulativeTotal: 9200, statusText: "Voyage 056N Bay B2 Cut-off" },
@@ -414,7 +414,7 @@ export const PORT_CALL_METERS: PortCallMeterGroup[] = [
         openingReading: 308400,
         closingReading: 332600,
         recordingWindow: "14/05 06:00 → 15/05 08:00 (26.0h)",
-        emissionFactorLabel: "0.7221 kgCO₂e/kWh (BESS Pre-Cool Assisted)",
+        emissionFactorLabel: "0.7221 kgCO₂e/kWh (Off-Peak Pre-Cool Assisted)",
         scopeType: "SCOPE_2",
         co2eMetricTons: 17.47,
         recordStatus: "COMPLETED_SEALED",
@@ -508,17 +508,17 @@ export const PORT_CALL_METERS: PortCallMeterGroup[] = [
         openingReading: 142810,
         closingReading: 149610,
         recordingWindow: "14/05 10:30 → 15/05 03:45 (17.25h)",
-        emissionFactorLabel: "100% Solar + BESS Green Corridor Matched",
+        emissionFactorLabel: "100% Solar + Crane Regen Green Corridor Matched",
         scopeType: "SCOPE_2",
         co2eMetricTons: 1.92,
         recordStatus: "COMPLETED_SEALED",
         chartYMax: 600,
         chartYUnit: "Active Power (kW)",
-        description: "Finalized OPS electricity record for MV TAN CANG GLORY (Voyage 104S) at Berth B1, matched with rooftop Solar PV and BESS discharge.",
+        description: "Finalized OPS electricity record for MV TAN CANG GLORY (Voyage 104S) at Berth B1, matched with rooftop Solar PV and Crane Regenerative recovery.",
         telemetry: [
           { time: "10:15", hour: 0, primaryVal: 260, secondaryVal: 0.40, tertiaryVal: 390, quaternaryVal: 0.97, cumulativeTotal: 260, statusText: "OPS Plugged In at Berth B1" },
           { time: "14:00", hour: 4, primaryVal: 420, secondaryVal: 0.40, tertiaryVal: 630, quaternaryVal: 0.98, cumulativeTotal: 1940, statusText: "100% Solar PV Supplied" },
-          { time: "18:00", hour: 8, primaryVal: 410, secondaryVal: 0.40, tertiaryVal: 615, quaternaryVal: 0.98, cumulativeTotal: 3580, statusText: "BESS Peak Shaving Supply" },
+          { time: "18:00", hour: 8, primaryVal: 410, secondaryVal: 0.40, tertiaryVal: 615, quaternaryVal: 0.98, cumulativeTotal: 3580, statusText: "Crane Regen & Solar Supply" },
           { time: "22:00", hour: 12, primaryVal: 390, secondaryVal: 0.40, tertiaryVal: 585, quaternaryVal: 0.98, cumulativeTotal: 5140, statusText: "Overnight Feeder Hoteling" },
           { time: "04:00", hour: 17.75, primaryVal: 290, secondaryVal: 0.40, tertiaryVal: 435, quaternaryVal: 0.97, cumulativeTotal: 6800, statusText: "OPS Disconnected · Final Index Sealed" },
         ],
@@ -793,10 +793,10 @@ export function resolvePortCallFromIdentifier(identifier?: string | null): {
   if (norm === "STS-01" || norm === "STS-02") {
     return { portCallId: "UC-01", matchedMeterId: "MTR-STS-B2-04", inferredMode: "LIVE_MONITORING" };
   }
-  if (norm === "TRK-2481" || norm === "TRK-2205") {
+  if (norm === "TRK-2481" || norm === "TRK-2205" || norm === "TRK-3105") {
     return { portCallId: "UC-01", matchedMeterId: "MTR-TRK-088", inferredMode: "LIVE_MONITORING" };
   }
-  if (norm === "BAY-B2" || norm === "BAY-B1") {
+  if (norm === "BAY-B2" || norm === "BAY-B1" || norm === "BAY-C1") {
     return { portCallId: "UC-01", matchedMeterId: "MTR-RF-Y3-02", inferredMode: "LIVE_MONITORING" };
   }
 
@@ -806,7 +806,7 @@ export function resolvePortCallFromIdentifier(identifier?: string | null): {
   if (norm === "STS-03") {
     return { portCallId: "UC-02", matchedMeterId: "MTR-STS-B3-03", inferredMode: "LIVE_MONITORING" };
   }
-  if (norm === "TRK-2319") {
+  if (norm === "TRK-2319" || norm === "TRK-4018") {
     return { portCallId: "UC-02", matchedMeterId: "MTR-TRK-B3-01", inferredMode: "LIVE_MONITORING" };
   }
   if (norm === "BAY-R1") {
@@ -819,7 +819,7 @@ export function resolvePortCallFromIdentifier(identifier?: string | null): {
   if (norm === "STS-04") {
     return { portCallId: "UC-04", matchedMeterId: "MTR-STS-B1-04", inferredMode: "COMPLETED_INVOICE" };
   }
-  if (norm === "TRK-2104") {
+  if (norm === "TRK-2104" || norm === "TRK-1092") {
     return { portCallId: "UC-04", matchedMeterId: "MTR-BIO-B1-01", inferredMode: "COMPLETED_INVOICE" };
   }
   if (norm === "BAY-A1") {

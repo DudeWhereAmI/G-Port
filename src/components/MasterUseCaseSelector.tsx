@@ -61,7 +61,7 @@ export const MasterUseCaseSelector: React.FC<MasterUseCaseSelectorProps> = ({
           </h3>
         </div>
         <span className="text-[11px] text-slate-500 font-medium">
-          Dữ liệu thống nhất 100% giữa TOS ➔ SCADA ➔ AI Dự Báo ➔ Đo Lường ➔ Tối Ưu BESS ➔ Báo Giá ➔ Hóa Đơn DCSA
+          Dữ liệu thống nhất 100% giữa TOS ➔ SCADA ➔ AI Dự Báo ➔ Đo Lường ➔ Tối Ưu Phụ Tải ➔ Báo Giá ➔ Hóa Đơn DCSA
         </span>
       </div>
 

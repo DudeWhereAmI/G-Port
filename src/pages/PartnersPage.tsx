@@ -48,7 +48,7 @@ export const PartnersPage: React.FC = () => {
             Decarbonization Technology & Hardware Partners
           </h1>
           <p className="text-xs text-slate-600 mt-1 max-w-3xl">
-            Certified technical equipment vendors, high-voltage shore connection manufacturers, battery storage integrators, and open TOS API partners.
+            Certified technical equipment vendors, high-voltage shore connection manufacturers, smart microgrid &amp; crane regen integrators, and open TOS API partners.
           </p>
         </div>
 

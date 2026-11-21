@@ -119,7 +119,7 @@ export const FeederDetailModal: React.FC<FeederDetailModalProps> = ({
       connectedAssets: ["320 Connected Reefer Sockets", "Cold Chain Temperature Alarms"]
     },
     F05: {
-      name: "BESS Storage & EV Fast Charging Racks",
+      name: "Crane Regen Busbar & EV Fast Charging Racks",
       substation: "Microgrid PCS Inverter Substation",
       voltageKv: 0.4,
       currentA: 620.0,
@@ -131,9 +131,9 @@ export const FeederDetailModal: React.FC<FeederDetailModalProps> = ({
       frequencyHz: 50.02,
       ctRatio: "800/5A Class 0.2S",
       breakerType: "ABB Emax2 0.4kV 1000A ACB",
-      status: "CLOSED (DISCHARGING)",
+      status: "CLOSED (ACTIVE REGEN)",
       tripRelays: ["Anti-Islanding Protection IEEE 1547", "Reverse Power Relay ANSI 32"],
-      connectedAssets: ["2.0 MWh BESS Battery Racks", "6 DC High-Power EV Chargers"]
+      connectedAssets: ["1.5 MW Crane Regen Active Converter", "6 DC High-Power EV Chargers"]
     },
     F06: {
       name: "Terminal Gate & Central Admin Building",
@@ -485,7 +485,7 @@ export const FeederDetailModal: React.FC<FeederDetailModalProps> = ({
                   className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white border border-slate-200 text-amber-700 hover:bg-amber-50 font-bold transition-colors shadow-2xs"
                 >
                   <Zap className="w-3.5 h-3.5 text-amber-500" />
-                  <span>Peak Shaving & BESS</span>
+                  <span>Peak Shaving &amp; Load Control</span>
                   <ArrowUpRight className="w-3 h-3 text-slate-400" />
                 </button>
 

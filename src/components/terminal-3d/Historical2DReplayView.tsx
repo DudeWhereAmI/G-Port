@@ -154,9 +154,9 @@ const BAY_DEFINITIONS: Record<
   },
   "BAY-C1": {
     id: "BAY-C1",
-    title: "CONTAINER BAY C1 + BESS",
-    sub: "East Deep-Sea Block + 1.5MW BESS",
-    feeder: "BESS 3MWh + Feeder F-02",
+    title: "CONTAINER BAY C1 + REGEN",
+    sub: "East Deep-Sea Block + 1.5MW Regen",
+    feeder: "Feeder F-02 + Regen Busbar",
     rtgCode: "e-RTG #05",
     targetSlotLabel: "Row A · Slot C1-02",
     x: 520,
@@ -1703,9 +1703,9 @@ function buildPersonalizedScenarios(entity: Terminal3DEntity): ReplayScenario[] 
       {
         id: `${id}-V012W`,
         label: "28/09 · Voyage 012W — MV ONE APUS (Tại Bến B3 · 3,400 TEU)",
-        badge: "Berth B3 ULCV + BESS",
+        badge: "Berth B3 ULCV + Regen",
         date: "28/09/2026 13:30 → 30/09/2026 08:00",
-        durationLabel: "70,300 kWh · -1.5MW BESS Shaved",
+        durationLabel: "70,300 kWh · -1.5MW Regen Shaved",
         mode: "VOYAGE_FULL",
         berthCode: "B3",
         berthLabel: "BERTH B3 (EAST ULCV QUAY)",
@@ -1715,8 +1715,8 @@ function buildPersonalizedScenarios(entity: Terminal3DEntity): ReplayScenario[] 
         tugName: "Escort Tug TC-09",
         opsLabel: "Dual OPS-B3 (840 kW)",
         scopeDescription: isSingleBayC1
-          ? "Chỉ hiển thị các chủ thể trực tiếp tham gia luồng Bến B3 ↔ Container Bay C1: Tàu MV ONE APUS cập Bến B3, Cẩu bờ STS-04 ngay tại Bến B3, xe đầu kéo TRK-5204 và Container Bay C1 (+ Trạm BESS 1.5MW)."
-          : "Toàn trình chuyến 012W của tàu MV ONE APUS tại Bến B3: Tàu lai TC-09 dẫn luồng cập Bến B3, cấp điện bờ Dual-Bus OPS-B3 (840 kW), Cẩu bờ STS-04 & STS-05 tại Bến B3 xếp dỡ với Container Bay C1 và Reefer Bay R1, kèm Trạm BESS 1.5MW xả cắt đỉnh.",
+          ? "Chỉ hiển thị các chủ thể trực tiếp tham gia luồng Bến B3 ↔ Container Bay C1: Tàu MV ONE APUS cập Bến B3, Cẩu bờ STS-04 ngay tại Bến B3, xe đầu kéo TRK-5204 và Container Bay C1 (+ Thu hồi động năng cẩu 1.5MW)."
+          : "Toàn trình chuyến 012W của tàu MV ONE APUS tại Bến B3: Tàu lai TC-09 dẫn luồng cập Bến B3, cấp điện bờ Dual-Bus OPS-B3 (840 kW), Cẩu bờ STS-04 & STS-05 tại Bến B3 xếp dỡ với Container Bay C1 và Reefer Bay R1, kèm Thu hồi động năng cẩu 1.5MW cắt đỉnh.",
         activeCranes: isSingleBayC1
           ? [{ code: "STS-04", x: 585, roleLabel: "Berth B3 Super Post-Panamax" }]
           : [
@@ -1791,10 +1791,10 @@ function buildPersonalizedScenarios(entity: Terminal3DEntity): ReplayScenario[] 
             energyOrFuel: "29,000 kWh (8.53 kWh/TEU)",
           },
           {
-            code: "Bay C1 + 1.5MW BESS",
-            role: "EU Export Staging & P90 Peak Shaving",
-            meterCode: "MTR-BESS-TCIT-1.5MW",
-            energyOrFuel: "3,450 kWh BESS Discharged",
+            code: "Bay C1 + 1.5MW Crane Regen",
+            role: "EU Export Staging & P90 Regen Recovery",
+            meterCode: "MTR-REGEN-TCIT-1.5MW",
+            energyOrFuel: "3,450 kWh Regen Recovered",
           },
           {
             code: "Escort Tug TC-09",
@@ -1817,9 +1817,9 @@ function buildPersonalizedScenarios(entity: Terminal3DEntity): ReplayScenario[] 
             endPct: 82,
             timeLabel: "14:15 – 06:00 (+2)",
             phaseTitle:
-              "2. Berth B3 Cranes STS-04/05 Handling ↔ Bay C1 & BESS Peak Shaving",
+              "2. Berth B3 Cranes STS-04/05 Handling ↔ Bay C1 & Crane Regen Peak Shaving",
             activityDetail:
-              "Cẩu STS-04 & STS-05 tại Bến B3 bốc dỡ container trực tiếp với Container Bay C1 (xe TRK-5204) và Reefer Bay R1; Trạm BESS 1.5MW tự động xả cắt đỉnh phụ tải.",
+              "Cẩu STS-04 & STS-05 tại Bến B3 bốc dỡ container trực tiếp với Container Bay C1 (xe TRK-5204) và Reefer Bay R1; Hệ thống thu hồi động năng cẩu 1.5MW tự động hoàn trả công suất cắt đỉnh phụ tải.",
           },
           {
             startPct: 82,
@@ -1849,20 +1849,20 @@ function buildPersonalizedScenarios(entity: Terminal3DEntity): ReplayScenario[] 
             ],
           },
           {
-            id: "MTR-BESS-TCIT-1.5MW",
-            name: "Bay C1 1.5MW BESS Peak Shaving",
+            id: "MTR-REGEN-TCIT-1.5MW",
+            name: "Bay C1 1.5MW Crane Regen Recovery",
             protocol: "Modbus TCP EMS",
             unit: "kW",
-            secondaryUnit: "% SOC",
-            totalRecorded: "3,450 kWh Shaved",
+            secondaryUnit: "% Eff",
+            totalRecorded: "3,450 kWh Recovered",
             intensity: "-1.5 MW Peak Cut",
             color: "#f59e0b",
             series: [
-              { t: "13:30", val: 0, sec: 92, status: "Standby at 92% SOC" },
-              { t: "14:15", val: 1450, sec: 84, status: "Auto-discharge as STS-04 starts" },
-              { t: "18:00", val: 1500, sec: 62, status: "Shaving Berth B3 crane peak" },
-              { t: "14:00", val: -600, sec: 88, status: "Off-peak recharge" },
-              { t: "07:30", val: 450, sec: 78, status: "Completed shaving" },
+              { t: "13:30", val: 0, sec: 96, status: "Regen Busbar Standby" },
+              { t: "14:15", val: 1450, sec: 94, status: "Hoist regen recovery as STS-04 starts" },
+              { t: "18:00", val: 1500, sec: 95, status: "Shaving Berth B3 crane peak" },
+              { t: "14:00", val: 600, sec: 93, status: "Continuous e-RTG regen recovery" },
+              { t: "07:30", val: 450, sec: 95, status: "Completed peak shaving" },
             ],
           },
         ],
@@ -1912,10 +1912,10 @@ function buildPersonalizedScenarios(entity: Terminal3DEntity): ReplayScenario[] 
             energyOrFuel: "28,400 kWh (8.48 kWh/TEU)",
           },
           {
-            code: "Bay C1 + 1.5MW BESS",
-            role: "East Block & BESS Shaving",
-            meterCode: "MTR-BESS-TCIT-1.5MW",
-            energyOrFuel: "3,200 kWh Discharged",
+            code: "Bay C1 + 1.5MW Crane Regen",
+            role: "East Block & Regen Shaving",
+            meterCode: "MTR-REGEN-TCIT-1.5MW",
+            energyOrFuel: "3,200 kWh Recovered",
           },
         ],
         timelinePhases: [

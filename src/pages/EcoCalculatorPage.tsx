@@ -558,7 +558,7 @@ export const EcoCalculatorPage: React.FC<EcoCalculatorPageProps> = ({
                       </div>
                       <div className="font-bold text-slate-900 text-xs truncate">ONE APUS (ULCV)</div>
                       <div className="text-[10px] text-slate-600 mt-0.5 truncate">Cai Mep TCIT ➔ Rotterdam</div>
-                      <div className="text-[9px] text-slate-400 font-mono mt-1">14k TEU · BESS 1.5MW Peak Shave</div>
+                      <div className="text-[9px] text-slate-400 font-mono mt-1">14k TEU · Crane Regen 1.5MW Peak Shave</div>
                     </button>
 
                     <button
@@ -594,7 +594,7 @@ export const EcoCalculatorPage: React.FC<EcoCalculatorPageProps> = ({
                       </div>
                       <div className="font-bold text-slate-900 text-xs truncate">TAN CANG GLORY</div>
                       <div className="text-[10px] text-slate-600 mt-0.5 truncate">Hai Phong ➔ Cat Lai ➔ Jurong</div>
-                      <div className="text-[9px] text-slate-400 font-mono mt-1">Perishables · Night BESS Charge</div>
+                      <div className="text-[9px] text-slate-400 font-mono mt-1">Perishables · Off-Peak EV &amp; Pre-Cool</div>
                     </button>
                   </div>
                 </div>
@@ -1401,14 +1401,14 @@ export const EcoCalculatorPage: React.FC<EcoCalculatorPageProps> = ({
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
                         <span className="font-black text-slate-900 text-xs">
-                          2. Solar & BESS-Powered Reefer Yard Slot
+                          2. Solar &amp; Crane Regen-Powered Reefer Yard Slot
                         </span>
                         <span className="text-[10px] font-bold text-blue-700 font-mono">
                           Clean Power
                         </span>
                       </div>
                       <p className="text-xs text-slate-600">
-                        Prioritized plug-in to reefer racks powered exclusively by the port's 4.2 MWp rooftop solar array and 2.5 MWh battery storage system.
+                        Prioritized plug-in to reefer racks powered by the port's 4.2 MWp rooftop solar array and 1.5 MW crane regenerative power busbar.
                       </p>
                       <div className="text-[11px] font-bold text-emerald-700 flex items-center gap-2 pt-1 font-mono">
                         <span>Abatement: -420 kg CO2e / TEU</span>

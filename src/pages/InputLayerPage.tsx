@@ -30,6 +30,13 @@ import {
   CartesianGrid,
 } from "recharts";
 import { PortTerminal3DScene } from "../components/terminal-3d/PortTerminal3DScene";
+import {
+  PortTerminal2DStrategyMap,
+  TerminalStrategyZone,
+  ENTITY_TIMELINE_WAYPOINTS,
+  TimelineWaypoint,
+  computeLiveEntityState,
+} from "../components/terminal-3d/PortTerminal2DStrategyMap";
 import { Historical2DReplayView } from "../components/terminal-3d/Historical2DReplayView";
 import {
   TERMINAL_3D_ENTITIES,
@@ -45,6 +52,7 @@ interface InputLayerPageProps {
   onNavigate?: (page: SubPageId) => void;
   onOpenCarbonInvoice?: (invoiceOrUseCaseId: string) => void;
   focusedTelemetryEntityId?: string | null;
+  focusedTelemetryPopupMode?: "TURNAROUND" | "BREAKDOWN";
   onClearFocusedTelemetryEntity?: () => void;
 }
 
@@ -52,15 +60,22 @@ type BreakdownTab = "TELEMETRY" | "CONTAINERS" | "HISTORY";
 
 export const InputLayerPage: React.FC<InputLayerPageProps> = ({
   onOpenMeterModal,
-  onNavigate,
-  onOpenCarbonInvoice,
   focusedTelemetryEntityId,
+  focusedTelemetryPopupMode = "TURNAROUND",
   onClearFocusedTelemetryEntity,
 }) => {
-  // Default selected entity: TRK-2481 (matches the WareTrack 3D layout)
-  const [selectedEntityId, setSelectedEntityId] = useState<string>("TRK-2481");
-  const [inspectorOpen, setInspectorOpen] = useState<boolean>(true);
-  const [activeTab, setActiveTab] = useState<TerminalEntityCategory>("CRANES");
+  // 2D Strategic Map is the primary view; 3D is hidden by default
+  const [mapMode, setMapMode] = useState<"2D" | "3D">("2D");
+  const [selectedZone, setSelectedZone] = useState<TerminalStrategyZone | null>(
+    null
+  );
+  const [activeCategoryFilter, setActiveCategoryFilter] =
+    useState<TerminalEntityCategory | null>(null);
+
+  // Progressive disclosure: null initially so only the map & selection options appear on load
+  const [selectedEntityId, setSelectedEntityId] = useState<string | null>(null);
+  const [inspectorOpen, setInspectorOpen] = useState<boolean>(false);
+  const [activeTab, setActiveTab] = useState<TerminalEntityCategory>("VESSELS");
   const [detailModalEntity, setDetailModalEntity] =
     useState<Terminal3DEntity | null>(null);
   const [breakdownTab, setBreakdownTab] = useState<BreakdownTab>("TELEMETRY");
@@ -68,8 +83,13 @@ export const InputLayerPage: React.FC<InputLayerPageProps> = ({
   const [vesselLifecycleModalId, setVesselLifecycleModalId] = useState<
     string | null
   >(null);
+  const [focusedWaypoint, setFocusedWaypoint] =
+    useState<TimelineWaypoint | null>(null);
+  const [loopSec, setLoopSec] = useState<number>(0);
+  const [leftListCollapsed, setLeftListCollapsed] = useState<boolean>(false);
+  const [entityListOpen, setEntityListOpen] = useState<boolean>(false);
 
-  // When traced back from Carbon Invoices or Meter Modal, focus the target vessel and open its 2D Voyage Replay
+  // When traced from Overview Berth Operation Map or Carbon Invoices, focus the target entity and open the requested popup
   React.useEffect(() => {
     if (!focusedTelemetryEntityId) return;
     const found = TERMINAL_3D_ENTITIES.find(
@@ -78,25 +98,69 @@ export const InputLayerPage: React.FC<InputLayerPageProps> = ({
     if (found) {
       setSelectedEntityId(found.id);
       setActiveTab(found.category);
+      setActiveCategoryFilter(found.category);
       setInspectorOpen(true);
-      setVesselLifecycleModalId(found.linkedVesselId);
+      setEntityListOpen(true);
+      setLeftListCollapsed(true);
+      if (focusedTelemetryPopupMode === "BREAKDOWN") {
+        setDetailModalEntity(found);
+        setBreakdownTab("TELEMETRY");
+      } else {
+        setVesselLifecycleModalId(found.linkedVesselId);
+      }
     }
     onClearFocusedTelemetryEntity?.();
-  }, [focusedTelemetryEntityId, onClearFocusedTelemetryEntity]);
+  }, [
+    focusedTelemetryEntityId,
+    focusedTelemetryPopupMode,
+    onClearFocusedTelemetryEntity,
+  ]);
 
   const selectedEntity = useMemo(
     () =>
-      TERMINAL_3D_ENTITIES.find((e) => e.id === selectedEntityId) ||
-      TERMINAL_3D_ENTITIES[0],
+      selectedEntityId
+        ? TERMINAL_3D_ENTITIES.find((e) => e.id === selectedEntityId) || null
+        : null,
     [selectedEntityId]
   );
 
-  // Linked Vessel for the Bottom-Left Lifecycle Stepper:
-  // Always shows the vessel that the currently selected crane, truck, bay, or vessel belongs to
+  // Linked Vessel for the Audit Modal:
   const activeVesselLifecycle = useMemo(() => {
     const vesselId = selectedEntity?.linkedVesselId || "VSL-01";
     return VESSEL_LIFECYCLE_BY_ID[vesselId] || VESSEL_LIFECYCLE_BY_ID["VSL-01"];
   }, [selectedEntity]);
+
+  // Entity-specific Google Maps Timeline waypoints (tracks vessels from sea + towage, or crane/truck/bay timeline)
+  const activeEntityWaypoints = useMemo(() => {
+    if (!selectedEntity) return [];
+    return ENTITY_TIMELINE_WAYPOINTS[selectedEntity.id] || [];
+  }, [selectedEntity]);
+
+  const selectedEntityLiveState = useMemo(() => {
+    if (!selectedEntity) return null;
+    return computeLiveEntityState(selectedEntity.id, loopSec);
+  }, [selectedEntity, loopSec]);
+
+  const activeTimelinePoint = useMemo(() => {
+    if (
+      focusedWaypoint &&
+      activeEntityWaypoints.some((w) => w.id === focusedWaypoint.id)
+    ) {
+      return focusedWaypoint;
+    }
+    const liveMatched = activeEntityWaypoints.find(
+      (w) =>
+        w.activeWindowSec &&
+        loopSec >= w.activeWindowSec[0] &&
+        loopSec < w.activeWindowSec[1]
+    );
+    if (liveMatched) return liveMatched;
+    return (
+      activeEntityWaypoints.find((w) => w.state === "ACTIVE") ||
+      activeEntityWaypoints[activeEntityWaypoints.length - 1] ||
+      null
+    );
+  }, [focusedWaypoint, activeEntityWaypoints, loopSec]);
 
   const vesselsList = useMemo(
     () => TERMINAL_3D_ENTITIES.filter((e) => e.category === "VESSELS"),
@@ -116,28 +180,64 @@ export const InputLayerPage: React.FC<InputLayerPageProps> = ({
   );
 
   const tabEntities = useMemo(() => {
+    let baseList: Terminal3DEntity[] = [];
     switch (activeTab) {
       case "VESSELS":
-        return vesselsList;
+        baseList = vesselsList;
+        break;
       case "CRANES":
-        return cranesList;
+        baseList = cranesList;
+        break;
       case "TRUCKS":
-        return trucksList;
+        baseList = trucksList;
+        break;
       case "BAYS":
-        return baysList;
+        baseList = baysList;
+        break;
     }
-  }, [activeTab, vesselsList, cranesList, trucksList, baysList]);
+    if (selectedZone) {
+      const zoneFiltered = baseList.filter((e) =>
+        selectedZone.entityIds.includes(e.id)
+      );
+      if (zoneFiltered.length > 0) return zoneFiltered;
+    }
+    return baseList;
+  }, [activeTab, vesselsList, cranesList, trucksList, baysList, selectedZone]);
 
   const handleSelectEntity = (entity: Terminal3DEntity) => {
     setSelectedEntityId(entity.id);
+    setFocusedWaypoint(null);
     setInspectorOpen(true);
+    setEntityListOpen(true);
+    setLeftListCollapsed(true);
     setActiveTab(entity.category);
+    setActiveCategoryFilter(entity.category);
   };
 
-  const handleSelectById = (id: string) => {
-    const found = TERMINAL_3D_ENTITIES.find((e) => e.id === id);
-    if (found) {
-      handleSelectEntity(found);
+  const handleSelectCategoryFilter = (cat: TerminalEntityCategory | null) => {
+    setActiveCategoryFilter(cat);
+    setFocusedWaypoint(null);
+    if (cat) {
+      setActiveTab(cat);
+      setEntityListOpen(true);
+      setLeftListCollapsed(true);
+    } else {
+      setSelectedEntityId(null);
+      setInspectorOpen(false);
+      setEntityListOpen(false);
+    }
+  };
+
+  const handleSelectZone = (zone: TerminalStrategyZone | null) => {
+    setSelectedZone(zone);
+    setFocusedWaypoint(null);
+    if (zone) {
+      setEntityListOpen(true);
+      setLeftListCollapsed(true);
+    } else {
+      setSelectedEntityId(null);
+      setInspectorOpen(false);
+      setEntityListOpen(false);
     }
   };
 
@@ -189,127 +289,72 @@ export const InputLayerPage: React.FC<InputLayerPageProps> = ({
     }
   };
 
-  // Short step labels so all 5 steps fit inside any card width without overflow
-  const getCompactStepLabel = (label: string) => {
-    if (label.includes("Arrived")) return "Vessel Arrived";
-    if (label.includes("Berthed") || label.includes("Berthing"))
-      return "Berthed & OPS";
-    if (label.includes("Quay Crane")) return "Quay Cranes";
-    if (label.includes("Container Bay")) return "Bay Stacking";
-    if (label.includes("Departure")) return "Departure";
-    return label;
+  const getEntityTimelineTitle = (category: TerminalEntityCategory) => {
+    switch (category) {
+      case "VESSELS":
+        return "Vessel Sea-to-Berth & Towage Turnaround";
+      case "CRANES":
+        return "Quay Crane Shift & Hoist Timeline";
+      case "TRUCKS":
+        return "Yard Truck Route & Stops Timeline";
+      case "BAYS":
+        return "Container Bay Stacking & Cooling Timeline";
+    }
   };
 
   const activeModalVessel = vesselLifecycleModalId
     ? VESSEL_LIFECYCLE_BY_ID[vesselLifecycleModalId]
     : null;
 
+  const showEntityListPanel =
+    entityListOpen &&
+    (activeCategoryFilter !== null ||
+      selectedZone !== null ||
+      selectedEntity !== null);
+
   return (
-    <div className="relative w-full h-full flex-1 min-h-0 rounded-2xl overflow-hidden border border-slate-200/80 shadow-sm bg-[#dbeafe] select-none">
-      {/* 1. Full-Viewport 3D Low-Polygon Port Terminal Map */}
-      <PortTerminal3DScene
-        selectedEntityId={selectedEntityId}
-        onSelectEntity={handleSelectEntity}
-        inspectorOpen={inspectorOpen}
-      />
+    <div className="relative w-full h-full flex-1 min-h-0 rounded-2xl overflow-hidden border border-slate-200 shadow-xs bg-[#AADAFF] select-none flex flex-col">
+      {/* 1. Primary 2D Strategic Port Terminal Map */}
+      {mapMode === "2D" ? (
+        <PortTerminal2DStrategyMap
+          selectedZoneId={selectedZone?.id || null}
+          onSelectZone={handleSelectZone}
+          selectedEntityId={selectedEntityId}
+          onSelectEntity={handleSelectEntity}
+          activeCategoryFilter={activeCategoryFilter}
+          onSelectCategoryFilter={handleSelectCategoryFilter}
+          focusedWaypoint={focusedWaypoint}
+          onSelectWaypoint={(wp) => {
+            if (wp) setLeftListCollapsed(true);
+            setFocusedWaypoint(wp);
+          }}
+          onLoopTimeChange={setLoopSec}
+          leftListCollapsed={leftListCollapsed}
+          onToggleLeftListCollapsed={setLeftListCollapsed}
+        />
+      ) : (
+        <PortTerminal3DScene
+          selectedEntityId={selectedEntityId || "TRK-2481"}
+          onSelectEntity={handleSelectEntity}
+          inspectorOpen={inspectorOpen}
+        />
+      )}
 
       {/* =====================================================================
-          2. UNIFIED 2-ROW ADAPTIVE FLEX OVERLAY
-          Guarantees zero collision between Top Row and Bottom Row, and zero
-          horizontal overlap between Left and Right cards at any viewport size!
+          2. PROGRESSIVE DISCLOSURE OVERLAY
+          Dynamically adapts left padding when Khu vực Cảng is collapsed so
+          Timeline, Inspector, and Entity List cards expand across the freed space.
       ===================================================================== */}
-      <div className="absolute inset-0 z-10 pointer-events-none flex flex-col justify-between p-2.5 sm:p-3.5 gap-2.5 overflow-hidden">
-        {/* -------------------------------------------------------------------
-            TOP ROW: Left KPI Pills + Right Adaptive Inspector Card
-        ------------------------------------------------------------------- */}
-        <div className="flex items-start justify-between gap-2.5 min-h-0 flex-1 overflow-hidden">
-          {/* TOP-LEFT: 3 Adaptive Terminal Activity KPI Cards */}
-          <div className="flex flex-wrap items-center gap-2 min-w-0 max-w-full">
-            {/* Card 1: Containers in Yard Bays */}
-            <button
-              type="button"
-              onClick={() => handleSelectById("BAY-R1")}
-              className="pointer-events-auto bg-white/95 hover:bg-white border border-slate-200/90 rounded-xl px-2.5 py-2 sm:px-3.5 sm:py-2.5 shadow-md flex items-center gap-2.5 transition-all text-left group cursor-pointer shrink-0"
-            >
-              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 shrink-0 group-hover:bg-blue-600 group-hover:text-white transition-colors">
-                <Package className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
-              </div>
-              <div className="min-w-0">
-                <div className="text-[10px] sm:text-[11px] font-medium text-slate-500 leading-tight truncate">
-                  Containers in Yard
-                </div>
-                <div className="flex items-baseline gap-1">
-                  <span className="text-base sm:text-lg font-black text-slate-900 tracking-tight leading-tight">
-                    1,420
-                  </span>
-                  <span className="text-[10px] font-bold text-emerald-600">
-                    ↑ +180
-                  </span>
-                </div>
-                <div className="hidden xl:block text-[10px] text-slate-400 truncate">
-                  TEU · 353 Reefer Plugs
-                </div>
-              </div>
-            </button>
-
-            {/* Card 2: Trucks & Cranes on site */}
-            <button
-              type="button"
-              onClick={() => handleSelectById("TRK-2481")}
-              className="pointer-events-auto bg-white/95 hover:bg-white border border-slate-200/90 rounded-xl px-2.5 py-2 sm:px-3.5 sm:py-2.5 shadow-md flex items-center gap-2.5 transition-all text-left group cursor-pointer shrink-0"
-            >
-              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 shrink-0 group-hover:bg-blue-600 group-hover:text-white transition-colors">
-                <Truck className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
-              </div>
-              <div className="min-w-0">
-                <div className="text-[10px] sm:text-[11px] font-medium text-slate-500 leading-tight truncate">
-                  Active Fleet
-                </div>
-                <div className="flex items-baseline gap-1">
-                  <span className="text-base sm:text-lg font-black text-slate-900 tracking-tight leading-tight">
-                    8
-                  </span>
-                  <span className="text-[10px] font-bold text-emerald-600">
-                    ↑ +2
-                  </span>
-                </div>
-                <div className="hidden xl:block text-[10px] text-slate-400 truncate">
-                  4 Cranes · 4 Yard Trucks
-                </div>
-              </div>
-            </button>
-
-            {/* Card 3: On-time vessel turnaround */}
-            <button
-              type="button"
-              onClick={() => handleSelectById("VSL-01")}
-              className="pointer-events-auto bg-white/95 hover:bg-white border border-slate-200/90 rounded-xl px-2.5 py-2 sm:px-3.5 sm:py-2.5 shadow-md flex items-center gap-2.5 transition-all text-left group cursor-pointer shrink-0"
-            >
-              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 shrink-0 group-hover:bg-blue-600 group-hover:text-white transition-colors">
-                <Clock className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
-              </div>
-              <div className="min-w-0">
-                <div className="text-[10px] sm:text-[11px] font-medium text-slate-500 leading-tight truncate">
-                  Turnaround SLA
-                </div>
-                <div className="flex items-baseline gap-1">
-                  <span className="text-base sm:text-lg font-black text-slate-900 tracking-tight leading-tight">
-                    96.8%
-                  </span>
-                  <span className="text-[10px] font-bold text-emerald-600">
-                    ↑ +0.6%
-                  </span>
-                </div>
-                <div className="hidden xl:block text-[10px] text-slate-400 truncate">
-                  3 Vessels · 100% OPS
-                </div>
-              </div>
-            </button>
-          </div>
-
-          {/* TOP-RIGHT: Adaptive Inspector Card (Constrained to Top Row height with internal scroll if needed) */}
+      <div
+        className={`absolute inset-0 z-10 pointer-events-none flex flex-col justify-between p-2.5 sm:p-3.5 pr-14 gap-2.5 overflow-hidden transition-all duration-200 ${
+          leftListCollapsed ? "pl-13 sm:pl-14" : "pl-62 sm:pl-68"
+        }`}
+      >
+        {/* TOP ROW: Spacer on Left + Right Inspector Card */}
+        <div className="flex items-start justify-end gap-2.5 min-h-0 flex-1 overflow-hidden pt-11 sm:pt-12">
+          {/* TOP-RIGHT: Adaptive Inspector Card (Appears ONLY when an entity is selected) */}
           {inspectorOpen && selectedEntity ? (
-            <div className="pointer-events-auto w-[270px] xl:w-[320px] max-h-full bg-white/95 border border-slate-200/90 rounded-2xl shadow-lg p-3 sm:p-3.5 text-slate-800 flex flex-col shrink-0 overflow-hidden">
+            <div className="pointer-events-auto w-[280px] sm:w-[310px] xl:w-[350px] max-h-full bg-white/95 border border-slate-200/90 rounded-2xl shadow-lg p-3 sm:p-3.5 text-slate-800 flex flex-col shrink-0 overflow-hidden animate-in fade-in transition-all duration-200">
               {/* Header with Icon, Title, and Action Buttons */}
               <div className="flex items-start justify-between gap-2 mb-2 shrink-0">
                 <div className="flex items-center gap-2.5 min-w-0">
@@ -333,7 +378,7 @@ export const InputLayerPage: React.FC<InputLayerPageProps> = ({
                   <button
                     type="button"
                     onClick={() => handleSelectEntity(selectedEntity)}
-                    title="Focus in 3D view"
+                    title="Focus unit"
                     className="w-6 h-6 rounded-lg border border-slate-200 flex items-center justify-center text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer"
                   >
                     <Crosshair className="w-3 h-3" />
@@ -350,8 +395,11 @@ export const InputLayerPage: React.FC<InputLayerPageProps> = ({
                   </button>
                   <button
                     type="button"
-                    onClick={() => setInspectorOpen(false)}
-                    title="Minimize inspector"
+                    onClick={() => {
+                      setInspectorOpen(false);
+                      setSelectedEntityId(null);
+                    }}
+                    title="Close inspector"
                     className="w-6 h-6 rounded-lg border border-slate-200 flex items-center justify-center text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer"
                   >
                     <X className="w-3 h-3" />
@@ -359,18 +407,25 @@ export const InputLayerPage: React.FC<InputLayerPageProps> = ({
                 </div>
               </div>
 
-              {/* Status Pill + Location */}
-              <div className="flex items-center gap-1.5 mb-2 shrink-0">
-                <span
-                  className={`px-2 py-0.5 rounded text-[10px] font-bold border shrink-0 ${getBadgeStyle(
-                    selectedEntity.statusTone
-                  )}`}
-                >
-                  {selectedEntity.statusLabel}
-                </span>
-                <span className="text-[11px] text-slate-600 truncate">
-                  {selectedEntity.statusSubtext}
-                </span>
+              {/* Concise Live Destination & Status Strip (No verbose dwell-second text) */}
+              <div className="mb-2 px-2.5 py-2 rounded-xl bg-slate-50 border border-slate-200/80 shrink-0">
+                <div className="flex items-center justify-between gap-1.5">
+                  <span
+                    className={`px-2 py-0.5 rounded text-[10px] font-bold border shrink-0 ${getBadgeStyle(
+                      selectedEntity.statusTone
+                    )}`}
+                  >
+                    {selectedEntity.statusLabel}
+                  </span>
+                  <span className="text-[10px] font-mono font-bold text-[#004B91] truncate">
+                    {selectedEntityLiveState?.liveMetric ||
+                      selectedEntity.distanceOrRemainingText}
+                  </span>
+                </div>
+                <div className="text-[11px] font-bold text-slate-900 mt-1 truncate">
+                  {selectedEntityLiveState?.destinationLabel ||
+                    selectedEntity.statusSubtext}
+                </div>
               </div>
 
               {/* Progress Bar */}
@@ -388,7 +443,7 @@ export const InputLayerPage: React.FC<InputLayerPageProps> = ({
                 </span>
               </div>
 
-              {/* Scrollable Key-Value Operational Summary Rows (Adapts to available height) */}
+              {/* Scrollable Key-Value Operational Summary Rows */}
               <div className="divide-y divide-slate-100 border-t border-slate-100 text-[11px] overflow-y-auto min-h-0 flex-1 pr-0.5">
                 {selectedEntity.inspectorRows.map((row) => (
                   <div
@@ -445,93 +500,135 @@ export const InputLayerPage: React.FC<InputLayerPageProps> = ({
                 </button>
               </div>
             </div>
-          ) : (
-            selectedEntity && (
-              <button
-                type="button"
-                onClick={() => setInspectorOpen(true)}
-                className="pointer-events-auto bg-white/95 hover:bg-white border border-slate-200/90 rounded-xl px-3 py-2 shadow-md flex items-center gap-2 text-xs font-bold text-slate-800 shrink-0 cursor-pointer"
-              >
-                {getCategoryIcon(selectedEntity.category)}
-                <span>{selectedEntity.code}</span>
-                <span
-                  className={`px-1.5 py-0.5 rounded text-[10px] font-bold border ${getBadgeStyle(
-                    selectedEntity.statusTone
-                  )}`}
-                >
-                  {selectedEntity.statusLabel}
-                </span>
-              </button>
-            )
-          )}
+          ) : null}
         </div>
 
         {/* -------------------------------------------------------------------
-            BOTTOM ROW: Side-by-Side Flex Siblings (Never Overlap Horizontally!)
+            BOTTOM ROW: Flexibly stretches across freed horizontal space when
+            Khu vực Cảng or either bottom card is collapsed/closed!
         ------------------------------------------------------------------- */}
         <div className="flex flex-col md:flex-row items-stretch md:items-end justify-between gap-2.5 shrink-0 w-full">
-          {/* BOTTOM-LEFT: Vessel Turnaround Lifecycle Stepper (Fluid Flex-1 + 5-Column Equal Grid) */}
-          <div className="pointer-events-auto flex-1 min-w-0 max-w-full md:max-w-[740px] bg-white/95 border border-slate-200/90 rounded-2xl shadow-lg p-3 sm:p-3.5 overflow-hidden">
-            {/* Compact Header Bar */}
-            <div className="flex items-center justify-between gap-2 mb-2.5 flex-wrap">
-              <div className="flex items-center gap-1.5 flex-wrap min-w-0">
-                <Ship className="w-3.5 h-3.5 text-blue-600 shrink-0" />
-                <span className="text-xs font-black text-slate-900 tracking-tight whitespace-nowrap">
-                  Vessel Turnaround
-                </span>
-                <div className="flex items-center gap-1 flex-wrap">
-                  {vesselsList.map((v) => (
+          {/* BOTTOM-LEFT: Entity-Adapted Timeline Card (Expands flexibly with flex-1, no restrictive max-w cap!) */}
+          {selectedEntity ? (
+            <div className="pointer-events-auto flex-1 min-w-0 bg-white/95 border border-slate-200/90 rounded-2xl shadow-lg p-3 sm:p-3.5 overflow-hidden animate-in fade-in transition-all duration-200">
+              {/* Compact Header Bar */}
+              <div className="flex items-center justify-between gap-2 mb-2.5 flex-wrap">
+                <div className="flex items-center gap-1.5 flex-wrap min-w-0">
+                  {getCategoryIcon(selectedEntity.category)}
+                  <span className="text-xs font-black text-slate-900 tracking-tight whitespace-nowrap">
+                    {getEntityTimelineTitle(selectedEntity.category)}
+                  </span>
+
+                  {selectedEntity.category === "VESSELS" ? (
+                    <div className="flex items-center gap-1 flex-wrap">
+                      {vesselsList.map((v) => (
+                        <button
+                          key={v.id}
+                          type="button"
+                          onClick={() => handleSelectEntity(v)}
+                          className={`px-2 py-0.5 rounded-md text-[10px] font-bold whitespace-nowrap transition-colors cursor-pointer ${
+                            selectedEntity.id === v.id
+                              ? "bg-[#1A73E8] text-white"
+                              : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                          }`}
+                        >
+                          {v.name.replace("MV ", "")}
+                        </button>
+                      ))}
+                    </div>
+                  ) : (
+                    <span className="px-2 py-0.5 rounded-md bg-blue-50 text-[#1A73E8] border border-blue-200 text-[10px] font-bold truncate">
+                      {selectedEntity.code} · {selectedEntity.linkedVesselName}
+                    </span>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-1.5 shrink-0">
+                  {!entityListOpen && (
                     <button
-                      key={v.id}
                       type="button"
-                      onClick={() => handleSelectEntity(v)}
-                      className={`px-2 py-0.5 rounded-md text-[10px] font-bold whitespace-nowrap transition-colors cursor-pointer ${
-                        activeVesselLifecycle.vesselId === v.id
-                          ? "bg-blue-600 text-white"
-                          : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                      }`}
+                      onClick={() => setEntityListOpen(true)}
+                      className="px-2 py-0.5 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700 text-[10px] font-bold cursor-pointer"
                     >
-                      {v.name.replace("MV ", "")}
+                      Danh sách ({tabEntities.length})
                     </button>
-                  ))}
+                  )}
+                  {focusedWaypoint && (
+                    <button
+                      type="button"
+                      onClick={() => setFocusedWaypoint(null)}
+                      className="px-2 py-0.5 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-600 text-[10px] font-bold cursor-pointer"
+                    >
+                      Reset Zoom
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (selectedEntity.category === "VESSELS") {
+                        setVesselLifecycleModalId(
+                          activeVesselLifecycle.vesselId
+                        );
+                      } else {
+                        openEntityBreakdown(selectedEntity, "HISTORY");
+                      }
+                    }}
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-blue-50 hover:bg-blue-100 text-[#1A73E8] border border-blue-200 text-[10px] font-bold transition-colors shrink-0 cursor-pointer"
+                  >
+                    <span>
+                      {selectedEntity.category === "VESSELS"
+                        ? "Port Call Audit"
+                        : "2D Route Log"}
+                    </span>
+                    <ArrowUpRight className="w-3 h-3" />
+                  </button>
                 </div>
               </div>
 
-              {/* Compact Summary Trigger on < XL screens (prevents vertical stacking overflow) */}
-              <button
-                type="button"
-                onClick={() =>
-                  setVesselLifecycleModalId(activeVesselLifecycle.vesselId)
-                }
-                className="xl:hidden inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 text-[10px] font-bold transition-colors shrink-0 cursor-pointer"
+              {/* Interactive Timeline Checkpoints — Click any past/active point to zoom the 2D map directly to that checkpoint */}
+              <div
+                className="grid gap-1.5 relative pt-0.5"
+                style={{
+                  gridTemplateColumns: `repeat(${Math.max(
+                    activeEntityWaypoints.length,
+                    1
+                  )}, minmax(0, 1fr))`,
+                }}
               >
-                <span>{activeVesselLifecycle.statusBadge}</span>
-                <span className="text-blue-400">·</span>
-                <span className="font-mono">Audit Sheet</span>
-                <ArrowUpRight className="w-3 h-3" />
-              </button>
-            </div>
-
-            <div className="flex items-center gap-3 min-w-0">
-              {/* 5-Stage Equal-Column Grid Stepper (Guaranteed 100% inside card at any width!) */}
-              <div className="flex-1 min-w-0 grid grid-cols-5 gap-1 relative pt-0.5">
-                {activeVesselLifecycle.steps.map((step, idx) => {
-                  const isDone = step.state === "COMPLETED";
-                  const isCurrent = step.state === "ACTIVE";
-                  const isLast = idx === activeVesselLifecycle.steps.length - 1;
+                {activeEntityWaypoints.map((wp, idx) => {
+                  const isLiveStep =
+                    wp.activeWindowSec &&
+                    loopSec >= wp.activeWindowSec[0] &&
+                    loopSec < wp.activeWindowSec[1];
+                  const isDone =
+                    wp.state === "COMPLETED" ||
+                    (wp.activeWindowSec && loopSec >= wp.activeWindowSec[1]);
+                  const isCurrent = isLiveStep || wp.state === "ACTIVE";
+                  const isFocused = focusedWaypoint?.id === wp.id;
+                  const isLast = idx === activeEntityWaypoints.length - 1;
 
                   return (
-                    <div
-                      key={step.label}
-                      className="relative flex flex-col items-center text-center min-w-0 px-0.5"
+                    <button
+                      key={wp.id}
+                      type="button"
+                      onClick={() => {
+                        setLeftListCollapsed(true);
+                        setFocusedWaypoint(wp);
+                      }}
+                      className={`group relative flex flex-col items-center text-center min-w-0 px-1.5 py-1.5 rounded-xl transition-all cursor-pointer ${
+                        isFocused
+                          ? "bg-blue-50/90 ring-1 ring-[#1A73E8]"
+                          : isLiveStep
+                          ? "bg-blue-50/50 ring-1 ring-blue-200"
+                          : "hover:bg-slate-50"
+                      }`}
                     >
-                      {/* Connector Line to next step */}
                       {!isLast && (
-                        <div className="absolute top-3.5 left-1/2 w-full h-0.5 bg-slate-200 z-0">
+                        <div className="absolute top-4.5 left-1/2 w-full h-0.5 bg-slate-200 z-0 pointer-events-none">
                           <div
                             className={`h-full ${
                               isDone
-                                ? "w-full bg-blue-600"
+                                ? "w-full bg-[#1A73E8]"
                                 : isCurrent
                                 ? "w-1/2 bg-blue-400"
                                 : "w-0"
@@ -540,176 +637,224 @@ export const InputLayerPage: React.FC<InputLayerPageProps> = ({
                         </div>
                       )}
 
-                      {/* Step Circle */}
                       <div
-                        className={`relative z-10 w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-bold transition-all shrink-0 ${
-                          isCurrent
-                            ? "bg-blue-600 text-white ring-3 ring-blue-100 shadow-xs"
+                        className={`relative z-10 w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold transition-all shrink-0 ${
+                          isFocused || isLiveStep
+                            ? "bg-[#004B91] text-white ring-3 ring-blue-100 scale-105"
+                            : isCurrent
+                            ? "bg-[#1A73E8] text-white ring-3 ring-blue-100 shadow-xs"
                             : isDone
-                            ? "bg-blue-600 text-white"
+                            ? "bg-[#1A73E8] text-white"
                             : "bg-slate-100 text-slate-400 border border-slate-200"
                         }`}
                       >
-                        {isDone ? (
+                        {isDone && !isFocused && !isLiveStep ? (
                           <CheckCircle2 className="w-3.5 h-3.5" />
                         ) : (
                           idx + 1
                         )}
                       </div>
 
-                      {/* Step Label (Truncated/Clamped cleanly) */}
                       <div
                         className={`mt-1 text-[10px] sm:text-[11px] font-bold leading-tight w-full truncate ${
-                          isCurrent
-                            ? "text-slate-900"
+                          isFocused || isLiveStep || isCurrent
+                            ? "text-[#004B91]"
                             : isDone
                             ? "text-slate-700"
                             : "text-slate-400"
                         }`}
-                        title={step.label}
+                        title={wp.title}
                       >
-                        {getCompactStepLabel(step.label)}
+                        {wp.title}
                       </div>
                       <div className="text-[9px] sm:text-[10px] text-slate-400 font-medium mt-0.5 w-full truncate">
-                        {step.time}
+                        {wp.time}
                       </div>
-                    </div>
+                    </button>
                   );
                 })}
               </div>
 
-              {/* Right Summary Pill Box on XL+ Screens */}
-              <button
-                type="button"
-                onClick={() =>
-                  setVesselLifecycleModalId(activeVesselLifecycle.vesselId)
-                }
-                className="hidden xl:flex w-[205px] bg-slate-50/90 hover:bg-blue-50/50 border border-slate-200/80 rounded-xl p-2.5 items-center justify-between gap-2 transition-colors text-left shrink-0 cursor-pointer"
-              >
-                <div className="min-w-0">
-                  <div className="text-xs font-black text-slate-900 truncate">
-                    {activeVesselLifecycle.vesselName}
-                  </div>
-                  <div className="text-[10px] text-slate-500 truncate mt-0.5">
-                    {activeVesselLifecycle.operator}
-                  </div>
-                  <div className="mt-1 flex items-center gap-1">
-                    <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-blue-50 text-blue-700 border border-blue-200 truncate">
-                      {activeVesselLifecycle.statusBadge}
+              {/* Clean Concise Active Point Summary Strip (No "Dừng Xs" text) */}
+              {activeTimelinePoint && (
+                <div className="mt-2 pt-2 border-t border-slate-100 flex items-center justify-between gap-2 text-[11px]">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="px-2 py-0.5 rounded font-mono text-[10px] font-bold shrink-0 bg-blue-50 text-[#1A73E8] border border-blue-200">
+                      {activeTimelinePoint.time}
+                    </span>
+                    <span className="font-bold text-slate-800 truncate">
+                      {!focusedWaypoint && selectedEntityLiveState
+                        ? selectedEntityLiveState.destinationLabel
+                        : activeTimelinePoint.title}
+                    </span>
+                    <span className="text-slate-400 hidden sm:inline">·</span>
+                    <span className="text-slate-500 truncate hidden sm:inline">
+                      {!focusedWaypoint && selectedEntityLiveState
+                        ? selectedEntityLiveState.activityText
+                        : activeTimelinePoint.subtitle}
                     </span>
                   </div>
-                  <div className="text-[9px] font-medium text-slate-500 mt-0.5 truncate">
-                    {activeVesselLifecycle.etaText}
-                  </div>
+                  <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-mono text-[10px] font-bold shrink-0">
+                    {!focusedWaypoint && selectedEntityLiveState
+                      ? selectedEntityLiveState.liveMetric
+                      : activeTimelinePoint.metricBadge}
+                  </span>
                 </div>
-                <ChevronRight className="w-4 h-4 text-slate-400 shrink-0" />
-              </button>
+              )}
             </div>
-          </div>
+          ) : (
+            <div className="hidden md:block flex-1" />
+          )}
 
-          {/* BOTTOM-RIGHT: Adaptive Tabbed Equipment & Bay Switcher */}
-          <div className="pointer-events-auto w-full md:w-[300px] lg:w-[335px] xl:w-[375px] shrink-0 bg-white/95 border border-slate-200/90 rounded-2xl shadow-lg p-2.5 sm:p-3 overflow-hidden">
-            {/* Category Tabs */}
-            <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl w-full mb-2">
-              <button
-                type="button"
-                onClick={() => setActiveTab("VESSELS")}
-                className={`flex-1 py-1 px-1.5 rounded-lg text-[10px] sm:text-[11px] font-bold transition-all cursor-pointer truncate ${
-                  activeTab === "VESSELS"
-                    ? "bg-white text-slate-900 shadow-xs"
-                    : "text-slate-500 hover:text-slate-800"
-                }`}
-              >
-                Vessels{" "}
-                <span className="text-blue-600">{vesselsList.length}</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveTab("CRANES")}
-                className={`flex-1 py-1 px-1.5 rounded-lg text-[10px] sm:text-[11px] font-bold transition-all cursor-pointer truncate ${
-                  activeTab === "CRANES"
-                    ? "bg-white text-slate-900 shadow-xs"
-                    : "text-slate-500 hover:text-slate-800"
-                }`}
-              >
-                Cranes{" "}
-                <span className="text-blue-600">3/{cranesList.length}</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveTab("TRUCKS")}
-                className={`flex-1 py-1 px-1.5 rounded-lg text-[10px] sm:text-[11px] font-bold transition-all cursor-pointer truncate ${
-                  activeTab === "TRUCKS"
-                    ? "bg-white text-slate-900 shadow-xs"
-                    : "text-slate-500 hover:text-slate-800"
-                }`}
-              >
-                Trucks{" "}
-                <span className="text-blue-600">{trucksList.length}</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveTab("BAYS")}
-                className={`flex-1 py-1 px-1.5 rounded-lg text-[10px] sm:text-[11px] font-bold transition-all cursor-pointer truncate ${
-                  activeTab === "BAYS"
-                    ? "bg-white text-slate-900 shadow-xs"
-                    : "text-slate-500 hover:text-slate-800"
-                }`}
-              >
-                Bays <span className="text-blue-600">{baysList.length}</span>
-              </button>
-            </div>
+          {/* BOTTOM-RIGHT: Adaptive Tabbed Equipment & Bay Switcher (Flexibly adapts width/height; closing it lets Timeline stretch full width) */}
+          {showEntityListPanel && (
+            <div
+              className={`pointer-events-auto shrink-0 bg-white/95 border border-slate-200/90 rounded-2xl shadow-lg p-2.5 sm:p-3 overflow-hidden animate-in fade-in transition-all duration-200 ${
+                selectedEntity
+                  ? "w-full md:w-[300px] lg:w-[340px] xl:w-[380px]"
+                  : "w-full md:w-[420px] lg:w-[480px]"
+              }`}
+            >
+              {/* Top Title + Close Button */}
+              <div className="flex items-center justify-between gap-2 mb-2 px-0.5">
+                <span className="text-[11px] font-black text-slate-800 truncate">
+                  {selectedZone
+                    ? `${selectedZone.name}`
+                    : "Danh sách Đối tượng Terminal"}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (selectedEntity) {
+                      // Close just the list panel so the Timeline Card stretches across the full bottom width!
+                      setEntityListOpen(false);
+                    } else {
+                      setEntityListOpen(false);
+                      setActiveCategoryFilter(null);
+                      setSelectedZone(null);
+                    }
+                  }}
+                  className="w-5 h-5 rounded-md hover:bg-slate-100 text-slate-400 hover:text-slate-700 flex items-center justify-center cursor-pointer"
+                  title="Đóng danh sách để mở rộng khung Timeline"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
 
-            {/* Rows List */}
-            <div className="divide-y divide-slate-100 max-h-[140px] sm:max-h-[160px] overflow-y-auto pr-0.5">
-              {tabEntities.map((item) => {
-                const isSelected = item.id === selectedEntityId;
-                return (
-                  <button
-                    key={item.id}
-                    type="button"
-                    onClick={() => handleSelectEntity(item)}
-                    className={`w-full py-1.5 px-2 flex items-center justify-between gap-1.5 text-left transition-colors rounded-xl cursor-pointer ${
-                      isSelected ? "bg-blue-50/80" : "hover:bg-slate-50"
-                    }`}
-                  >
-                    <div className="min-w-0 flex-1">
-                      <div className="text-[11px] font-black text-slate-900 leading-tight truncate">
-                        {item.code.replace("MV ", "")}
-                      </div>
-                      <div className="text-[10px] text-slate-500 font-medium truncate">
-                        {item.statusSubtext}
-                      </div>
-                    </div>
+              {/* Category Tabs */}
+              <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl w-full mb-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveTab("VESSELS");
+                    setActiveCategoryFilter("VESSELS");
+                  }}
+                  className={`flex-1 py-1 px-1.5 rounded-lg text-[10px] sm:text-[11px] font-bold transition-all cursor-pointer truncate ${
+                    activeTab === "VESSELS"
+                      ? "bg-white text-slate-900 shadow-xs"
+                      : "text-slate-500 hover:text-slate-800"
+                  }`}
+                >
+                  Vessels{" "}
+                  <span className="text-blue-600">{vesselsList.length}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveTab("CRANES");
+                    setActiveCategoryFilter("CRANES");
+                  }}
+                  className={`flex-1 py-1 px-1.5 rounded-lg text-[10px] sm:text-[11px] font-bold transition-all cursor-pointer truncate ${
+                    activeTab === "CRANES"
+                      ? "bg-white text-slate-900 shadow-xs"
+                      : "text-slate-500 hover:text-slate-800"
+                  }`}
+                >
+                  Cranes{" "}
+                  <span className="text-blue-600">3/{cranesList.length}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveTab("TRUCKS");
+                    setActiveCategoryFilter("TRUCKS");
+                  }}
+                  className={`flex-1 py-1 px-1.5 rounded-lg text-[10px] sm:text-[11px] font-bold transition-all cursor-pointer truncate ${
+                    activeTab === "TRUCKS"
+                      ? "bg-white text-slate-900 shadow-xs"
+                      : "text-slate-500 hover:text-slate-800"
+                  }`}
+                >
+                  Trucks{" "}
+                  <span className="text-blue-600">{trucksList.length}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveTab("BAYS");
+                    setActiveCategoryFilter("BAYS");
+                  }}
+                  className={`flex-1 py-1 px-1.5 rounded-lg text-[10px] sm:text-[11px] font-bold transition-all cursor-pointer truncate ${
+                    activeTab === "BAYS"
+                      ? "bg-white text-slate-900 shadow-xs"
+                      : "text-slate-500 hover:text-slate-800"
+                  }`}
+                >
+                  Bays <span className="text-blue-600">{baysList.length}</span>
+                </button>
+              </div>
 
-                    <span
-                      className={`px-1.5 py-0.5 rounded text-[9px] font-bold border shrink-0 ${getBadgeStyle(
-                        item.statusTone
-                      )}`}
+              {/* Rows List */}
+              <div className="divide-y divide-slate-100 max-h-[140px] sm:max-h-[160px] overflow-y-auto pr-0.5">
+                {tabEntities.map((item) => {
+                  const isSelected = item.id === selectedEntityId;
+                  return (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => handleSelectEntity(item)}
+                      className={`w-full py-1.5 px-2 flex items-center justify-between gap-1.5 text-left transition-colors rounded-xl cursor-pointer ${
+                        isSelected ? "bg-blue-50/80" : "hover:bg-slate-50"
+                      }`}
                     >
-                      {item.statusLabel}
-                    </span>
-
-                    <div className="w-9 shrink-0 text-right">
-                      <div className="h-1 w-full bg-slate-100 rounded-full overflow-hidden mb-0.5">
-                        <div
-                          className={`h-full rounded-full ${getProgressColor(
-                            item.statusTone
-                          )}`}
-                          style={{ width: `${item.progressPercent}%` }}
-                        />
+                      <div className="min-w-0 flex-1">
+                        <div className="text-[11px] font-black text-slate-900 leading-tight truncate">
+                          {item.code.replace("MV ", "")}
+                        </div>
+                        <div className="text-[10px] text-slate-500 font-medium truncate">
+                          {item.statusSubtext}
+                        </div>
                       </div>
-                      <div className="text-[9px] font-bold text-slate-600">
-                        {item.progressPercent}%
-                      </div>
-                    </div>
 
-                    <ChevronRight className="w-3 h-3 text-slate-400 shrink-0" />
-                  </button>
-                );
-              })}
+                      <span
+                        className={`px-1.5 py-0.5 rounded text-[9px] font-bold border shrink-0 ${getBadgeStyle(
+                          item.statusTone
+                        )}`}
+                      >
+                        {item.statusLabel}
+                      </span>
+
+                      <div className="w-9 shrink-0 text-right">
+                        <div className="h-1 w-full bg-slate-100 rounded-full overflow-hidden mb-0.5">
+                          <div
+                            className={`h-full rounded-full ${getProgressColor(
+                              item.statusTone
+                            )}`}
+                            style={{ width: `${item.progressPercent}%` }}
+                          />
+                        </div>
+                        <div className="text-[9px] font-bold text-slate-600">
+                          {item.progressPercent}%
+                        </div>
+                      </div>
+
+                      <ChevronRight className="w-3 h-3 text-slate-400 shrink-0" />
+                    </button>
+                  );
+                })}
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
 

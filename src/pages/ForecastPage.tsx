@@ -39,6 +39,9 @@ interface ForecastPageProps {
   vessels: TosVesselSchedule[];
   tariff: ElectricityTariffTou;
   pvStatus: PvSystemStatus;
+  focusedWindowId?: string | null;
+  focusedWindowOpenReport?: boolean;
+  onClearFocusedWindow?: () => void;
 }
 
 export interface ForecastWindowRecord {
@@ -120,7 +123,7 @@ const FORECAST_WINDOWS: ForecastWindowRecord[] = [
     shorePowerKw: 480,
     tempAmbC: 25.8,
     solarIrradianceWm2: 0,
-    operationSummary: "Low-rate night window; battery charging scheduled",
+    operationSummary: "Low-rate night window; EV tractor charging & reefer pre-cooling",
     feeders: { f01StsKw: 760, f02RtgKw: 380, f03ReeferKw: 650, f04OpsKw: 480, f05EvBessKw: 315, f06AuxKw: 160 }
   },
   {
@@ -374,7 +377,11 @@ const ACCURACY_HISTORY = [
   { windowDays: 30, samples: 2880, accuracyPercent: "98.7%", avgErrorKw: 66.7, rangeCoverage: "100.0%" }
 ];
 
-export const ForecastPage: React.FC<ForecastPageProps> = () => {
+export const ForecastPage: React.FC<ForecastPageProps> = ({
+  focusedWindowId,
+  focusedWindowOpenReport,
+  onClearFocusedWindow,
+}) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<"ALL" | "OVERLOAD_WARNING" | "HIGH_SOLAR" | "OFF_PEAK">("ALL");
   const [chartMode, setChartMode] = useState<"DEMAND_RANGE" | "NET_VS_SOLAR">("DEMAND_RANGE");
@@ -384,6 +391,22 @@ export const ForecastPage: React.FC<ForecastPageProps> = () => {
   const [showPowerBreakdownModal, setShowPowerBreakdownModal] = useState(false);
   const [showForecastReportModal, setShowForecastReportModal] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
+
+  React.useEffect(() => {
+    if (!focusedWindowId) return;
+    const found =
+      FORECAST_WINDOWS.find((w) => w.id === focusedWindowId) ||
+      FORECAST_WINDOWS[7];
+    setSelectedWindow(found);
+    if (focusedWindowOpenReport) {
+      setShowForecastReportModal(true);
+      setShowPowerBreakdownModal(false);
+    } else {
+      setShowPowerBreakdownModal(true);
+      setShowForecastReportModal(false);
+    }
+    onClearFocusedWindow?.();
+  }, [focusedWindowId, focusedWindowOpenReport, onClearFocusedWindow]);
 
   const substationLimitKw = 8000;
 
@@ -856,7 +879,7 @@ export const ForecastPage: React.FC<ForecastPageProps> = () => {
                       { id: "F-02", name: "Yard e-RTG Cranes (12 Units)", kw: selectedWindow.feeders.f02RtgKw },
                       { id: "F-03", name: "Reefer Container Yard (480 Plugs)", kw: selectedWindow.feeders.f03ReeferKw },
                       { id: "F-04", name: "Ship Shore Power (OPS)", kw: selectedWindow.feeders.f04OpsKw },
-                      { id: "F-05", name: "Electric Trucks & Battery System", kw: selectedWindow.feeders.f05EvBessKw },
+                      { id: "F-05", name: "EV Tractor Fast-Charging Hub", kw: selectedWindow.feeders.f05EvBessKw },
                       { id: "F-06", name: "Warehouse HVAC, Lighting & Fire Pumps", kw: selectedWindow.feeders.f06AuxKw }
                     ].map((f) => {
                       const share = ((f.kw / selectedWindow.expectedKw) * 100).toFixed(1);

@@ -84,7 +84,7 @@ export const ScadaFeedersView: React.FC<ScadaFeedersViewProps> = ({
     },
     {
       id: "F05",
-      name: "Battery Storage (BESS) & Electric Truck Chargers",
+      name: "EV Tractor Fast Chargers & Crane Regen Busbar",
       substation: "0.4kV Microgrid Hub",
       voltageKv: 0.4,
       currentA: 620.0,
@@ -93,7 +93,7 @@ export const ScadaFeedersView: React.FC<ScadaFeedersViewProps> = ({
       pf: 0.98,
       status: "ONLINE",
       loadPercent: 42,
-      equipmentConnected: "6 Fast Truck Chargers + Battery System"
+      equipmentConnected: "6 Fast Truck Chargers + Crane Regen Converter"
     },
     {
       id: "F06",

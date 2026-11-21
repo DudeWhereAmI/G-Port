@@ -212,7 +212,7 @@ export const VESSEL_LIFECYCLE_BY_ID: Record<
         label: "Quay Crane Operations",
         time: "Starts 14:15",
         state: "UPCOMING",
-        detail: "Super Post-Panamax Cranes staged; 1.5MW BESS armed for P90 peak shaving"
+        detail: "Super Post-Panamax Cranes staged; 1.5MW Crane Regen & Smart Demand Control active"
       },
       {
         label: "Container Bay Stacking",
@@ -385,12 +385,12 @@ export const TERMINAL_3D_ENTITIES: Terminal3DEntity[] = [
       { label: "Voyage & IMO", value: "012W · IMO 9806079", highlight: true },
       { label: "Assigned Berth", value: "Berth B3 (Dual-Bus 22kV/6.6kV OPS)" },
       { label: "Escort Tugboat", value: "Tug TC-09 (34.0 L/min Coriolis Flow)" },
-      { label: "Peak Shaving Prep", value: "1.5 MW BESS Armed for 14:15 Ramp", highlight: true },
+      { label: "Peak Load Control", value: "1.5 MW Crane Regen & Smart Grid Cap", highlight: true },
       { label: "Pre-Staged Yard Bay", value: "Bay C1 (290 TEU) & Reefer R1" },
       { label: "Planned Exchange", value: "3,400 TEU (Rotterdam Gateway)" }
     ],
     drillDownTitle: "MV ONE APUS (012W) — Escort Tug Fuel & ULCV Shore Power Pre-Dispatch Report",
-    drillDownSubtitle: "Coriolis mass flowmeter bunker telemetry during berthing approach and 22kV/6.6kV OPS + BESS peak-shaving plan",
+    drillDownSubtitle: "Coriolis mass flowmeter bunker telemetry during berthing approach and 22kV/6.6kV OPS + Crane Regen peak-load balancing plan",
     chartTitle: "Escort Tugboat Fuel Flow (L/min) & Dual-Bus OPS Power Ramp Forecast (kW)",
     chartPrimaryLabel: "OPS / Berthing Power",
     chartPrimaryUnit: "kW",
@@ -416,7 +416,7 @@ export const TERMINAL_3D_ENTITIES: Terminal3DEntity[] = [
       { time: "13:30", primaryVal: 180, secondaryVal: 12.0, tertiaryVal: 40.1, statusNote: "Tug #02 attached at channel buoy 0" },
       { time: "13:50", primaryVal: 320, secondaryVal: 34.0, tertiaryVal: 42.5, statusNote: "Heavy tug push against ebb current into Berth B3" },
       { time: "14:15", primaryVal: 680, secondaryVal: 22.0, tertiaryVal: 59.5, statusNote: "Dual OPS cable booms connected & synchronized" },
-      { time: "15:00", primaryVal: 840, secondaryVal: 3.5, tertiaryVal: 73.8, statusNote: "380 Reefer holds online; BESS discharging 1.5MW" },
+      { time: "15:00", primaryVal: 840, secondaryVal: 3.5, tertiaryVal: 73.8, statusNote: "380 Reefer holds online; Solar PV & Crane Regen offsetting 1.5MW" },
       { time: "18:00", primaryVal: 860, secondaryVal: 0.0, tertiaryVal: 75.8, statusNote: "Full ULCV hoteling load on clean shore power" }
     ],
     containersManifest: [
@@ -485,7 +485,7 @@ export const TERMINAL_3D_ENTITIES: Terminal3DEntity[] = [
     telemetrySeries: [
       { time: "10:30", primaryVal: 310, secondaryVal: 6.6, tertiaryVal: 27.1, statusNote: "Berth B1 OPS connected; unloading started" },
       { time: "14:00", primaryVal: 890, secondaryVal: 6.59, tertiaryVal: 78.0, statusNote: "2 STS cranes + OPS steady operation" },
-      { time: "22:00", primaryVal: 740, secondaryVal: 6.61, tertiaryVal: 64.8, statusNote: "Off-peak night stevedoring + BESS charging" },
+      { time: "22:00", primaryVal: 740, secondaryVal: 6.61, tertiaryVal: 64.8, statusNote: "Off-peak night stevedoring & EV tractor fast-charging" },
       { time: "02:00", primaryVal: 420, secondaryVal: 6.62, tertiaryVal: 36.7, statusNote: "Final container lashing & hatch closing" },
       { time: "04:15", primaryVal: 0, secondaryVal: 6.6, tertiaryVal: 0.0, statusNote: "OPS disconnected; vessel cast off on schedule" }
     ],
@@ -734,15 +734,15 @@ export const TERMINAL_3D_ENTITIES: Terminal3DEntity[] = [
       { label: "Assigned Vessel", value: "MV ONE APUS (012W - Arriving)", highlight: true },
       { label: "Substation Feeder", value: "22kV Super Post-Panamax Feeder" },
       { label: "Target Yard Bay", value: "Container Bay C1 (Pre-Staged)", highlight: true },
-      { label: "Peak Shaving Link", value: "1.5 MW BESS Auto-Trigger at 14:15" },
+      { label: "Regen & Grid Link", value: "1.5 MW Regenerative Drive Bus Active" },
       { label: "Planned Workload", value: "680 TEU Moves (Ship Bay 42)" }
     ],
-    drillDownTitle: "Quay Crane STS-04 — Super Post-Panamax Pre-Dispatch & BESS Peak Shaving Plan",
-    drillDownSubtitle: "Scheduled 14:15 hoist ramp for MV ONE APUS (14,000 TEU ULCV) synchronized with 1.5MW BESS discharge",
-    chartTitle: "Projected STS-04..05 Ramp Load (kW) & BESS Peak Shaving Offset (kW)",
+    drillDownTitle: "Quay Crane STS-04 — Super Post-Panamax Pre-Dispatch & Regenerative Drive Plan",
+    drillDownSubtitle: "Scheduled 14:15 hoist ramp for MV ONE APUS (14,000 TEU ULCV) synchronized with 1.5MW Crane Regen & Smart Demand Control",
+    chartTitle: "Projected STS-04..05 Ramp Load (kW) & Regenerative Drive Recovery (kW)",
     chartPrimaryLabel: "Projected Crane Load",
     chartPrimaryUnit: "kW",
-    chartSecondaryLabel: "BESS Shaving",
+    chartSecondaryLabel: "Regen Recovery",
     chartSecondaryUnit: "kW",
     feederReport: {
       feederCode: "F-01 / MTR-STS-SPP",
@@ -758,11 +758,11 @@ export const TERMINAL_3D_ENTITIES: Terminal3DEntity[] = [
       totalCumulativeEnergy: "29,000 kWh Scheduled (8.53 kWh/TEU)",
       carbonScope1Kg: 0,
       carbonScope2Kg: 20941,
-      intensityPerTeu: "8.53 kWh / TEU (BESS Shaves 1,500 kW Peak)"
+      intensityPerTeu: "8.53 kWh / TEU (Regen & Smart Control Offsets 1,500 kW)"
     },
     telemetrySeries: [
-      { time: "13:45", primaryVal: 45, secondaryVal: 0, tertiaryVal: 92, statusNote: "Gantry positioned at Berth B3 Mark 420m; BESS SOC 92%" },
-      { time: "14:15", primaryVal: 1850, secondaryVal: 1450, tertiaryVal: 84, statusNote: "Boom lowered onto ONE APUS; BESS discharges 1,450 kW" },
+      { time: "13:45", primaryVal: 45, secondaryVal: 0, tertiaryVal: 92, statusNote: "Gantry positioned at Berth B3 Mark 420m; Regen Bus Ready" },
+      { time: "14:15", primaryVal: 1850, secondaryVal: 1450, tertiaryVal: 84, statusNote: "Boom lowered onto ONE APUS; Regen & Solar offset 1,450 kW" },
       { time: "15:30", primaryVal: 3400, secondaryVal: 1500, tertiaryVal: 62, statusNote: "Peak twin-lift unloading; grid demand capped below 8,500 kW" },
       { time: "18:00", primaryVal: 3100, secondaryVal: 450, tertiaryVal: 55, statusNote: "Evening steady container handling to Bay C1" }
     ],
@@ -1262,67 +1262,67 @@ export const TERMINAL_3D_ENTITIES: Terminal3DEntity[] = [
     id: "BAY-C1",
     category: "BAYS",
     code: "Bay C1",
-    name: "Container Bay C1 (East Deep-Sea Yard)",
-    subtitle: "Pre-Staged for MV ONE APUS (Berth B3) + BESS Hub",
+    name: "Container Bay C1 (South-East Export Yard)",
+    subtitle: "Pre-Staged for MV ONE APUS (Berth B3) + e-RTG Busbar",
     statusLabel: "Pre-Staged",
     statusTone: "BLUE",
-    statusSubtext: "290 / 450 TEU · BESS 1.5MW Ready",
+    statusSubtext: "290 / 450 TEU · Feeder F-02 (650 kW)",
     progressPercent: 64,
     distanceOrRemainingText: "160 slots free",
     linkedVesselId: "VSL-02",
     linkedVesselName: "MV ONE APUS",
     useCaseId: "UC-02",
-    meterModalId: "MTR-BESS-TCIT-1.5MW",
-    berthName: "Linked to Berth B3 (STS-04/05)",
-    bayAssignment: "Rows A–F · East Block + BESS Station",
-    speedOrRate: "Ready for 14:15 Start",
+    meterModalId: "MTR-RF-Y3-02",
+    berthName: "Linked to Berth B2 & B3",
+    bayAssignment: "Rows A–F · South Block · e-RTG #04",
+    speedOrRate: "28 moves/hr (e-RTG #04)",
     cargoSummary: "290 / 450 TEU (64% Full)",
     position3D: [28, 2.5, -8.5],
     cameraOffset: [34, 18, 12],
     inspectorRows: [
-      { label: "Container Bay", value: "Bay C1 (East ULCV Staging)", highlight: true },
-      { label: "Assigned Vessel", value: "MV ONE APUS (012W - Arriving B3)" },
+      { label: "Container Bay", value: "Bay C1 (South Export Staging)", highlight: true },
+      { label: "Assigned Vessel", value: "MV ONE APUS (012W) & MUMBAI (056N)" },
       { label: "Pre-Staged Cargo", value: "290 EU-Bound Export TEU Ready", highlight: true },
-      { label: "Adjacent BESS Hub", value: "1.5 MW / 3.0 MWh LFP (SOC 78%)" },
+      { label: "Active Yard Gantry", value: "e-RTG #04 (22kV Regen Busbar)" },
       { label: "Rooftop Solar Feed", value: "+1,820 kW CFS Solar Array (845 W/m²)" }
     ],
-    drillDownTitle: "Container Bay C1 & East Yard — EU ETS Export Manifest & BESS Peak-Shaving Telemetry",
-    drillDownSubtitle: "Pre-staged Rotterdam export containers for MV ONE APUS and adjacent 1.5MW / 3.0MWh BESS storage telemetry",
-    chartTitle: "East Yard BESS Discharge Power (kW) & State of Charge SOC (%)",
-    chartPrimaryLabel: "BESS Power",
+    drillDownTitle: "Container Bay C1 — EU ETS Export Manifest & e-RTG #04 Regen Busbar Telemetry",
+    drillDownSubtitle: "Pre-staged Rotterdam export containers and e-RTG #04 regenerative lowering power telemetry on Feeder F-02",
+    chartTitle: "Bay C1 e-RTG #04 Active Power (kW) & Regenerative Recovery Efficiency (%)",
+    chartPrimaryLabel: "e-RTG Power",
     chartPrimaryUnit: "kW",
-    chartSecondaryLabel: "BESS SOC",
+    chartSecondaryLabel: "Regen Efficiency",
     chartSecondaryUnit: "%",
     feederReport: {
-      feederCode: "BESS-01 / MTR-BESS-1.5MW",
-      feederName: "Utility-Scale BESS Substation (1.5MW / 3.0MWh LFP) & East Yard",
-      protocol: "Modbus TCP / Siemens SIESTORAGE EMS",
-      meterId: "MTR-BESS-TCIT-1.5MW",
+      feederCode: "F-02 / RTG-BLOCK-C1",
+      feederName: "Feeder Yard e-RTG Block C1 & Regenerative Busbar (22kV)",
+      protocol: "Modbus TCP / IEC 61850 MMS",
+      meterId: "MTR-RF-Y3-02",
       voltageKv: "22.00 kV",
       currentAmps: 39.4,
       activePowerKw: 650,
-      reactivePowerKvar: 0,
-      powerFactor: 1.0,
+      reactivePowerKvar: 85,
+      powerFactor: 0.98,
       frequencyHz: 50.02,
-      totalCumulativeEnergy: "3,450 kWh Discharged (Peak Shaving 1.5 MW)",
+      totalCumulativeEnergy: "3,450 kWh Recorded (Regen Offset 24%)",
       carbonScope1Kg: 0,
-      carbonScope2Kg: -2491,
-      intensityPerTeu: "Shaves 1,500 kW P90 Peak during ULCV Berthing"
+      carbonScope2Kg: 2491,
+      intensityPerTeu: "5.08 kWh / TEU (Zero Diesel e-RTG Busbar)"
     },
     telemetrySeries: [
-      { time: "04:00", primaryVal: -600, secondaryVal: 95.0, tertiaryVal: 25.5, statusNote: "Charged to 95% SOC on off-peak EVN tariff (1,100 VND)" },
-      { time: "10:00", primaryVal: 650, secondaryVal: 78.0, tertiaryVal: 24.8, statusNote: "Discharging 650 kW during morning peak tariff window" },
-      { time: "14:15", primaryVal: 1450, secondaryVal: 72.0, tertiaryVal: 28.2, statusNote: "Full 1.45 MW discharge triggered as ONE APUS cranes start" },
-      { time: "15:30", primaryVal: 1500, secondaryVal: 58.0, tertiaryVal: 31.0, statusNote: "Capping terminal grid demand safely below 8,500 kW" }
+      { time: "04:00", primaryVal: 320, secondaryVal: 95.0, tertiaryVal: 25.5, statusNote: "Off-peak export container pre-staging on EVN night tariff" },
+      { time: "10:00", primaryVal: 650, secondaryVal: 78.0, tertiaryVal: 24.8, statusNote: "e-RTG #04 marshaling VGM export containers in Rows A–C" },
+      { time: "14:15", primaryVal: 740, secondaryVal: 82.0, tertiaryVal: 28.2, statusNote: "High-speed export feeding to Berth B2 & Berth B3" },
+      { time: "15:30", primaryVal: 680, secondaryVal: 84.0, tertiaryVal: 31.0, statusNote: "Regenerative hoist recovery capping yard feeder demand" }
     ],
     containersManifest: [
       { containerNo: "ONEY8401923", sizeType: "40HC", baySlot: "Bay C1 · Row A Slot 02", isReefer: false, tempSetC: "Ambient", status: "STACKED_YARD", bookingNo: "BKG-SAMSUNG-EU02", commodity: "Consumer Electronics (Rotterdam Gateway)", vesselVoyage: "ONE APUS 012W", weightKg: 22900 },
       { containerNo: "ONEU7710294", sizeType: "40HC", baySlot: "Bay C1 · Row A Slot 06", isReefer: false, tempSetC: "Ambient", status: "STACKED_YARD", bookingNo: "BKG-SAMSUNG-EU02", commodity: "Precision Display Panels (EU ETS Ready)", vesselVoyage: "ONE APUS 012W", weightKg: 21800 }
     ],
     historicalReports: [
-      { voyageOrShift: "28/09 · Voyage 012W (Berth B3 ↔ Bay C1 + BESS)", date: "28/09/2026", totalEnergyOrFuel: "3,450 kWh BESS Shaved", teuHandled: 1700, intensityMetric: "-1.5 MW Peak Cut", co2Scope1Kg: 0, co2Scope2Kg: 0, verifiedHash: "BAYC1-V012W" },
-      { voyageOrShift: "10/09 · Voyage 011W (Berth B3 ↔ Bay C1 + BESS)", date: "10/09/2026", totalEnergyOrFuel: "3,200 kWh BESS Shaved", teuHandled: 1675, intensityMetric: "-1.4 MW Peak Cut", co2Scope1Kg: 0, co2Scope2Kg: 0, verifiedHash: "BAYC1-V011W" },
-      { voyageOrShift: "24/08 · Voyage 010W (Berth B3 ↔ Bay C1 + BESS)", date: "24/08/2026", totalEnergyOrFuel: "3,510 kWh BESS Shaved", teuHandled: 1740, intensityMetric: "-1.5 MW Peak Cut", co2Scope1Kg: 0, co2Scope2Kg: 0, verifiedHash: "BAYC1-V010W" }
+      { voyageOrShift: "28/09 · Voyage 012W (Berth B3 ↔ Bay C1 e-RTG)", date: "28/09/2026", totalEnergyOrFuel: "3,450 kWh (Regen 24%)", teuHandled: 680, intensityMetric: "5.07 kWh/TEU", co2Scope1Kg: 0, co2Scope2Kg: 2491, verifiedHash: "BAYC1-V012W" },
+      { voyageOrShift: "10/09 · Voyage 011W (Berth B3 ↔ Bay C1 e-RTG)", date: "10/09/2026", totalEnergyOrFuel: "3,200 kWh (Regen 23%)", teuHandled: 630, intensityMetric: "5.08 kWh/TEU", co2Scope1Kg: 0, co2Scope2Kg: 2310, verifiedHash: "BAYC1-V011W" },
+      { voyageOrShift: "24/08 · Voyage 010W (Berth B3 ↔ Bay C1 e-RTG)", date: "24/08/2026", totalEnergyOrFuel: "3,510 kWh (Regen 24%)", teuHandled: 690, intensityMetric: "5.09 kWh/TEU", co2Scope1Kg: 0, co2Scope2Kg: 2534, verifiedHash: "BAYC1-V010W" }
     ]
   }
 ];

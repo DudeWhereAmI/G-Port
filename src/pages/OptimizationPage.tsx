@@ -58,20 +58,20 @@ export interface AssetControlGroup {
 const INITIAL_12_ASSET_GROUPS: AssetControlGroup[] = [
   {
     id: "EQ-01",
-    name: "Battery Storage System (BESS 3.0 MWh)",
-    feeder: "Line F-05",
-    zone: "Zone 4",
+    name: "Crane Regenerative Braking & SVC Compensator (1.5 MW)",
+    feeder: "Line F-01 / F-02",
+    zone: "Zone 1",
     controlTier: "DIRECT_CONTROL",
-    controlLabel: "Automatic Battery Discharge",
+    controlLabel: "Automatic Regen Power Recovery",
     pMaxKw: 1500,
     maxReductionPercent: 100,
     unoptimizedPeakKw: 0,
     currentLoadKw: -1380,
     powerSavedKw: 1380,
     operatorStatus: "AUTO_ACTIVE",
-    currentActionSummary: "Supplying 1,380 kW to the port grid during 14:00–16:30 peak surge",
-    safetyConstraintSpec: "Charges at night (Off-Peak) and discharges during afternoon peak. Battery charge stays safely between 20% and 95%, cell temperature ≤ 35 °C.",
-    fallbackRule: "Automatically switches to standby if signal is lost for more than 45 minutes."
+    currentActionSummary: "Recovering 1,380 kW of kinetic hoist braking power to the port grid during 14:00–16:30 peak surge",
+    safetyConstraintSpec: "Captures kinetic braking energy from STS & e-RTG lowering cycles onto the 22kV DC/AC busbar with Static Var Compensation (power factor ≥ 0.98, THD ≤ 3.0%).",
+    fallbackRule: "Automatically switches to dynamic resistor braking if substation busbar voltage exceeds 105%."
   },
   {
     id: "EQ-02",
@@ -144,7 +144,7 @@ const INITIAL_12_ASSET_GROUPS: AssetControlGroup[] = [
   },
   {
     id: "EQ-06",
-    name: "Empty Handler Battery Swap Station",
+    name: "Empty Handler Fast-Charge Depot",
     feeder: "Line F-05",
     zone: "Zone 2",
     controlTier: "OPERATOR_APPROVAL",
@@ -155,9 +155,9 @@ const INITIAL_12_ASSET_GROUPS: AssetControlGroup[] = [
     currentLoadKw: 80,
     powerSavedKw: 75,
     operatorStatus: "PENDING_REVIEW",
-    currentActionSummary: "Charging reduced by 50% (-75 kW saved); 4 full spare batteries ready",
-    safetyConstraintSpec: "Reduces charger draw during peak rate hours as long as at least 4 fully charged spare battery packs are ready for the night shift.",
-    fallbackRule: "Cancels power reduction immediately if charged spare batteries drop below 4 packs."
+    currentActionSummary: "Charging reduced by 50% (-75 kW saved); 4 active handlers ready for shift",
+    safetyConstraintSpec: "Reduces charger draw during peak rate hours as long as at least 4 empty container handlers are ready for the night shift.",
+    fallbackRule: "Cancels power reduction immediately if active standby handlers drop below 4 units."
   },
   {
     id: "EQ-07",
@@ -350,7 +350,7 @@ export const OptimizationPage: React.FC<OptimizationPageProps> = () => {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200/90 shadow-2xs">
         <div>
           <div className="flex items-center gap-2 text-xs font-semibold text-slate-500 mb-1">
-            <span className="font-bold text-[#004B91]">Peak Shaving &amp; Battery Control</span>
+            <span className="font-bold text-[#004B91]">Peak Shaving &amp; Smart Load Control</span>
             <span aria-hidden="true">·</span>
             <span>12 Equipment Groups</span>
             <span aria-hidden="true">·</span>
@@ -454,7 +454,7 @@ export const OptimizationPage: React.FC<OptimizationPageProps> = () => {
             <div className="flex items-center gap-2 text-xs text-slate-500 mt-0.5">
               <span>Without Control: 8,458 kW Peak</span>
               <span aria-hidden="true">·</span>
-              <span className="text-emerald-700 font-semibold">With Battery &amp; Load Control: 6,233 kW Peak</span>
+              <span className="text-emerald-700 font-semibold">With Regen &amp; Load Control: 6,233 kW Peak</span>
             </div>
           </div>
 
@@ -511,7 +511,7 @@ export const OptimizationPage: React.FC<OptimizationPageProps> = () => {
           <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
           <input
             type="text"
-            placeholder="Search equipment by name (Battery, Reefer, Cranes), line (F-01..F-06)..."
+            placeholder="Search equipment by name (Crane Regen, Reefer, Cranes), line (F-01..F-06)..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-[#004B91] focus:bg-white"
@@ -522,7 +522,7 @@ export const OptimizationPage: React.FC<OptimizationPageProps> = () => {
           <span className="text-slate-500 font-bold text-[11px] mr-1">Control Mode:</span>
           {([
             { id: "ALL", label: "All Equipment (12)" },
-            { id: "DIRECT_CONTROL", label: "Auto Battery & Solar (2)" },
+            { id: "DIRECT_CONTROL", label: "Auto Regen & Solar (2)" },
             { id: "OPERATOR_APPROVAL", label: "Needs Operator Approval (4)" },
             { id: "MUST_RUN", label: "Protected / Locked (6)" }
           ] as const).map((tab) => (
@@ -747,7 +747,7 @@ export const OptimizationPage: React.FC<OptimizationPageProps> = () => {
                     {selectedAsset.controlTier === "OPERATOR_APPROVAL"
                       ? "Flexible equipment requires operator approval before reducing power during peak hours."
                       : selectedAsset.controlTier === "DIRECT_CONTROL"
-                      ? "Runs automatically within safe battery and solar inverter limits."
+                      ? "Runs automatically within safe crane regen busbar and solar inverter limits."
                       : "Protected equipment: locked at 100% power to protect ship schedules and port safety."}
                   </div>
                 </div>
@@ -990,9 +990,9 @@ export const OptimizationPage: React.FC<OptimizationPageProps> = () => {
             <div className="p-6 space-y-4 text-xs text-slate-800">
               <div className="space-y-2.5">
                 <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200">
-                  <div className="font-bold text-[#004B91]">1. Automatic Control (Battery Storage &amp; Solar Panels)</div>
+                  <div className="font-bold text-[#004B91]">1. Automatic Control (Crane Regenerative Braking &amp; Solar Panels)</div>
                   <p className="text-slate-600 mt-1">
-                    The 3.0 MWh Battery and 2,450 kWp Solar system automatically charge during low-rate hours and supply power during afternoon peak hours within strict battery safety limits (20%–95% charge, cell temp ≤ 35 °C).
+                    The 1.5 MW Crane Regenerative Braking busbar and 2,450 kWp Solar system automatically recover hoist lowering energy and supply clean solar power during afternoon peak hours within strict substation power quality limits (PF ≥ 0.98, THD ≤ 3.0%).
                   </p>
                 </div>
 

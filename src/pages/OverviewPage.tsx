@@ -23,6 +23,9 @@ import {
   Flame,
 } from "lucide-react";
 
+import { MeterModalMode } from "../components/MeterTelemetryModal";
+import { BerthOperationMapSection } from "../components/overview/BerthOperationMapSection";
+
 interface OverviewPageProps {
   onNavigate: (page: SubPageId) => void;
   vessels: TosVesselSchedule[];
@@ -31,6 +34,12 @@ interface OverviewPageProps {
   tariff: ElectricityTariffTou;
   zoneEmissions?: ZoneEmissionSummary[];
   onOpenCarbonInvoice?: (invoiceOrUseCaseId?: string) => void;
+  onOpenMeterModal?: (assetId?: string, mode?: MeterModalMode) => void;
+  onTraceEntityInTelemetry?: (
+    entityId: string,
+    popupMode?: "TURNAROUND" | "BREAKDOWN"
+  ) => void;
+  onInspectForecastWindow?: (windowId: string, openReport?: boolean) => void;
 }
 
 export const OverviewPage: React.FC<OverviewPageProps> = ({
@@ -40,7 +49,9 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
   bessStatus,
   tariff,
   zoneEmissions = [],
-  onOpenCarbonInvoice,
+  onOpenMeterModal,
+  onTraceEntityInTelemetry,
+  onInspectForecastWindow,
 }) => {
   const totalLoadKw =
     tariff.currentDemandKw + pvStatus.currentPowerKw + bessStatus.currentPowerKw;
@@ -112,7 +123,7 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
       band: "Off-Peak Window",
       hours: "22:00 – 04:00",
       rate: "1,146 VND/kWh",
-      action: "BESS Grid Charging & Pre-Cooling Reefers",
+      action: "Off-Peak Reefer Pre-Cooling & EV Fast-Charge",
       active: false,
     },
     {
@@ -126,7 +137,7 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
       band: "Peak Window",
       hours: "09:30 – 11:30 · 17:00 – 20:00",
       rate: "3,076 VND/kWh",
-      action: "BESS Peak Shaving Discharge Active",
+      action: "Crane Regen Recovery & Smart Load Control Active",
       active: true,
     },
   ];
@@ -173,7 +184,7 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
             </span>
             <span className="text-slate-400">•</span>
             <span className="text-amber-600 font-bold flex items-center gap-0.5">
-              <BatteryCharging className="w-3.5 h-3.5" /> 8.5% BESS
+              <BatteryCharging className="w-3.5 h-3.5" /> 8.5% Crane Regen
             </span>
           </div>
         </div>
@@ -297,13 +308,13 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
             <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200/70">
               <div className="text-[11px] font-bold text-amber-700 flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-amber-500" />
-                BESS Battery Storage
+                Crane Regen &amp; SVC Grid
               </div>
               <div className="text-lg font-black text-amber-700 mt-1">
                 +{bessStatus.currentPowerKw.toLocaleString()} kW
               </div>
               <div className="text-[11px] text-slate-500 mt-0.5">
-                SOC {bessStatus.socPercent}% · Peak Shaving
+                Efficiency {bessStatus.socPercent}% · Regen Recovery
               </div>
             </div>
           </div>
@@ -358,93 +369,76 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
           </div>
         </div>
 
-        {/* Right Column: EVN Tariff Schedule & Active Berth Summary */}
+        {/* Right Column: EVN Tariff Schedule */}
         <div className="space-y-6">
           {/* EVN Time-of-Use Schedule */}
-          <div className="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-xs space-y-3">
-            <div className="border-b border-slate-100 pb-3">
-              <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
-                <Clock className="w-4 h-4 text-amber-500" />
-                EVN Tariff Schedule
-              </h3>
-              <p className="text-xs text-slate-500">
-                Daily electricity pricing windows for terminal dispatch
-              </p>
-            </div>
+          <div className="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-xs space-y-3 h-full flex flex-col justify-between">
+            <div className="space-y-3">
+              <div className="border-b border-slate-100 pb-3">
+                <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
+                  <Clock className="w-4 h-4 text-amber-500" />
+                  EVN Tariff Schedule
+                </h3>
+                <p className="text-xs text-slate-500">
+                  Daily electricity pricing windows for terminal dispatch
+                </p>
+              </div>
 
-            <div className="space-y-2.5">
-              {tariffBands.map((item) => (
-                <div
-                  key={item.band}
-                  className={`p-3 rounded-xl border ${
-                    item.active
-                      ? "bg-amber-50/70 border-amber-200"
-                      : "bg-slate-50/70 border-slate-200/70"
-                  }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-black text-slate-900">
-                      {item.band}
-                    </span>
-                    <span
-                      className={`text-xs font-mono font-bold ${
-                        item.active ? "text-amber-700" : "text-slate-700"
-                      }`}
-                    >
-                      {item.rate}
-                    </span>
-                  </div>
-                  <div className="text-[11px] text-slate-500 mt-0.5">
-                    {item.hours}
-                  </div>
-                  <div className="text-[11px] font-semibold text-slate-600 mt-1">
-                    {item.action}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Active Berth Snapshot */}
-          <div className="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-xs space-y-3">
-            <div className="border-b border-slate-100 pb-3">
-              <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
-                <Ship className="w-4 h-4 text-blue-600" />
-                Berth Occupancy Summary
-              </h3>
-              <p className="text-xs text-slate-500">
-                Current vessels moored at Cat Lai & Cai Mep berths
-              </p>
-            </div>
-
-            <div className="space-y-2.5">
-              {vessels
-                .filter(
-                  (v) => v.status === "OPERATING" || v.status === "BERTHED"
-                )
-                .map((v) => (
+              <div className="space-y-2.5">
+                {tariffBands.map((item) => (
                   <div
-                    key={v.id}
-                    className="p-3 rounded-xl border border-slate-200/80 bg-slate-50/60 flex items-center justify-between gap-2"
+                    key={item.band}
+                    className={`p-3.5 rounded-xl border ${
+                      item.active
+                        ? "bg-amber-50/70 border-amber-200"
+                        : "bg-slate-50/70 border-slate-200/70"
+                    }`}
                   >
-                    <div>
-                      <div className="text-xs font-black text-slate-900">
-                        {v.vesselName}
-                      </div>
-                      <div className="text-[11px] text-slate-500">
-                        {v.berth} · {v.assignedCranes} Cranes · {v.handledTeu}/
-                        {v.plannedTeu} TEU
-                      </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-black text-slate-900">
+                        {item.band}
+                      </span>
+                      <span
+                        className={`text-xs font-mono font-bold ${
+                          item.active ? "text-amber-700" : "text-slate-700"
+                        }`}
+                      >
+                        {item.rate}
+                      </span>
                     </div>
-                    <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 shrink-0">
-                      {v.status === "OPERATING" ? "Unloading" : "Berthed"}
-                    </span>
+                    <div className="text-[11px] text-slate-500 mt-0.5">
+                      {item.hours}
+                    </div>
+                    <div className="text-[11px] font-semibold text-slate-600 mt-1">
+                      {item.action}
+                    </div>
                   </div>
                 ))}
+              </div>
+            </div>
+
+            <div className="pt-3 border-t border-slate-100 text-[11px] text-slate-500 flex items-center justify-between">
+              <span>Substation Contract Limit:</span>
+              <strong className="font-mono text-slate-900">8,000 kW (110/22kV)</strong>
             </div>
           </div>
         </div>
       </div>
+
+      {/* ================================================================== */}
+      {/* BERTH OPERATION & GEOFENCED EVENT SUMMARY VISUALIZATION MAP */}
+      {/* (Replaces static Berth Occupancy Summary; links to 1-Day Load Forecast & Telemetry Popups) */}
+      {/* ================================================================== */}
+      <BerthOperationMapSection
+        onNavigate={onNavigate}
+        onOpenMeterModal={(assetId, mode) => onOpenMeterModal?.(assetId, mode)}
+        onTraceEntityInTelemetry={(entityId, popupMode) =>
+          onTraceEntityInTelemetry?.(entityId, popupMode)
+        }
+        onInspectForecastWindow={(windowId, openReport) =>
+          onInspectForecastWindow?.(windowId, openReport)
+        }
+      />
 
       {/* Merged Terminal Emissions MRV by Zone (Scope 1 & Scope 2 Accounting) */}
       {zoneEmissions.length > 0 && (

@@ -67,7 +67,7 @@ export const Navigation: React.FC<NavigationProps> = ({
       label: "Lớp Đầu Vào",
       badge: "Layer 01",
       icon: Database,
-      description: "TOS, ePort, PV, BESS, SCADA, Thời tiết, Biểu giá TOU"
+      description: "TOS, ePort, PV, Regen Grid, SCADA, Thời tiết, Biểu giá TOU"
     },
     {
       id: "MODULE_1_FORECAST",
@@ -161,7 +161,7 @@ export const Navigation: React.FC<NavigationProps> = ({
           <span className="text-slate-300">|</span>
           <div className="flex items-center gap-1.5 text-slate-600">
             <BatteryCharging className="w-3.5 h-3.5 text-emerald-500" />
-            <span className="text-slate-400">BESS SOC:</span>
+            <span className="text-slate-400">Regen Eff:</span>
             <span className="font-bold text-slate-800">{bessSoc}%</span>
           </div>
         </div>

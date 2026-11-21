@@ -72,7 +72,7 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Search modules, schedules..."
+              placeholder="Search modules..."
               className="w-full pl-8 pr-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-normal text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-[#004B91] focus:bg-white"
             />
           </div>
@@ -103,73 +103,7 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
           {!collapsed && <span>Overview</span>}
         </button>
 
-        {/* 2. ROUTING & SCHEDULES */}
-        <div className="space-y-0.5 pt-1">
-          <button
-            onClick={() => {
-              if (collapsed) onToggleCollapse();
-              setScheduleOpen(!scheduleOpen);
-            }}
-            className={`w-full flex items-center justify-between px-3 py-2 rounded-lg font-bold transition-colors ${
-              (activeSubPage === "ECO_CALCULATOR" || activeSubPage === "VESSEL_SCHEDULE")
-                ? "text-[#004B91] bg-blue-50/70"
-                : "text-slate-700 hover:bg-slate-50"
-            }`}
-            title="Routing & Schedules"
-          >
-            <div className="flex items-center gap-2.5">
-              <Calendar className="w-4 h-4 text-[#004B91] shrink-0" />
-              {!collapsed && <span>Routing & Schedules</span>}
-            </div>
-            {!collapsed && (
-              <ChevronDown 
-                className={`w-3.5 h-3.5 text-slate-400 transition-transform duration-200 ${
-                  scheduleOpen ? "" : "-rotate-90"
-                }`} 
-              />
-            )}
-          </button>
-
-          {(!collapsed && scheduleOpen) && (
-            <div className="pl-6 space-y-0.5 border-l border-slate-100 ml-4 py-0.5">
-              <button
-                onClick={() => handleNavigate("ECO_CALCULATOR")}
-                className={`w-full text-left px-3 py-2 rounded-md font-bold transition-colors flex items-center justify-between ${
-                  activeSubPage === "ECO_CALCULATOR"
-                    ? "bg-[#004B91] text-white font-black shadow-2xs"
-                    : "text-slate-700 hover:bg-slate-50"
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  <Calculator className="w-3.5 h-3.5" />
-                  <span>Eco Routing</span>
-                </div>
-                {activeSubPage === "ECO_CALCULATOR" ? (
-                  <span className="w-1.5 h-1.5 rounded-full bg-white" />
-                ) : (
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#004B91]" />
-                )}
-              </button>
-
-              <button
-                onClick={() => handleNavigate("VESSEL_SCHEDULE")}
-                className={`w-full text-left px-3 py-1.5 rounded-md transition-colors flex items-center justify-between ${
-                  activeSubPage === "VESSEL_SCHEDULE"
-                    ? "bg-blue-100 font-bold text-[#004B91]"
-                    : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  <Ship className="w-3.5 h-3.5 text-blue-600" />
-                  <span>Berth Schedule</span>
-                </div>
-                <span className="text-[9px] font-mono px-1 rounded bg-blue-100 text-[#004B91] font-bold">TOS</span>
-              </button>
-            </div>
-          )}
-        </div>
-
-        {/* 3. MICROGRID & SCADA */}
+        {/* 2. MICROGRID & SCADA (Routing & Schedules temporarily hidden) */}
         <div className="space-y-0.5 pt-1">
           <button
             onClick={() => {
@@ -210,7 +144,6 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
                   <Database className="w-3.5 h-3.5 text-blue-600" />
                   <span>Telemetry Feeds</span>
                 </div>
-                <span className="text-[9px] font-mono px-1 rounded bg-blue-100 text-[#004B91] font-bold">L-01</span>
               </button>
 
               <button

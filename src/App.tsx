@@ -63,6 +63,13 @@ export default function App() {
   const [currentUserEmail, setCurrentUserEmail] = useState("admin@gport.maritime.vn");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
+  // Automatically collapse the main sidebar when entering Telemetry Feeds to maximize 2D map & timeline space
+  React.useEffect(() => {
+    if (activeSubPage === "INPUT_LAYER") {
+      setSidebarCollapsed(true);
+    }
+  }, [activeSubPage]);
+
   // Application Data States
   const [vessels, setVessels] = useState<TosVesselSchedule[]>(MOCK_VESSELS);
   const [containers, setContainers] = useState(MOCK_EPORT_CONTAINERS);
@@ -86,6 +93,9 @@ export default function App() {
   const [meterModalMode, setMeterModalMode] = useState<MeterModalMode | undefined>(undefined);
   const [focusedInvoiceId, setFocusedInvoiceId] = useState<string | null>(null);
   const [focusedTelemetryEntityId, setFocusedTelemetryEntityId] = useState<string | null>(null);
+  const [focusedTelemetryPopupMode, setFocusedTelemetryPopupMode] = useState<"TURNAROUND" | "BREAKDOWN">("TURNAROUND");
+  const [focusedForecastWindowId, setFocusedForecastWindowId] = useState<string | null>(null);
+  const [focusedForecastOpenReport, setFocusedForecastOpenReport] = useState<boolean>(false);
 
   const handleOpenMeterModal = (assetId?: any, mode?: MeterModalMode) => {
     if (typeof assetId === "string" && assetId.trim().length > 0) {
@@ -104,9 +114,22 @@ export default function App() {
     setActiveSubPage("VESSEL_CARBON_INVOICE");
   };
 
-  const handleTraceVoyageInTelemetry = (vesselEntityId: string) => {
+  const handleTraceVoyageInTelemetry = (
+    vesselEntityId: string,
+    popupMode: "TURNAROUND" | "BREAKDOWN" = "TURNAROUND"
+  ) => {
     setFocusedTelemetryEntityId(vesselEntityId);
+    setFocusedTelemetryPopupMode(popupMode);
     setActiveSubPage("INPUT_LAYER");
+  };
+
+  const handleInspectForecastWindow = (
+    windowId: string,
+    openReport: boolean = false
+  ) => {
+    setFocusedForecastWindowId(windowId);
+    setFocusedForecastOpenReport(openReport);
+    setActiveSubPage("MODULE_1_FORECAST");
   };
 
   // Asset Form State
@@ -215,6 +238,9 @@ export default function App() {
                 zoneEmissions={zoneEmissions}
                 onNavigate={setActiveSubPage}
                 onOpenCarbonInvoice={handleOpenCarbonInvoice}
+                onOpenMeterModal={handleOpenMeterModal}
+                onTraceEntityInTelemetry={handleTraceVoyageInTelemetry}
+                onInspectForecastWindow={handleInspectForecastWindow}
               />
             )}
 
@@ -228,6 +254,7 @@ export default function App() {
                 onNavigate={setActiveSubPage}
                 onOpenCarbonInvoice={handleOpenCarbonInvoice}
                 focusedTelemetryEntityId={focusedTelemetryEntityId}
+                focusedTelemetryPopupMode={focusedTelemetryPopupMode}
                 onClearFocusedTelemetryEntity={() =>
                   setFocusedTelemetryEntityId(null)
                 }
@@ -240,6 +267,9 @@ export default function App() {
                 vessels={vessels}
                 tariff={tariff}
                 pvStatus={pvStatus}
+                focusedWindowId={focusedForecastWindowId}
+                focusedWindowOpenReport={focusedForecastOpenReport}
+                onClearFocusedWindow={() => setFocusedForecastWindowId(null)}
               />
             )}
 
@@ -288,18 +318,7 @@ export default function App() {
         </main>
       </div>
 
-      {/* FLOATING CHAT / HELP WIDGET (Hidden on INPUT_LAYER so it never overlaps the bottom-right HUD card) */}
-      {activeSubPage !== "INPUT_LAYER" && (
-        <div className="fixed bottom-6 right-6 z-40">
-          <button
-            onClick={() => setActiveSubPage("ECO_CALCULATOR")}
-            title="Eco Routing & Technical Support"
-            className="w-12 h-12 rounded-full shadow-xl flex items-center justify-center text-white transition-transform hover:scale-105 active:scale-95 bg-[#004B91]"
-          >
-            <MessageSquare className="w-5 h-5" />
-          </button>
-        </div>
-      )}
+      {/* Floating Eco Routing shortcut temporarily hidden alongside Routing & Schedules */}
 
       {/* MODAL: ADD ASSET */}
       {showAddAssetModal && (
