@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from "react";
+import { useLanguage } from "../context/LanguageContext";
 import {
   Ship,
   Truck,
@@ -64,6 +65,7 @@ export const InputLayerPage: React.FC<InputLayerPageProps> = ({
   focusedTelemetryPopupMode = "TURNAROUND",
   onClearFocusedTelemetryEntity,
 }) => {
+  const { t } = useLanguage();
   // 2D Strategic Map is the primary view; 3D is hidden by default
   const [mapMode, setMapMode] = useState<"2D" | "3D">("2D");
   const [selectedZone, setSelectedZone] = useState<TerminalStrategyZone | null>(
@@ -292,13 +294,13 @@ export const InputLayerPage: React.FC<InputLayerPageProps> = ({
   const getEntityTimelineTitle = (category: TerminalEntityCategory) => {
     switch (category) {
       case "VESSELS":
-        return "Vessel Sea-to-Berth & Towage Turnaround";
+        return t("Vessel Sea-to-Berth & Towage Turnaround", "Hành Trình Tàu Từ Ngoài Khơi, Lai Dắt & Cập Bến");
       case "CRANES":
-        return "Quay Crane Shift & Hoist Timeline";
+        return t("Quay Crane Shift & Hoist Timeline", "Tiến Độ Ca Trực & Chu Kỳ Cẩu Bờ STS");
       case "TRUCKS":
-        return "Yard Truck Route & Stops Timeline";
+        return t("Yard Truck Route & Stops Timeline", "Lộ Trình & Điểm Dừng Xe Đầu Kéo Nội Cảng");
       case "BAYS":
-        return "Container Bay Stacking & Cooling Timeline";
+        return t("Container Bay Stacking & Cooling Timeline", "Chu Kỳ Xếp Chồng & Làm Lạnh Bãi Container");
     }
   };
 
@@ -482,7 +484,7 @@ export const InputLayerPage: React.FC<InputLayerPageProps> = ({
                   className="py-1.5 px-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center gap-1 text-[11px] font-bold transition-colors shadow-xs cursor-pointer"
                 >
                   <Activity className="w-3 h-3 shrink-0" />
-                  <span className="truncate">Telemetry Report</span>
+                  <span className="truncate">{t("Telemetry Report", "Báo Cáo Telemetry")}</span>
                 </button>
                 <button
                   type="button"
@@ -496,7 +498,7 @@ export const InputLayerPage: React.FC<InputLayerPageProps> = ({
                   className="py-1.5 px-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 flex items-center justify-center gap-1 text-[11px] font-bold transition-colors cursor-pointer"
                 >
                   <Gauge className="w-3 h-3 text-blue-600 shrink-0" />
-                  <span className="truncate">Meter Diagram</span>
+                  <span className="truncate">{t("Meter Diagram", "Sơ Đồ Đồng Hồ")}</span>
                 </button>
               </div>
             </div>
@@ -550,7 +552,7 @@ export const InputLayerPage: React.FC<InputLayerPageProps> = ({
                       onClick={() => setEntityListOpen(true)}
                       className="px-2 py-0.5 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700 text-[10px] font-bold cursor-pointer"
                     >
-                      Danh sách ({tabEntities.length})
+                      {t("List", "Danh sách")} ({tabEntities.length})
                     </button>
                   )}
                   {focusedWaypoint && (
@@ -559,7 +561,7 @@ export const InputLayerPage: React.FC<InputLayerPageProps> = ({
                       onClick={() => setFocusedWaypoint(null)}
                       className="px-2 py-0.5 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-600 text-[10px] font-bold cursor-pointer"
                     >
-                      Reset Zoom
+                      {t("Reset Zoom", "Thu nhỏ")}
                     </button>
                   )}
                   <button
@@ -577,8 +579,8 @@ export const InputLayerPage: React.FC<InputLayerPageProps> = ({
                   >
                     <span>
                       {selectedEntity.category === "VESSELS"
-                        ? "Port Call Audit"
-                        : "2D Route Log"}
+                        ? t("Port Call Audit", "Kiểm toán Lượt tàu")
+                        : t("2D Route Log", "Nhật ký Lộ trình 2D")}
                     </span>
                     <ArrowUpRight className="w-3 h-3" />
                   </button>
@@ -720,7 +722,7 @@ export const InputLayerPage: React.FC<InputLayerPageProps> = ({
                 <span className="text-[11px] font-black text-slate-800 truncate">
                   {selectedZone
                     ? `${selectedZone.name}`
-                    : "Danh sách Đối tượng Terminal"}
+                    : t("Terminal Entities List", "Danh sách Đối tượng Terminal")}
                 </span>
                 <button
                   type="button"
@@ -735,7 +737,7 @@ export const InputLayerPage: React.FC<InputLayerPageProps> = ({
                     }
                   }}
                   className="w-5 h-5 rounded-md hover:bg-slate-100 text-slate-400 hover:text-slate-700 flex items-center justify-center cursor-pointer"
-                  title="Đóng danh sách để mở rộng khung Timeline"
+                  title={t("Close list to expand timeline", "Đóng danh sách để mở rộng khung Timeline")}
                 >
                   <X className="w-3.5 h-3.5" />
                 </button>
@@ -755,7 +757,7 @@ export const InputLayerPage: React.FC<InputLayerPageProps> = ({
                       : "text-slate-500 hover:text-slate-800"
                   }`}
                 >
-                  Vessels{" "}
+                  {t("Vessels", "Tàu")}{" "}
                   <span className="text-blue-600">{vesselsList.length}</span>
                 </button>
                 <button
@@ -770,7 +772,7 @@ export const InputLayerPage: React.FC<InputLayerPageProps> = ({
                       : "text-slate-500 hover:text-slate-800"
                   }`}
                 >
-                  Cranes{" "}
+                  {t("Cranes", "Cẩu")}{" "}
                   <span className="text-blue-600">3/{cranesList.length}</span>
                 </button>
                 <button
@@ -785,7 +787,7 @@ export const InputLayerPage: React.FC<InputLayerPageProps> = ({
                       : "text-slate-500 hover:text-slate-800"
                   }`}
                 >
-                  Trucks{" "}
+                  {t("Trucks", "Xe")}{" "}
                   <span className="text-blue-600">{trucksList.length}</span>
                 </button>
                 <button
@@ -800,7 +802,7 @@ export const InputLayerPage: React.FC<InputLayerPageProps> = ({
                       : "text-slate-500 hover:text-slate-800"
                   }`}
                 >
-                  Bays <span className="text-blue-600">{baysList.length}</span>
+                  {t("Bays", "Bãi")} <span className="text-blue-600">{baysList.length}</span>
                 </button>
               </div>
 
@@ -919,7 +921,7 @@ export const InputLayerPage: React.FC<InputLayerPageProps> = ({
                   }`}
                 >
                   <Activity className="w-3.5 h-3.5" />
-                  <span>1. SCADA Feeder & Telemetry Curve</span>
+                  <span>{t("1. SCADA Feeder & Telemetry Curve", "1. Lộ Xuất Tuyến SCADA & Đồ Thị Telemetry")}</span>
                 </button>
                 <button
                   type="button"
@@ -932,7 +934,7 @@ export const InputLayerPage: React.FC<InputLayerPageProps> = ({
                 >
                   <Layers className="w-3.5 h-3.5" />
                   <span>
-                    2. ePort Container Manifest (
+                    {t("2. ePort Container Manifest", "2. Bảng Kê Container ePort")} (
                     {detailModalEntity.containersManifest.length})
                   </span>
                 </button>
@@ -946,12 +948,12 @@ export const InputLayerPage: React.FC<InputLayerPageProps> = ({
                   }`}
                 >
                   <MapIcon className="w-3.5 h-3.5" />
-                  <span>3. Historical Voyage & 2D Map Replay</span>
+                  <span>{t("3. Historical Voyage & 2D Map Replay", "3. Lịch Sử Chuyến Tàu & Mô Phỏng 2D")}</span>
                 </button>
               </div>
 
               <span className="text-[11px] font-mono text-slate-400 pb-2 hidden sm:inline">
-                Sub-Meter ID: {detailModalEntity.feederReport.meterId}
+                {t("Sub-Meter ID:", "Mã Đồng Hồ:")} {detailModalEntity.feederReport.meterId}
               </span>
             </div>
 
@@ -1345,7 +1347,7 @@ export const InputLayerPage: React.FC<InputLayerPageProps> = ({
             {/* Clean Minimal Modal Footer without redundant quick-maneuver buttons */}
             <div className="px-5 py-3 border-t border-slate-100 bg-slate-50/80 flex items-center justify-between gap-2">
               <span className="text-[11px] text-slate-500 font-mono">
-                Sub-Meter: {detailModalEntity.feederReport.meterId} ·{" "}
+                {t("Sub-Meter:", "Đồng hồ phụ:")} {detailModalEntity.feederReport.meterId} ·{" "}
                 {detailModalEntity.feederReport.protocol}
               </span>
               <button
@@ -1353,7 +1355,7 @@ export const InputLayerPage: React.FC<InputLayerPageProps> = ({
                 onClick={() => setDetailModalEntity(null)}
                 className="px-4 py-1.5 rounded-xl bg-slate-900 text-white text-xs font-bold hover:bg-slate-800 cursor-pointer"
               >
-                Close
+                {t("Close", "Đóng")}
               </button>
             </div>
           </div>

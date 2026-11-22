@@ -18,13 +18,11 @@ import {
   Clock,
   PlugZap,
   Server,
-  FileText,
-  ArrowRight,
   Flame,
 } from "lucide-react";
 
 import { MeterModalMode } from "../components/MeterTelemetryModal";
-import { BerthOperationMapSection } from "../components/overview/BerthOperationMapSection";
+import { useLanguage } from "../context/LanguageContext";
 
 interface OverviewPageProps {
   onNavigate: (page: SubPageId) => void;
@@ -43,16 +41,14 @@ interface OverviewPageProps {
 }
 
 export const OverviewPage: React.FC<OverviewPageProps> = ({
-  onNavigate,
   vessels,
   pvStatus,
   bessStatus,
   tariff,
   zoneEmissions = [],
-  onOpenMeterModal,
-  onTraceEntityInTelemetry,
-  onInspectForecastWindow,
 }) => {
+  const { t } = useLanguage();
+
   const totalLoadKw =
     tariff.currentDemandKw + pvStatus.currentPowerKw + bessStatus.currentPowerKw;
   const pContractLimitKw = tariff.contractDemandKw;
@@ -66,81 +62,117 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
     zoneEmissions.reduce((acc, z) => acc + z.scope2Co2Kg, 0) / 1000;
   const totalPortEmissionsTons = totalScope1Tons + totalScope2Tons;
 
-  // Port-wide non-vessel-specific feeders & infrastructure (moved out of Telemetry Feeds)
+  // Port-wide non-vessel-specific feeders & infrastructure
   const liveFeederLoads = [
     {
       code: "F-01",
-      name: "STS Quay Cranes (Berth 1–2)",
+      name: t("STS Quay Cranes (Berth 1–2)", "Cẩu bờ STS (Cầu tàu B1–B2)"),
       kw: 2480,
       capacityKw: 3500,
-      zone: "Quay Zone 1",
+      zone: t("Quay Zone 1", "Khu Cầu Tàu (Zone 1)"),
       color: "#2E598E",
     },
     {
       code: "F-02",
-      name: "Reefer Container Cooling Racks",
+      name: t("Reefer Container Cooling Racks", "Giàn Điện Container Lạnh Reefer"),
       kw: 1650,
       capacityKw: 2400,
-      zone: "Yard Zone 3",
+      zone: t("Yard Zone 3", "Bãi Lạnh Reefer (Zone 3)"),
       color: "#0284C7",
     },
     {
       code: "F-03",
-      name: "e-RTG Yard Gantries (Bays B1–B4)",
+      name: t("e-RTG Yard Gantries (Bays B1–B4)", "Cẩu khung bánh lốp e-RTG (Bãi B1–B4)"),
       kw: 1260,
       capacityKw: 2000,
-      zone: "Yard Zone 2",
+      zone: t("Yard Zone 2", "Bãi Container (Zone 2)"),
       color: "#4A81C9",
     },
     {
       code: "F-04",
-      name: "Shore Power (OPS) Substation",
+      name: t("Shore Power (OPS) Substation", "Trạm Nguồn Điện Bờ Cao Áp (OPS)"),
       kw: 1050,
       capacityKw: 2500,
-      zone: "Quay Zone 1",
+      zone: t("Quay Zone 1", "Khu Cầu Tàu (Zone 1)"),
       color: "#10B981",
     },
     {
       code: "F-05",
-      name: "EV Yard Truck Fast Chargers",
+      name: t("EV Yard Truck Fast Chargers", "Trạm Sạc Nhanh Đầu Kéo Điện EV"),
       kw: 340,
       capacityKw: 800,
-      zone: "Gate & Depot",
+      zone: t("Gate & Depot", "Trạm Sạc & Cổng Cảng"),
       color: "#6366F1",
     },
     {
       code: "F-06",
-      name: "CFS Warehouses, Lighting & Admin",
+      name: t("CFS Warehouses, Lighting & Admin", "Kho CFS, Chiếu Sáng Bãi & Điều Hành"),
       kw: 180,
       capacityKw: 500,
-      zone: "Port Admin",
+      zone: t("Port Admin", "Khu Hành Chính & Phụ Trợ"),
       color: "#64748B",
     },
   ];
 
   const tariffBands = [
     {
-      band: "Off-Peak Window",
+      band: t("Off-Peak Window", "Khung Giờ Thấp Điểm"),
       hours: "22:00 – 04:00",
       rate: "1,146 VND/kWh",
-      action: "Off-Peak Reefer Pre-Cooling & EV Fast-Charge",
+      action: t(
+        "Off-Peak Reefer Pre-Cooling & EV Fast-Charge",
+        "Làm lạnh sâu Reefer & Sạc nhanh đội xe đầu kéo điện EV"
+      ),
       active: false,
     },
     {
-      band: "Standard Window",
+      band: t("Standard Window", "Khung Giờ Bình Thường"),
       hours: "04:00 – 09:30 · 11:30 – 17:00 · 20:00 – 22:00",
       rate: "1,811 VND/kWh",
-      action: "Balanced Grid + Solar PV Self-Consumption",
+      action: t(
+        "Balanced Grid + Solar PV Self-Consumption",
+        "Vận hành cân bằng lưới điện + Tự dùng điện mặt trời mái kho"
+      ),
       active: false,
     },
     {
-      band: "Peak Window",
+      band: t("Peak Window", "Khung Giờ Cao Điểm"),
       hours: "09:30 – 11:30 · 17:00 – 20:00",
       rate: "3,076 VND/kWh",
-      action: "Crane Regen Recovery & Smart Load Control Active",
+      action: t(
+        "Crane Regen Recovery & Smart Load Control Active",
+        "Kích hoạt thu hồi động năng cẩu & Điều tiết phụ tải thông minh"
+      ),
       active: true,
     },
   ];
+
+  const translateZoneName = (zoneId: string, rawName: string) => {
+    switch (zoneId) {
+      case "ZONE_1":
+        return t(
+          "Zone 1: Berths, STS Quay Cranes & OPS Shore Power (B1, B2, TCIT)",
+          rawName
+        );
+      case "ZONE_2":
+        return t(
+          "Zone 2: e-RTG Container Yards & Prime Mover Tractor Fleet",
+          rawName
+        );
+      case "ZONE_3":
+        return t(
+          "Zone 3: Reefer Container Cooling Racks (240 VinaSeafood Units)",
+          rawName
+        );
+      case "ZONE_4":
+        return t(
+          "Zone 4: ePort Gate, EV Fast-Charging Depot & CFS Solar Building",
+          rawName
+        );
+      default:
+        return rawName;
+    }
+  };
 
   return (
     <div className="space-y-6 pb-10">
@@ -148,19 +180,32 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
       <div className="bg-white p-6 rounded-2xl border border-slate-200/90 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 text-xs text-slate-500 font-semibold mb-1">
-            <span className="font-bold text-[#004B91]">Terminal Operations</span>
+            <span className="font-bold text-[#004B91]">
+              {t("Terminal Operations", "Điều Hành Khai Thác Cảng")}
+            </span>
             <span aria-hidden="true">·</span>
-            <span>Cat Lai & Cai Mep Deep-Sea Terminals</span>
+            <span>
+              {t(
+                "Cat Lai & Cai Mep Deep-Sea Terminals",
+                "Cảng Tân Cảng Cát Lái & Cụm Cảng Nước Sâu Cái Mép"
+              )}
+            </span>
           </div>
           <h1 className="text-2xl font-black text-slate-900 tracking-tight">
-            Port Energy & Emissions MRV Overview
+            {t(
+              "Port Energy & Emissions MRV Overview",
+              "Tổng Quan Năng Lượng & Kiểm Kê Phát Thải Cảng (MRV)"
+            )}
           </h1>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
           <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-amber-50 text-amber-800 border border-amber-200">
             <Clock className="w-3.5 h-3.5 text-amber-600" />
-            EVN Peak Tariff · 3,076 VND/kWh
+            {t(
+              "EVN Peak Tariff · 3,076 VND/kWh",
+              "Biểu Giá Cao Điểm EVN · 3,076 VND/kWh"
+            )}
           </span>
         </div>
       </div>
@@ -169,7 +214,7 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs">
           <div className="flex items-center justify-between text-slate-500 text-xs font-bold uppercase tracking-wider mb-2">
-            <span>Total Terminal Power</span>
+            <span>{t("Total Terminal Power", "Tổng Công Suất Phụ Tải")}</span>
             <div className="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
               <Zap className="w-4 h-4" />
             </div>
@@ -180,18 +225,20 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
           </div>
           <div className="flex items-center gap-2 text-xs">
             <span className="text-emerald-600 font-bold flex items-center gap-0.5">
-              <SunMedium className="w-3.5 h-3.5" /> 23.9% Solar
+              <SunMedium className="w-3.5 h-3.5" />{" "}
+              {t("23.9% Solar", "23.9% Điện mặt trời")}
             </span>
             <span className="text-slate-400">•</span>
             <span className="text-amber-600 font-bold flex items-center gap-0.5">
-              <BatteryCharging className="w-3.5 h-3.5" /> 8.5% Crane Regen
+              <BatteryCharging className="w-3.5 h-3.5" />{" "}
+              {t("8.5% Crane Regen", "8.5% Thu hồi cẩu")}
             </span>
           </div>
         </div>
 
         <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs">
           <div className="flex items-center justify-between text-slate-500 text-xs font-bold uppercase tracking-wider mb-2">
-            <span>Grid Contract Limit</span>
+            <span>{t("Grid Contract Limit", "Giới Hạn Công Suất Trạm")}</span>
             <div className="w-7 h-7 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center">
               <ShieldCheck className="w-4 h-4" />
             </div>
@@ -213,14 +260,21 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
             />
           </div>
           <div className="flex justify-between items-center text-[11px] text-slate-500 mt-1">
-            <span>{safetyMarginPercent}% headroom</span>
-            <span className="text-emerald-600 font-bold">Within Limit</span>
+            <span>
+              {t(
+                `${safetyMarginPercent}% headroom`,
+                `Dự phòng an toàn ${safetyMarginPercent}%`
+              )}
+            </span>
+            <span className="text-emerald-600 font-bold">
+              {t("Within Limit", "Trong Ngưỡng An Toàn")}
+            </span>
           </div>
         </div>
 
         <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs">
           <div className="flex items-center justify-between text-slate-500 text-xs font-bold uppercase tracking-wider mb-2">
-            <span>Port Carbon Intensity</span>
+            <span>{t("Port Carbon Intensity", "Cường Độ Phát Thải Cảng")}</span>
             <div className="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
               <Leaf className="w-4 h-4" />
             </div>
@@ -233,13 +287,18 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
           </div>
           <div className="flex items-center gap-1.5 text-xs text-emerald-600 font-medium">
             <TrendingDown className="w-3.5 h-3.5" />
-            <span>-14.2% YoY · {totalPortEmissionsTons.toFixed(1)} tCO₂e/day</span>
+            <span>
+              {t(
+                `-14.2% YoY · ${totalPortEmissionsTons.toFixed(1)} tCO₂e/day`,
+                `-14.2% so với cùng kỳ · ${totalPortEmissionsTons.toFixed(1)} tCO₂e/ngày`
+              )}
+            </span>
           </div>
         </div>
 
         <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs">
           <div className="flex items-center justify-between text-slate-500 text-xs font-bold uppercase tracking-wider mb-2">
-            <span>Calling Vessels at Berth</span>
+            <span>{t("Calling Vessels at Berth", "Tàu Đang Cập Cầu Cảng")}</span>
             <div className="w-7 h-7 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center">
               <Ship className="w-4 h-4" />
             </div>
@@ -251,12 +310,12 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
               ).length
             }{" "}
             <span className="text-sm font-semibold text-slate-500">
-              Active Vessels
+              {t("Active Vessels", "Tàu Đang Làm Hàng")}
             </span>
           </div>
           <div className="flex items-center gap-1.5 text-xs text-emerald-600 font-medium">
             <PlugZap className="w-3.5 h-3.5 text-emerald-500" />
-            <span>Shore Power Connected</span>
+            <span>{t("Shore Power Connected", "Đã Kết Nối Điện Bờ OPS")}</span>
           </div>
         </div>
       </div>
@@ -269,10 +328,16 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
             <div>
               <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
                 <Server className="w-4 h-4 text-blue-600" />
-                Port-Wide Power Supply & Substation Feeders
+                {t(
+                  "Port-Wide Power Supply & Substation Feeders",
+                  "Cơ Cấu Nguồn Điện Toàn Cảng & Phụ Tải 6 Tủ Lộ Tổng (F-01 – F-06)"
+                )}
               </h2>
               <p className="text-xs text-slate-500 mt-0.5">
-                Shared terminal infrastructure and feeder loads not tied to a single vessel
+                {t(
+                  "Shared terminal infrastructure and feeder loads not tied to a single vessel",
+                  "Hạ tầng lưới điện dùng chung toàn cảng và phân bổ công suất theo từng lộ trạm biến áp 110/22kV"
+                )}
               </p>
             </div>
           </div>
@@ -282,39 +347,45 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
             <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200/70">
               <div className="text-[11px] font-bold text-blue-700 flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-blue-600" />
-                National Grid (110kV)
+                {t("National Grid (110kV)", "Điện Lưới Quốc Gia (110kV)")}
               </div>
               <div className="text-lg font-black text-slate-900 mt-1">
                 {tariff.currentDemandKw.toLocaleString()} kW
               </div>
               <div className="text-[11px] text-slate-500 mt-0.5">
-                67.5% of total port demand
+                {t("67.5% of total port demand", "Chiếm 67.5% tổng phụ tải cảng")}
               </div>
             </div>
 
             <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200/70">
               <div className="text-[11px] font-bold text-emerald-700 flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                Rooftop Solar PV
+                {t("Rooftop Solar PV", "Điện Mặt Trời Mái Kho CFS")}
               </div>
               <div className="text-lg font-black text-emerald-700 mt-1">
                 +{pvStatus.currentPowerKw.toLocaleString()} kW
               </div>
               <div className="text-[11px] text-slate-500 mt-0.5">
-                23.9% share · Irradiance 845 W/m²
+                {t(
+                  "23.9% share · Irradiance 845 W/m²",
+                  "Tỷ trọng 23.9% · Bức xạ 845 W/m²"
+                )}
               </div>
             </div>
 
             <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200/70">
               <div className="text-[11px] font-bold text-amber-700 flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-amber-500" />
-                Crane Regen &amp; SVC Grid
+                {t("Crane Regen & SVC Grid", "Thu Hồi Động Năng Cẩu & Bù SVC")}
               </div>
               <div className="text-lg font-black text-amber-700 mt-1">
                 +{bessStatus.currentPowerKw.toLocaleString()} kW
               </div>
               <div className="text-[11px] text-slate-500 mt-0.5">
-                Efficiency {bessStatus.socPercent}% · Regen Recovery
+                {t(
+                  `Efficiency ${bessStatus.socPercent}% · Regen Recovery`,
+                  `Hiệu suất ${bessStatus.socPercent}% · Hoàn trả động năng`
+                )}
               </div>
             </div>
           </div>
@@ -322,7 +393,10 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
           {/* 6 Substation Feeders Breakdown */}
           <div>
             <div className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">
-              Substation Feeder Distribution ({totalLoadKw.toLocaleString()} kW Total)
+              {t(
+                `Substation Feeder Distribution (${totalLoadKw.toLocaleString()} kW Total)`,
+                `Phân Bổ Công Suất Các Lộ Trạm Biến Áp (Tổng ${totalLoadKw.toLocaleString()} kW)`
+              )}
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {liveFeederLoads.map((feeder) => {
@@ -359,7 +433,10 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
                     <div className="flex items-center justify-between text-[11px] text-slate-400">
                       <span>{feeder.zone}</span>
                       <span>
-                        {utilization}% of {feeder.capacityKw.toLocaleString()} kW rated
+                        {t(
+                          `${utilization}% of ${feeder.capacityKw.toLocaleString()} kW rated`,
+                          `${utilization}% định mức ${feeder.capacityKw.toLocaleString()} kW`
+                        )}
                       </span>
                     </div>
                   </div>
@@ -377,10 +454,13 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
               <div className="border-b border-slate-100 pb-3">
                 <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
                   <Clock className="w-4 h-4 text-amber-500" />
-                  EVN Tariff Schedule
+                  {t("EVN Tariff Schedule", "Biểu Giá Điện TOU (EVN)")}
                 </h3>
                 <p className="text-xs text-slate-500">
-                  Daily electricity pricing windows for terminal dispatch
+                  {t(
+                    "Daily electricity pricing windows for terminal dispatch",
+                    "Khung giờ biểu giá điện 3 bậc trong ngày phục vụ điều độ cảng"
+                  )}
                 </p>
               </div>
 
@@ -418,27 +498,21 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
             </div>
 
             <div className="pt-3 border-t border-slate-100 text-[11px] text-slate-500 flex items-center justify-between">
-              <span>Substation Contract Limit:</span>
-              <strong className="font-mono text-slate-900">8,000 kW (110/22kV)</strong>
+              <span>
+                {t(
+                  "Substation Contract Limit:",
+                  "Giới hạn Công suất Trạm 110/22kV:"
+                )}
+              </span>
+              <strong className="font-mono text-slate-900">
+                8,000 kW (110/22kV)
+              </strong>
             </div>
           </div>
         </div>
       </div>
 
-      {/* ================================================================== */}
-      {/* BERTH OPERATION & GEOFENCED EVENT SUMMARY VISUALIZATION MAP */}
-      {/* (Replaces static Berth Occupancy Summary; links to 1-Day Load Forecast & Telemetry Popups) */}
-      {/* ================================================================== */}
-      <BerthOperationMapSection
-        onNavigate={onNavigate}
-        onOpenMeterModal={(assetId, mode) => onOpenMeterModal?.(assetId, mode)}
-        onTraceEntityInTelemetry={(entityId, popupMode) =>
-          onTraceEntityInTelemetry?.(entityId, popupMode)
-        }
-        onInspectForecastWindow={(windowId, openReport) =>
-          onInspectForecastWindow?.(windowId, openReport)
-        }
-      />
+      {/* Maritime AIS & Geofenced Berth Operations section temporarily hidden per user request */}
 
       {/* Merged Terminal Emissions MRV by Zone (Scope 1 & Scope 2 Accounting) */}
       {zoneEmissions.length > 0 && (
@@ -448,11 +522,17 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
               <div className="flex items-center gap-2">
                 <Leaf className="w-4 h-4 text-emerald-600" />
                 <h2 className="text-base font-bold text-slate-900">
-                  Terminal Emissions MRV by Operational Zone (ISO 14083)
+                  {t(
+                    "Terminal Emissions MRV by Operational Zone (ISO 14083)",
+                    "Kiểm Kê Phát Thải MRV Theo Phân Khu Vận Hành (ISO 14083)"
+                  )}
                 </h2>
               </div>
               <p className="text-xs text-slate-500 mt-0.5">
-                Consolidated Scope 1 (Direct Fuel) and Scope 2 (Grid Electricity · EF 0.7221 kgCO₂e/kWh) accounting across port zones
+                {t(
+                  "Consolidated Scope 1 (Direct Fuel) and Scope 2 (Grid Electricity · EF 0.7221 kgCO₂e/kWh) accounting across port zones",
+                  "Tổng hợp phát thải Scope 1 (Nhiên liệu trực tiếp) và Scope 2 (Điện lưới · Hệ số 0.7221 kgCO₂e/kWh) trên 4 phân khu cảng"
+                )}
               </p>
             </div>
 
@@ -484,23 +564,23 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
                         {z.zoneId}
                       </span>
                       <span className="text-xs font-mono font-bold text-slate-500">
-                        {z.sharePercent}% Share
+                        {z.sharePercent}% {t("Share", "Tỷ trọng")}
                       </span>
                     </div>
                     <h4 className="text-xs font-black text-slate-900 leading-snug">
-                      {z.zoneName}
+                      {translateZoneName(z.zoneId, z.zoneName)}
                     </h4>
                   </div>
 
                   <div className="space-y-1.5 pt-2 border-t border-slate-200/60 text-[11px]">
                     <div className="flex justify-between text-slate-600">
-                      <span>Electricity (Scope 2):</span>
+                      <span>{t("Electricity (Scope 2):", "Điện năng (Scope 2):")}</span>
                       <strong className="font-mono text-slate-900">
                         {z.electricityKwh.toLocaleString()} kWh ({s2Tons.toFixed(2)}t)
                       </strong>
                     </div>
                     <div className="flex justify-between text-slate-600">
-                      <span>Diesel / Biofuel (Scope 1):</span>
+                      <span>{t("Diesel / Biofuel (Scope 1):", "Nhiên liệu (Scope 1):")}</span>
                       <strong className="font-mono text-slate-900">
                         {z.fuelLiters.toLocaleString()} L ({s1Tons.toFixed(2)}t)
                       </strong>
@@ -513,7 +593,7 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
                     </div>
                     <div className="flex justify-between items-center pt-1">
                       <span className="text-[10px] font-bold uppercase text-slate-400">
-                        Zone Total CO₂e
+                        {t("Zone Total CO₂e", "Tổng Phát Thải Khu Vực")}
                       </span>
                       <span className="text-sm font-black font-mono text-emerald-700">
                         {totTons.toFixed(2)} tCO₂e
@@ -529,4 +609,5 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
     </div>
   );
 };
+
 

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useLanguage } from "../context/LanguageContext";
 import { 
   ForecastInterval, 
   TosVesselSchedule, 
@@ -382,6 +383,7 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
   focusedWindowOpenReport,
   onClearFocusedWindow,
 }) => {
+  const { t } = useLanguage();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<"ALL" | "OVERLOAD_WARNING" | "HIGH_SOLAR" | "OFF_PEAK">("ALL");
   const [chartMode, setChartMode] = useState<"DEMAND_RANGE" | "NET_VS_SOLAR">("DEMAND_RANGE");
@@ -451,14 +453,21 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200/90 shadow-2xs">
         <div>
           <div className="flex items-center gap-2 text-xs font-semibold text-slate-500 mb-1">
-            <span className="font-bold text-[#004B91]">24-Hour Power Forecast</span>
+            <span className="font-bold text-[#004B91]">
+              {t("24-Hour Power Forecast", "Dự Báo Phụ Tải Điện 24 Giờ")}
+            </span>
             <span aria-hidden="true">·</span>
-            <span>Updated every 15 minutes</span>
+            <span>{t("Updated every 15 minutes", "Cập nhật mỗi 15 phút")}</span>
             <span aria-hidden="true">·</span>
-            <span className="text-amber-700 font-bold">Substation Limit: 8,000 kW</span>
+            <span className="text-amber-700 font-bold">
+              {t("Substation Limit: 8,000 kW", "Giới hạn Trạm biến áp: 8,000 kW")}
+            </span>
           </div>
           <h1 className="text-2xl font-black text-slate-900 tracking-tight">
-            Port Power Demand & Overload Warnings
+            {t(
+              "Port Power Demand & Overload Warnings",
+              "Dự Báo Phụ Tải Điện Cảng & Cảnh Báo Quá Tải Trạm"
+            )}
           </h1>
         </div>
 
@@ -469,7 +478,7 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
             className="px-3.5 py-2 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-50 text-xs font-bold flex items-center gap-1.5 transition-colors whitespace-nowrap shrink-0 cursor-pointer"
           >
             <Settings className="w-3.5 h-3.5 text-[#004B91]" />
-            <span>Forecast Settings</span>
+            <span>{t("Forecast Settings", "Cấu Hình Dự Báo")}</span>
           </button>
 
           <button
@@ -478,7 +487,7 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
             className="px-4 py-2 rounded-xl bg-[#004B91] hover:bg-[#00386E] text-white text-xs font-bold flex items-center gap-1.5 shadow-2xs transition-colors whitespace-nowrap shrink-0 cursor-pointer"
           >
             <FileText className="w-3.5 h-3.5" />
-            <span>Export 24h Forecast</span>
+            <span>{t("Export 24h Forecast", "Báo Cáo Dự Báo 24h")}</span>
           </button>
         </div>
       </div>
@@ -489,25 +498,28 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
         <div className="bg-white p-4 rounded-xl border border-slate-200/90 shadow-2xs">
           <div className="flex items-center justify-between text-slate-500 text-[11px] font-bold mb-1">
-            <span>Peak Expected Power</span>
+            <span>{t("Peak Expected Power", "Đỉnh Phụ Tải Dự Kiến")}</span>
             <TrendingUp className="w-4 h-4 text-[#004B91]" />
           </div>
           <div className="text-xl sm:text-2xl font-black text-slate-900 font-mono tabular-nums">
             8,151 <span className="text-xs text-slate-500 font-sans font-semibold">kW</span>
           </div>
           <div className="text-[11px] text-slate-500 font-medium mt-0.5">
-            At 14:00 · Max range up to 8,371 kW
+            {t("At 14:00 · Max range up to 8,371 kW", "Lúc 14:00 · Biên độ cực đại 8,371 kW")}
           </div>
         </div>
 
         {/* Highlighted Warning Card */}
         <div className="bg-amber-50/70 p-4 rounded-xl border-2 border-amber-300 shadow-2xs">
           <div className="flex items-center justify-between text-amber-900 text-[11px] font-bold mb-1">
-            <span>Overload Warnings (&gt;8,000 kW)</span>
+            <span>{t("Overload Warnings (>8,000 kW)", "Cảnh Báo Vượt Ngưỡng (>8,000 kW)")}</span>
             <AlertTriangle className="w-4 h-4 text-amber-600" />
           </div>
           <div className="text-xl sm:text-2xl font-black text-amber-800 font-mono tabular-nums">
-            2 Hours <span className="text-xs text-amber-700 font-sans font-bold">Flagged</span>
+            {t("2 Hours", "2 Khung Giờ")}{" "}
+            <span className="text-xs text-amber-700 font-sans font-bold">
+              {t("Flagged", "Cảnh báo")}
+            </span>
           </div>
           <div className="text-[11px] text-amber-800 font-bold mt-0.5">
             14:00 (8,151 kW) &amp; 16:00 (8,029 kW)
@@ -516,27 +528,30 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
 
         <div className="bg-white p-4 rounded-xl border border-slate-200/90 shadow-2xs">
           <div className="flex items-center justify-between text-slate-500 text-[11px] font-bold mb-1">
-            <span>Peak Solar Generation</span>
+            <span>{t("Peak Solar Generation", "Đỉnh Phát Điện Mặt Trời")}</span>
             <SunMedium className="w-4 h-4 text-emerald-600" />
           </div>
           <div className="text-xl sm:text-2xl font-black text-emerald-700 font-mono tabular-nums">
             1,880 <span className="text-xs text-slate-500 font-sans font-semibold">kW</span>
           </div>
           <div className="text-[11px] text-slate-500 font-medium mt-0.5">
-            At 12:00 · Reduces grid draw to 2,124 kW
+            {t("At 12:00 · Reduces grid draw to 2,124 kW", "Lúc 12:00 · Giảm điện lưới còn 2,124 kW")}
           </div>
         </div>
 
         <div className="bg-white p-4 rounded-xl border border-slate-200/90 shadow-2xs">
           <div className="flex items-center justify-between text-slate-500 text-[11px] font-bold mb-1">
-            <span>Forecast Accuracy (30-Day)</span>
+            <span>{t("Forecast Accuracy (30-Day)", "Độ Chính Xác Dự Báo (30 Ngày)")}</span>
             <ShieldCheck className="w-4 h-4 text-blue-600" />
           </div>
           <div className="text-xl sm:text-2xl font-black text-blue-700 font-mono tabular-nums">
-            98.7% <span className="text-xs text-slate-500 font-sans font-semibold">±1.3% error</span>
+            98.7%{" "}
+            <span className="text-xs text-slate-500 font-sans font-semibold">
+              {t("±1.3% error", "Sai số ±1.3%")}
+            </span>
           </div>
           <div className="text-[11px] text-emerald-700 font-semibold mt-0.5">
-            Avg deviation: ±66.7 kW
+            {t("Avg deviation: ±66.7 kW", "Độ lệch trung bình: ±66.7 kW")}
           </div>
         </div>
       </div>
@@ -548,12 +563,22 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
           <div>
             <h2 className="font-bold text-slate-900 text-sm">
-              24-Hour Power Demand Curve (kW)
+              {t("24-Hour Power Demand Curve (kW)", "Đường Cong Dự Báo Phụ Tải Điện 24 Giờ (kW)")}
             </h2>
             <div className="flex items-center gap-2 text-xs text-slate-500 mt-0.5">
-              <span>Dashed orange line shows 8,000 kW Substation Overload Limit</span>
+              <span>
+                {t(
+                  "Dashed orange line shows 8,000 kW Substation Overload Limit",
+                  "Đường nét đứt màu cam thể hiện ngưỡng giới hạn 8,000 kW của Trạm biến áp"
+                )}
+              </span>
               <span aria-hidden="true">·</span>
-              <span>Click any time card below to inspect power by line</span>
+              <span>
+                {t(
+                  "Click any time card below to inspect power by line",
+                  "Bấm vào từng khung giờ bên dưới để xem chi tiết công suất 6 lộ"
+                )}
+              </span>
             </div>
           </div>
 
@@ -565,7 +590,7 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
                 chartMode === "DEMAND_RANGE" ? "bg-white text-slate-900 shadow-2xs" : "text-slate-600 hover:text-slate-900"
               }`}
             >
-              Expected vs. High Load Range
+              {t("Expected vs. High Load Range", "Phụ Tải Dự Kiến & Biên Độ Cao")}
             </button>
             <button
               type="button"
@@ -574,7 +599,7 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
                 chartMode === "NET_VS_SOLAR" ? "bg-white text-slate-900 shadow-2xs" : "text-slate-600 hover:text-slate-900"
               }`}
             >
-              Grid Power vs. Solar Power
+              {t("Grid Power vs. Solar Power", "Điện Lưới Thuần & Điện Mặt Trời")}
             </button>
           </div>
         </div>
@@ -658,7 +683,10 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
           <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
           <input
             type="text"
-            placeholder="Search by hour (14:00), ship name (ONE APUS, SPIRIT OF MUMBAI), berth..."
+            placeholder={t(
+              "Search by hour (14:00), ship name (ONE APUS, SPIRIT OF MUMBAI), berth...",
+              "Tìm kiếm theo khung giờ (14:00), tên tàu (ONE APUS, SPIRIT OF MUMBAI), cầu bến..."
+            )}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-[#004B91] focus:bg-white"
@@ -666,12 +694,14 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
         </div>
 
         <div className="flex items-center gap-1.5 flex-wrap">
-          <span className="text-slate-500 font-bold text-[11px] mr-1">Filter:</span>
+          <span className="text-slate-500 font-bold text-[11px] mr-1">
+            {t("Filter:", "Bộ lọc:")}
+          </span>
           {([
-            { id: "ALL", label: "All Time Windows (12)" },
-            { id: "OVERLOAD_WARNING", label: "Overload Warnings (>8,000 kW)" },
-            { id: "HIGH_SOLAR", label: "High Solar Hours" },
-            { id: "OFF_PEAK", label: "Off-Peak Rate Hours" }
+            { id: "ALL", label: t("All Time Windows (12)", "Tất cả Khung giờ (12)") },
+            { id: "OVERLOAD_WARNING", label: t("Overload Warnings (>8,000 kW)", "Cảnh báo Quá tải (>8,000 kW)") },
+            { id: "HIGH_SOLAR", label: t("High Solar Hours", "Giờ Điện mặt trời cao") },
+            { id: "OFF_PEAK", label: t("Off-Peak Rate Hours", "Giờ Thấp điểm TOU") }
           ] as const).map((tab) => (
             <button
               key={tab.id}
@@ -711,7 +741,9 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
                     <div className="flex items-center gap-1.5 text-[11px] font-bold text-slate-500">
                       <span>{win.berth}</span>
                       <span aria-hidden="true">·</span>
-                      <span className="text-[#004B91]">{win.stsCranes} Cranes</span>
+                      <span className="text-[#004B91]">
+                        {win.stsCranes} {t("Cranes", "Cẩu STS")}
+                      </span>
                     </div>
                     <h3 className="font-black text-slate-900 text-base font-mono mt-0.5">
                       {win.timeWindow}
@@ -731,10 +763,14 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
                     }`}
                   >
                     {isOverload
-                      ? "Overload Alert"
+                      ? t("Overload Alert", "Báo Động Quá Tải")
                       : win.status === "HIGH_SOLAR"
-                      ? "Solar Active"
-                      : win.touLabel}
+                      ? t("Solar Active", "Đỉnh Mặt Trời")
+                      : win.touBand === "OFF_PEAK"
+                      ? t("Off-Peak Rate", "Giờ Thấp Điểm")
+                      : win.touBand === "PEAK"
+                      ? t("Peak Rate", "Giờ Cao Điểm")
+                      : t("Normal Rate", "Giờ Bình Thường")}
                   </span>
                 </div>
 
@@ -743,7 +779,9 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
                   isOverload ? "bg-amber-100/70 border-amber-300" : "bg-slate-50 border-slate-200/80"
                 }`}>
                   <div className="flex items-baseline justify-between">
-                    <span className="text-[11px] font-bold text-slate-600">Expected Power:</span>
+                    <span className="text-[11px] font-bold text-slate-600">
+                      {t("Expected Power:", "Công suất Dự kiến:")}
+                    </span>
                     <strong className={`text-lg font-black font-mono tabular-nums ${
                       isOverload ? "text-amber-900" : "text-slate-900"
                     }`}>
@@ -751,7 +789,7 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
                     </strong>
                   </div>
                   <div className="flex items-center justify-between text-[11px] text-slate-500 mt-1">
-                    <span>Possible Range:</span>
+                    <span>{t("Possible Range:", "Biên độ Dao động:")}</span>
                     <span className="font-mono font-semibold text-slate-700 tabular-nums">
                       {win.lowBoundKw.toLocaleString()} – {win.highBoundKw.toLocaleString()} kW
                     </span>
@@ -761,21 +799,21 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
                 {/* Secondary Operational Metrics */}
                 <div className="space-y-1.5 text-xs">
                   <div className="flex justify-between text-slate-600">
-                    <span className="text-slate-500">Solar Power Offset:</span>
+                    <span className="text-slate-500">{t("Solar Power Offset:", "Bù trừ Điện mặt trời:")}</span>
                     <strong className="text-emerald-700 font-mono tabular-nums">
                       {win.solarKw > 0 ? `-${win.solarKw.toLocaleString()} kW` : "0 kW"}
                     </strong>
                   </div>
                   <div className="flex justify-between text-slate-600">
-                    <span className="text-slate-500">Net Grid Power Needed:</span>
+                    <span className="text-slate-500">{t("Net Grid Power Needed:", "Điện lưới Cần cấp:")}</span>
                     <strong className="text-[#004B91] font-mono tabular-nums">
                       {win.netGridKw.toLocaleString()} kW
                     </strong>
                   </div>
                   <div className="flex justify-between text-slate-600">
-                    <span className="text-slate-500">Reefer Containers:</span>
+                    <span className="text-slate-500">{t("Reefer Containers:", "Container Lạnh Reefer:")}</span>
                     <strong className="text-slate-800 font-mono tabular-nums">
-                      {win.reeferPlugs} Plugs
+                      {win.reeferPlugs} {t("Plugs", "Ổ cắm")}
                     </strong>
                   </div>
                 </div>
@@ -793,7 +831,7 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
                   className="py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-1.5 whitespace-nowrap shrink-0 cursor-pointer"
                 >
                   <Gauge className="w-3.5 h-3.5 text-[#004B91]" />
-                  <span>Power Breakdown</span>
+                  <span>{t("Power Breakdown", "Chi Tiết 6 Lộ")}</span>
                 </button>
 
                 <button
@@ -802,7 +840,7 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
                   className="py-2 bg-[#004B91] hover:bg-[#00386E] text-white rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-1.5 shadow-2xs whitespace-nowrap shrink-0 cursor-pointer"
                 >
                   <FileText className="w-3.5 h-3.5" />
-                  <span>Forecast Report</span>
+                  <span>{t("Forecast Report", "Báo Cáo 24h")}</span>
                 </button>
               </div>
             </div>
@@ -820,7 +858,7 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
               <div className="flex items-center gap-2">
                 <Layers className="w-4 h-4 text-sky-400" />
                 <span className="font-bold text-sm">
-                  Power Breakdown by Line — {selectedWindow.timeWindow}
+                  {t("Power Breakdown by Line", "Phân Bổ Công Suất Theo 6 Lộ Trạm Biến Áp")} — {selectedWindow.timeWindow}
                 </span>
               </div>
               <button
@@ -836,25 +874,25 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
               {/* Operational Context */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-slate-50 p-4 rounded-xl border border-slate-200">
                 <div>
-                  <span className="text-slate-400 block text-[10px] uppercase font-bold">Ships at Berth</span>
+                  <span className="text-slate-400 block text-[10px] uppercase font-bold">{t("Ships at Berth", "Tàu Cập Bến")}</span>
                   <strong className="text-slate-900 font-bold">{selectedWindow.vesselName}</strong>
                   <span className="text-[11px] text-slate-500 block">{selectedWindow.berth}</span>
                 </div>
                 <div>
-                  <span className="text-slate-400 block text-[10px] uppercase font-bold">Active Equipment</span>
-                  <strong className="text-slate-900 font-mono">{selectedWindow.stsCranes} Quay Cranes</strong>
-                  <span className="text-[11px] text-slate-500 block">{selectedWindow.reeferPlugs} Reefers</span>
+                  <span className="text-slate-400 block text-[10px] uppercase font-bold">{t("Active Equipment", "Thiết Bị Vận Hành")}</span>
+                  <strong className="text-slate-900 font-mono">{selectedWindow.stsCranes} {t("Quay Cranes", "Cẩu STS")}</strong>
+                  <span className="text-[11px] text-slate-500 block">{selectedWindow.reeferPlugs} {t("Reefers", "Ổ Reefer")}</span>
                 </div>
                 <div>
-                  <span className="text-slate-400 block text-[10px] uppercase font-bold">Weather</span>
+                  <span className="text-slate-400 block text-[10px] uppercase font-bold">{t("Weather", "Thời Tiết")}</span>
                   <strong className="text-slate-900 font-mono">{selectedWindow.tempAmbC} °C</strong>
-                  <span className="text-[11px] text-slate-500 block">Solar: {selectedWindow.solarKw} kW</span>
+                  <span className="text-[11px] text-slate-500 block">{t("Solar", "Điện Mặt Trời")}: {selectedWindow.solarKw} kW</span>
                 </div>
                 <div>
-                  <span className="text-slate-400 block text-[10px] uppercase font-bold">Electricity Rate</span>
+                  <span className="text-slate-400 block text-[10px] uppercase font-bold">{t("Electricity Rate", "Khung Giá Điện")}</span>
                   <strong className="text-[#004B91] font-mono">{selectedWindow.touLabel}</strong>
                   <span className="text-[11px] text-slate-500 block">
-                    {selectedWindow.status === "OVERLOAD_WARNING" ? "Over 8,000 kW limit" : "Within limit"}
+                    {selectedWindow.status === "OVERLOAD_WARNING" ? t("Over 8,000 kW limit", "Vượt ngưỡng 8,000 kW") : t("Within limit", "Trong giới hạn")}
                   </span>
                 </div>
               </div>
@@ -862,25 +900,25 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
               {/* 6 Substation Feeders Breakdown Table */}
               <div className="space-y-2">
                 <div className="font-bold text-slate-900 uppercase tracking-wider text-[11px]">
-                  Expected Power by Substation Line (Feeders F-01 to F-06)
+                  {t("Expected Power by Substation Line (Feeders F-01 to F-06)", "Công Suất Dự Báo Theo 6 Lộ Xuất Tuyến (Lộ F-01 đến F-06)")}
                 </div>
                 <table className="w-full text-left border border-slate-200 rounded-xl overflow-hidden">
                   <thead className="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
                     <tr>
-                      <th className="py-2 px-3">Line</th>
-                      <th className="py-2 px-3">Port Area &amp; Equipment</th>
-                      <th className="py-2 px-3 text-right font-mono">Expected Power (kW)</th>
-                      <th className="py-2 px-3 text-right font-mono">Share (%)</th>
+                      <th className="py-2 px-3">{t("Line", "Lộ")}</th>
+                      <th className="py-2 px-3">{t("Port Area & Equipment", "Khu Vực & Thiết Bị Cảng")}</th>
+                      <th className="py-2 px-3 text-right font-mono">{t("Expected Power (kW)", "Công Suất Dự Báo (kW)")}</th>
+                      <th className="py-2 px-3 text-right font-mono">{t("Share (%)", "Tỷ Trọng (%)")}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 font-mono">
                     {[
-                      { id: "F-01", name: "Quay Cranes (S01–S05)", kw: selectedWindow.feeders.f01StsKw },
-                      { id: "F-02", name: "Yard e-RTG Cranes (12 Units)", kw: selectedWindow.feeders.f02RtgKw },
-                      { id: "F-03", name: "Reefer Container Yard (480 Plugs)", kw: selectedWindow.feeders.f03ReeferKw },
-                      { id: "F-04", name: "Ship Shore Power (OPS)", kw: selectedWindow.feeders.f04OpsKw },
-                      { id: "F-05", name: "EV Tractor Fast-Charging Hub", kw: selectedWindow.feeders.f05EvBessKw },
-                      { id: "F-06", name: "Warehouse HVAC, Lighting & Fire Pumps", kw: selectedWindow.feeders.f06AuxKw }
+                      { id: "F-01", name: t("Quay Cranes (S01–S05)", "Cẩu Bờ STS (S01–S05)"), kw: selectedWindow.feeders.f01StsKw },
+                      { id: "F-02", name: t("Yard e-RTG Cranes (12 Units)", "Cẩu Khung Bãi e-RTG (12 Cẩu)"), kw: selectedWindow.feeders.f02RtgKw },
+                      { id: "F-03", name: t("Reefer Container Yard (480 Plugs)", "Bãi Container Lạnh (480 Ổ Cắm)"), kw: selectedWindow.feeders.f03ReeferKw },
+                      { id: "F-04", name: t("Ship Shore Power (OPS)", "Điện Bờ Cho Tàu (OPS)"), kw: selectedWindow.feeders.f04OpsKw },
+                      { id: "F-05", name: t("EV Tractor Fast-Charging Hub", "Trạm Sạc Nhanh Xe Đầu Kéo EV"), kw: selectedWindow.feeders.f05EvBessKw },
+                      { id: "F-06", name: t("Warehouse HVAC, Lighting & Fire Pumps", "Kho CFS, Đèn Bãi & Trạm Bơm PCCC"), kw: selectedWindow.feeders.f06AuxKw }
                     ].map((f) => {
                       const share = ((f.kw / selectedWindow.expectedKw) * 100).toFixed(1);
                       return (
@@ -896,13 +934,13 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
                   <tfoot className="bg-slate-50 font-bold border-t border-slate-200 font-mono">
                     <tr>
                       <td colSpan={2} className="py-2.5 px-3 font-sans text-right text-slate-700">
-                        Total Port Demand / Net Grid Power Needed:
+                        {t("Total Port Demand / Net Grid Power Needed:", "Tổng Phụ Tải Cảng / Điện Nhận Lưới EVN:")}
                       </td>
                       <td className="py-2.5 px-3 text-right text-slate-900 tabular-nums">
                         {selectedWindow.expectedKw.toLocaleString()} kW
                       </td>
                       <td className="py-2.5 px-3 text-right text-[#004B91] tabular-nums">
-                        Grid: {selectedWindow.netGridKw.toLocaleString()} kW
+                        {t("Grid", "Lưới")}: {selectedWindow.netGridKw.toLocaleString()} kW
                       </td>
                     </tr>
                   </tfoot>
@@ -918,14 +956,14 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
                   }}
                   className="px-4 py-2 bg-[#004B91] text-white rounded-lg font-bold hover:bg-[#00386E] transition-colors cursor-pointer"
                 >
-                  View Full 24h Forecast Report
+                  {t("View Full 24h Forecast Report", "Xem Báo Cáo Dự Báo 24h")}
                 </button>
                 <button
                   type="button"
                   onClick={() => setShowPowerBreakdownModal(false)}
                   className="px-4 py-2 bg-slate-100 text-slate-700 rounded-lg font-bold hover:bg-slate-200 transition-colors cursor-pointer"
                 >
-                  Close
+                  {t("Close", "Đóng")}
                 </button>
               </div>
             </div>
@@ -943,7 +981,7 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
               <div className="flex items-center gap-2">
                 <FileText className="w-5 h-5 text-emerald-300" />
                 <span className="font-bold text-sm">
-                  24-Hour Port Power Forecast Report
+                  {t("24-Hour Port Power Forecast Report", "Báo Cáo Dự Báo Công Suất Phụ Tải Cảng 24 Giờ")}
                 </span>
               </div>
               <div className="flex items-center gap-2">
@@ -953,7 +991,7 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
                   className="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
                 >
                   <Printer className="w-3.5 h-3.5" />
-                  <span>Print / Save PDF</span>
+                  <span>{t("Print / Save PDF", "In / Lưu PDF")}</span>
                 </button>
                 <button
                   type="button"
@@ -970,13 +1008,13 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
               <div className="flex justify-between items-start border-b-2 border-slate-900 pb-5">
                 <div>
                   <div className="text-xl font-black text-[#004B91] tracking-tight">
-                    SAIGON NEWPORT CORPORATION (SNP)
+                    {t("SAIGON NEWPORT CORPORATION (SNP)", "TỔNG CÔNG TY TÂN CẢNG SÀI GÒN (SNP)")}
                   </div>
                   <div className="text-slate-600 text-[11px] font-semibold mt-0.5">
-                    Cat Lai Terminal · 24-Hour Power Demand &amp; Overload Warning Report
+                    {t("Cat Lai Terminal · 24-Hour Power Demand & Overload Warning Report", "Cảng Tân Cảng Cát Lái · Báo Cáo Dự Báo Phụ Tải 24 Giờ & Cảnh Báo Quá Tải")}
                   </div>
                   <div className="text-slate-400 text-[10px] mt-0.5">
-                    Main 110/22kV Substation · Overload Warning Threshold: 8,000 kW
+                    {t("Main 110/22kV Substation · Overload Warning Threshold: 8,000 kW", "Trạm Biến Áp 110/22kV Cát Lái · Ngưỡng Cảnh Báo Quá Tải: 8,000 kW")}
                   </div>
                 </div>
 
@@ -985,10 +1023,10 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
                     REPORT #{selectedWindow.id.replace(":", "")}
                   </div>
                   <div className="text-slate-500 font-sans">
-                    Selected Window: {selectedWindow.timeWindow}
+                    {t("Selected Window", "Khung giờ chọn")}: {selectedWindow.timeWindow}
                   </div>
                   <div className="text-emerald-700 font-bold text-[11px] mt-0.5">
-                    30-Day Accuracy: 98.7%
+                    {t("30-Day Accuracy: 98.7%", "Độ chính xác 30 ngày: 98.7%")}
                   </div>
                 </div>
               </div>
@@ -996,45 +1034,45 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
               {/* Selected Window Summary */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-200">
                 <div>
-                  <span className="text-slate-400 block text-[10px] uppercase font-bold">Time Window</span>
+                  <span className="text-slate-400 block text-[10px] uppercase font-bold">{t("Time Window", "Khung Giờ")}</span>
                   <strong className="text-slate-900 text-sm font-black font-mono">{selectedWindow.timeWindow}</strong>
                   <span className="text-[11px] text-slate-500 block">{selectedWindow.touLabel}</span>
                 </div>
                 <div>
-                  <span className="text-slate-400 block text-[10px] uppercase font-bold">Expected Power</span>
+                  <span className="text-slate-400 block text-[10px] uppercase font-bold">{t("Expected Power", "Công Suất Dự Báo")}</span>
                   <strong className="text-[#004B91] text-sm font-black font-mono">{selectedWindow.expectedKw.toLocaleString()} kW</strong>
                   <span className="text-[11px] text-slate-500 font-mono block">Max: {selectedWindow.highBoundKw.toLocaleString()} kW</span>
                 </div>
                 <div>
-                  <span className="text-slate-400 block text-[10px] uppercase font-bold">Solar / Net Grid</span>
+                  <span className="text-slate-400 block text-[10px] uppercase font-bold">{t("Solar / Net Grid", "Điện Mặt Trời / Nhận Lưới")}</span>
                   <strong className="text-emerald-700 text-sm font-black font-mono">-{selectedWindow.solarKw.toLocaleString()} kW</strong>
-                  <span className="text-[11px] text-slate-700 font-mono block">Grid: {selectedWindow.netGridKw.toLocaleString()} kW</span>
+                  <span className="text-[11px] text-slate-700 font-mono block">{t("Grid", "Lưới")}: {selectedWindow.netGridKw.toLocaleString()} kW</span>
                 </div>
                 <div>
-                  <span className="text-slate-400 block text-[10px] uppercase font-bold">Substation Status</span>
+                  <span className="text-slate-400 block text-[10px] uppercase font-bold">{t("Substation Status", "Trạng Thái Trạm")}</span>
                   <strong className={`text-sm font-black font-mono ${selectedWindow.status === "OVERLOAD_WARNING" ? "text-amber-700" : "text-emerald-700"}`}>
-                    {selectedWindow.status === "OVERLOAD_WARNING" ? "OVERLOAD ALERT" : "NORMAL"}
+                    {selectedWindow.status === "OVERLOAD_WARNING" ? t("OVERLOAD ALERT", "CẢNH BÁO QUÁ TẢI") : t("NORMAL", "BÌNH THƯỜNG")}
                   </strong>
-                  <span className="text-[11px] text-slate-500 block">Limit: 8,000 kW</span>
+                  <span className="text-[11px] text-slate-500 block">{t("Limit: 8,000 kW", "Giới hạn: 8,000 kW")}</span>
                 </div>
               </div>
 
               {/* Full 24-Hour Table */}
               <div className="space-y-2">
                 <div className="font-extrabold text-slate-900 text-xs uppercase tracking-wider">
-                  Complete 24-Hour Schedule &amp; Power Forecast
+                  {t("Complete 24-Hour Schedule & Power Forecast", "Bảng Tổng Hợp Lịch Tàu & Dự Báo Phụ Tải 24 Giờ")}
                 </div>
                 <div className="overflow-x-auto border border-slate-200 rounded-xl">
                   <table className="w-full text-left text-xs">
                     <thead className="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
                       <tr>
-                        <th className="py-2 px-2.5">Time</th>
-                        <th className="py-2 px-2.5 text-right font-mono">Expected (kW)</th>
-                        <th className="py-2 px-2.5 text-right font-mono">High Range (kW)</th>
-                        <th className="py-2 px-2.5 text-right font-mono">Solar (kW)</th>
-                        <th className="py-2 px-2.5 text-right font-mono">Net Grid (kW)</th>
-                        <th className="py-2 px-2.5 text-center">Status</th>
-                        <th className="py-2 px-2.5">Port Activity</th>
+                        <th className="py-2 px-2.5">{t("Time", "Giờ")}</th>
+                        <th className="py-2 px-2.5 text-right font-mono">{t("Expected (kW)", "Dự Báo (kW)")}</th>
+                        <th className="py-2 px-2.5 text-right font-mono">{t("High Range (kW)", "Biên Trên (kW)")}</th>
+                        <th className="py-2 px-2.5 text-right font-mono">{t("Solar (kW)", "Solar (kW)")}</th>
+                        <th className="py-2 px-2.5 text-right font-mono">{t("Net Grid (kW)", "Nhận Lưới (kW)")}</th>
+                        <th className="py-2 px-2.5 text-center">{t("Status", "Trạng Thái")}</th>
+                        <th className="py-2 px-2.5">{t("Port Activity", "Hoạt Động Cảng")}</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100">
@@ -1058,7 +1096,7 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
                               <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
                                 isWarn ? "bg-amber-500 text-white" : "bg-emerald-100 text-emerald-800"
                               }`}>
-                                {isWarn ? "OVER 8,000 kW" : "NORMAL"}
+                                {isWarn ? t("OVER 8,000 kW", "VƯỢT 8,000 kW") : t("NORMAL", "BÌNH THƯỜNG")}
                               </span>
                             </td>
                             <td className="py-2 px-2.5 text-slate-600 truncate max-w-[210px]">{row.operationSummary}</td>
@@ -1077,7 +1115,7 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
                 onClick={() => setShowForecastReportModal(false)}
                 className="px-4 py-2 bg-white border border-slate-200 text-slate-700 rounded-lg text-xs font-bold hover:bg-slate-100 transition-colors cursor-pointer"
               >
-                Close
+                {t("Close", "Đóng")}
               </button>
               <button
                 type="button"
@@ -1085,7 +1123,7 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
                 className="px-5 py-2 bg-[#004B91] text-white rounded-lg text-xs font-bold hover:bg-[#00386E] transition-colors flex items-center gap-2 shadow-2xs cursor-pointer"
               >
                 <Download className="w-3.5 h-3.5" />
-                <span>Download PDF Report</span>
+                <span>{t("Download PDF Report", "Tải Báo Cáo PDF")}</span>
               </button>
             </div>
           </div>
@@ -1102,7 +1140,7 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
               <div className="flex items-center gap-2">
                 <Clock className="w-4 h-4 text-emerald-400" />
                 <span className="font-bold text-sm">
-                  Forecast Update Rules &amp; 30-Day Accuracy
+                  {t("Forecast Update Rules & 30-Day Accuracy", "Quy Tắc Cập Nhật Dự Báo & Độ Chính Xác 30 Ngày")}
                 </span>
               </div>
               <button
@@ -1117,46 +1155,46 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
             <div className="p-6 space-y-5 text-xs text-slate-800">
               <div className="space-y-2">
                 <div className="font-bold text-slate-900 uppercase tracking-wider text-[11px]">
-                  When Does the Forecast Automatically Update?
+                  {t("When Does the Forecast Automatically Update?", "Khi Nào Hệ Thống Tự Động Cập Nhật Dự Báo?")}
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
-                    <div className="font-bold text-slate-900">1. Ship Arrival / Departure Change</div>
-                    <div className="text-slate-600 mt-0.5">Updates immediately if a ship arrives ≥ 30 minutes early/late or changes berth.</div>
+                    <div className="font-bold text-slate-900">{t("1. Ship Arrival / Departure Change", "1. Thay đổi giờ tàu cập / rời bến")}</div>
+                    <div className="text-slate-600 mt-0.5">{t("Updates immediately if a ship arrives ≥ 30 minutes early/late or changes berth.", "Cập nhật ngay khi tàu đến sớm/trễ ≥ 30 phút hoặc đổi cầu bến.")}</div>
                   </div>
                   <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
-                    <div className="font-bold text-slate-900">2. Container &amp; Reefer Volume Change</div>
-                    <div className="text-slate-600 mt-0.5">Updates if container moves change by ≥ 15% or plugged reefer containers shift by ≥ 10%.</div>
+                    <div className="font-bold text-slate-900">{t("2. Container & Reefer Volume Change", "2. Biến động sản lượng Container & Reefer")}</div>
+                    <div className="text-slate-600 mt-0.5">{t("Updates if container moves change by ≥ 15% or plugged reefer containers shift by ≥ 10%.", "Cập nhật khi lượt cẩu thay đổi ≥ 15% hoặc số lượng container lạnh thay đổi ≥ 10%.")}</div>
                   </div>
                   <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
-                    <div className="font-bold text-slate-900">3. Regular 15-Minute Updates</div>
-                    <div className="text-slate-600 mt-0.5">Refreshes every 15 minutes and locks the next-day schedule at 22:00 each night.</div>
+                    <div className="font-bold text-slate-900">{t("3. Regular 15-Minute Updates", "3. Chu kỳ cập nhật 15 phút")}</div>
+                    <div className="text-slate-600 mt-0.5">{t("Refreshes every 15 minutes and locks the next-day schedule at 22:00 each night.", "Làm mới mỗi 15 phút và chốt kế hoạch phụ tải ngày hôm sau lúc 22:00 mỗi tối.")}</div>
                   </div>
                   <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
-                    <div className="font-bold text-slate-900">4. Crane Maintenance or Stoppage</div>
-                    <div className="text-slate-600 mt-0.5">Recalculates power demand immediately if any Quay Crane stops for maintenance.</div>
+                    <div className="font-bold text-slate-900">{t("4. Crane Maintenance or Stoppage", "4. Bảo trì hoặc dừng cẩu STS")}</div>
+                    <div className="text-slate-600 mt-0.5">{t("Recalculates power demand immediately if any Quay Crane stops for maintenance.", "Tính toán lại phụ tải tức thì nếu bất kỳ cẩu bờ STS nào tạm dừng bảo trì.")}</div>
                   </div>
                 </div>
               </div>
 
               <div className="space-y-2">
                 <div className="font-bold text-slate-900 uppercase tracking-wider text-[11px]">
-                  30-Day Forecast Accuracy History
+                  {t("30-Day Forecast Accuracy History", "Lịch Sử Độ Chính Xác Dự Báo 30 Ngày")}
                 </div>
                 <table className="w-full text-left border border-slate-200 rounded-xl overflow-hidden font-mono">
                   <thead className="bg-slate-100 text-slate-700 font-bold border-b border-slate-200 font-sans">
                     <tr>
-                      <th className="py-2 px-3">History Window</th>
-                      <th className="py-2 px-3 text-right">15-Min Readings</th>
-                      <th className="py-2 px-3 text-right">Accuracy</th>
-                      <th className="py-2 px-3 text-right">Avg Error (kW)</th>
-                      <th className="py-2 px-3 text-right">Within Range</th>
+                      <th className="py-2 px-3">{t("History Window", "Chu Kỳ Đánh Giá")}</th>
+                      <th className="py-2 px-3 text-right">{t("15-Min Readings", "Số Mẫu 15 Phút")}</th>
+                      <th className="py-2 px-3 text-right">{t("Accuracy", "Độ Chính Xác")}</th>
+                      <th className="py-2 px-3 text-right">{t("Avg Error (kW)", "Sai Số TB (kW)")}</th>
+                      <th className="py-2 px-3 text-right">{t("Within Range", "Trong Biên Dự Báo")}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
                     {ACCURACY_HISTORY.map((row) => (
                       <tr key={row.windowDays} className={row.windowDays === 30 ? "bg-emerald-50/70 font-bold" : ""}>
-                        <td className="py-2 px-3">{row.windowDays} Days</td>
+                        <td className="py-2 px-3">{row.windowDays} {t("Days", "Ngày")}</td>
                         <td className="py-2 px-3 text-right tabular-nums">{row.samples.toLocaleString()}</td>
                         <td className="py-2 px-3 text-right text-[#004B91] tabular-nums">{row.accuracyPercent}</td>
                         <td className="py-2 px-3 text-right tabular-nums">±{row.avgErrorKw} kW</td>
@@ -1173,7 +1211,7 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
                   onClick={() => setShowSettingsModal(false)}
                   className="px-4 py-2 bg-slate-900 text-white rounded-lg font-bold hover:bg-slate-800 transition-colors cursor-pointer"
                 >
-                  Close
+                  {t("Close", "Đóng")}
                 </button>
               </div>
             </div>

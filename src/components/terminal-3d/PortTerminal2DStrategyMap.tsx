@@ -16,6 +16,7 @@ import {
   Terminal3DEntity,
   TerminalEntityCategory,
 } from "./terminal3DData";
+import { useLanguage } from "../../context/LanguageContext";
 
 export const LOOP_DURATION_SEC = 30;
 
@@ -2092,6 +2093,7 @@ export const PortTerminal2DStrategyMap: React.FC<
   leftListCollapsed,
   onToggleLeftListCollapsed,
 }) => {
+  const { t } = useLanguage();
   const [zoom, setZoom] = useState<number>(1);
   const [pan, setPan] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState<boolean>(false);
@@ -2272,14 +2274,18 @@ export const PortTerminal2DStrategyMap: React.FC<
         <div className="px-2.5 py-2.5 border-b border-slate-100 flex items-center justify-between gap-2">
           {!leftListCollapsed && (
             <span className="text-xs font-black text-slate-900 truncate pl-0.5">
-              Khu vực Cảng ({TERMINAL_STRATEGY_ZONES.length})
+              {t("Port Zones", "Khu vực Cảng")} ({TERMINAL_STRATEGY_ZONES.length})
             </span>
           )}
           <button
             type="button"
             onClick={() => onToggleLeftListCollapsed(!leftListCollapsed)}
             className="w-6 h-6 rounded-lg hover:bg-slate-100 text-slate-500 flex items-center justify-center transition-colors cursor-pointer shrink-0"
-            title={leftListCollapsed ? "Mở danh sách khu vực cảng" : "Thu gọn khu vực cảng"}
+            title={
+              leftListCollapsed
+                ? t("Expand port zones list", "Mở danh sách khu vực cảng")
+                : t("Collapse port zones", "Thu gọn khu vực cảng")
+            }
           >
             <ChevronRight
               className={`w-4 h-4 transition-transform ${
@@ -2304,9 +2310,11 @@ export const PortTerminal2DStrategyMap: React.FC<
                 <Navigation className="w-3.5 h-3.5" />
               </div>
               <div className="min-w-0 flex-1">
-                <div className="text-xs font-bold truncate">Toàn bộ Cảng</div>
+                <div className="text-xs font-bold truncate">
+                  {t("All Terminal Zones", "Toàn bộ Cảng")}
+                </div>
                 <div className="text-[10px] text-slate-500 truncate">
-                  Luồng biển · 3 Cầu bến · 4 Bãi lớn
+                  {t("Channel · 3 Berths · 4 Major Bays", "Luồng biển · 3 Cầu bến · 4 Bãi lớn")}
                 </div>
               </div>
             </button>
@@ -2409,10 +2417,10 @@ export const PortTerminal2DStrategyMap: React.FC<
           <div className="pointer-events-auto flex flex-wrap items-center gap-1.5">
             {(
               [
-                { id: "VESSELS", label: "Vessels", count: 3, icon: Ship, color: "#1A73E8" },
-                { id: "CRANES", label: "Quay Cranes", count: 4, icon: Anchor, color: "#0284C7" },
-                { id: "TRUCKS", label: "Yard Trucks", count: 4, icon: Truck, color: "#EA580C" },
-                { id: "BAYS", label: "Container Bays", count: 4, icon: Container, color: "#0D9488" },
+                { id: "VESSELS", label: t("Vessels", "Tàu biển"), count: 3, icon: Ship, color: "#1A73E8" },
+                { id: "CRANES", label: t("Quay Cranes", "Cẩu bờ STS"), count: 4, icon: Anchor, color: "#0284C7" },
+                { id: "TRUCKS", label: t("Yard Trucks", "Xe đầu kéo"), count: 4, icon: Truck, color: "#EA580C" },
+                { id: "BAYS", label: t("Container Bays", "Bãi Container"), count: 4, icon: Container, color: "#0D9488" },
               ] as const
             ).map((cat) => {
               const Icon = cat.icon;

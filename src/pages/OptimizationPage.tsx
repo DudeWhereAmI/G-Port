@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useLanguage } from "../context/LanguageContext";
 import { 
   ElectricityTariffTou, 
   BessSystemStatus, 
@@ -280,6 +281,7 @@ const PEAK_SHAVING_24H_SERIES = [
 ];
 
 export const OptimizationPage: React.FC<OptimizationPageProps> = () => {
+  const { t } = useLanguage();
   const [assetGroups, setAssetGroups] = useState<AssetControlGroup[]>(INITIAL_12_ASSET_GROUPS);
   const [searchQuery, setSearchQuery] = useState("");
   const [tierFilter, setTierFilter] = useState<"ALL" | ControlTier>("ALL");
@@ -350,14 +352,14 @@ export const OptimizationPage: React.FC<OptimizationPageProps> = () => {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200/90 shadow-2xs">
         <div>
           <div className="flex items-center gap-2 text-xs font-semibold text-slate-500 mb-1">
-            <span className="font-bold text-[#004B91]">Peak Shaving &amp; Smart Load Control</span>
+            <span className="font-bold text-[#004B91]">{t("Peak Shaving & Smart Load Control", "Cắt Đỉnh Phụ Tải & Điều Khiển Phụ Tải Thông Minh")}</span>
             <span aria-hidden="true">·</span>
-            <span>12 Equipment Groups</span>
+            <span>{t("12 Equipment Groups", "12 Nhóm Thiết Bị Cảng")}</span>
             <span aria-hidden="true">·</span>
-            <span className="text-emerald-700 font-bold">Peak Reduced by 2,225 kW (-26.3%)</span>
+            <span className="text-emerald-700 font-bold">{t("Peak Reduced by 2,225 kW (-26.3%)", "Giảm Đỉnh 2,225 kW (-26.3%)")}</span>
           </div>
           <h1 className="text-2xl font-black text-slate-900 tracking-tight">
-            Peak Power Shaving &amp; Equipment Load Control
+            {t("Peak Power Shaving & Equipment Load Control", "Cắt Đỉnh Phụ Tải & Điều Khiển Thiết Bị Cảng")}
           </h1>
         </div>
 
@@ -368,7 +370,7 @@ export const OptimizationPage: React.FC<OptimizationPageProps> = () => {
             className="px-3.5 py-2 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-50 text-xs font-bold flex items-center gap-1.5 transition-colors whitespace-nowrap shrink-0 cursor-pointer"
           >
             <ShieldCheck className="w-3.5 h-3.5 text-[#004B91]" />
-            <span>Safety Rules</span>
+            <span>{t("Safety Rules", "Quy Tắc An Toàn")}</span>
           </button>
 
           <button
@@ -377,7 +379,7 @@ export const OptimizationPage: React.FC<OptimizationPageProps> = () => {
             className="px-4 py-2 rounded-xl bg-[#004B91] hover:bg-[#00386E] text-white text-xs font-bold flex items-center gap-1.5 shadow-2xs transition-colors whitespace-nowrap shrink-0 cursor-pointer"
           >
             <FileText className="w-3.5 h-3.5" />
-            <span>Daily Savings Report</span>
+            <span>{t("Daily Savings Report", "Báo Cáo Tiết Kiệm Ngày")}</span>
           </button>
         </div>
       </div>
@@ -389,55 +391,55 @@ export const OptimizationPage: React.FC<OptimizationPageProps> = () => {
         {/* Highlighted Peak Reduction Card */}
         <div className="bg-emerald-50/70 p-4 rounded-xl border-2 border-emerald-300 shadow-2xs">
           <div className="flex items-center justify-between text-emerald-900 text-[11px] font-bold mb-1">
-            <span>Peak Power Reduced</span>
+            <span>{t("Peak Power Reduced", "Công Suất Đỉnh Đã Cắt Giảm")}</span>
             <TrendingDown className="w-4 h-4 text-emerald-600" />
           </div>
           <div className="text-xl sm:text-2xl font-black text-emerald-800 font-mono tabular-nums">
             -2,225 <span className="text-xs text-emerald-700 font-sans font-bold">kW (-26.3%)</span>
           </div>
           <div className="text-[11px] text-emerald-800 font-semibold mt-0.5 font-mono">
-            8,458 kW → 6,233 kW at 14:00
+            8,458 kW → 6,233 kW {t("at 14:00", "lúc 14:00")}
           </div>
         </div>
 
         <div className="bg-white p-4 rounded-xl border border-slate-200/90 shadow-2xs">
           <div className="flex items-center justify-between text-slate-500 text-[11px] font-bold mb-1">
-            <span>Daily Electricity Cost Saved</span>
+            <span>{t("Daily Electricity Cost Saved", "Tiết Kiệm Chi Phí Điện Ngày")}</span>
             <Zap className="w-4 h-4 text-[#004B91]" />
           </div>
           <div className="text-xl sm:text-2xl font-black text-slate-900 font-mono tabular-nums">
-            37.66M <span className="text-xs text-slate-500 font-sans font-semibold">VND / Day</span>
+            37.66M <span className="text-xs text-slate-500 font-sans font-semibold">{t("VND / Day", "VNĐ / Ngày")}</span>
           </div>
           <div className="text-[11px] text-emerald-700 font-semibold mt-0.5">
-            +25.59M VND Peak Penalty Avoided
+            {t("+25.59M VND Peak Penalty Avoided", "+25.59 Tr VNĐ Tránh Phạt Vượt Đỉnh")}
           </div>
         </div>
 
         <div className="bg-white p-4 rounded-xl border border-slate-200/90 shadow-2xs">
           <div className="flex items-center justify-between text-slate-500 text-[11px] font-bold mb-1">
-            <span>Operator Approvals</span>
+            <span>{t("Operator Approvals", "Phê Duyệt Vận Hành Ca")}</span>
             <Sliders className="w-4 h-4 text-amber-600" />
           </div>
           <div className="text-xl sm:text-2xl font-black text-slate-900 font-mono tabular-nums">
-            {approvedCount}/{totalApprovalRequired} <span className="text-xs text-slate-500 font-sans font-semibold">Approved</span>
+            {approvedCount}/{totalApprovalRequired} <span className="text-xs text-slate-500 font-sans font-semibold">{t("Approved", "Đã Duyệt")}</span>
           </div>
           <div className="text-[11px] text-amber-700 font-semibold mt-0.5">
             {totalApprovalRequired - approvedCount > 0
-              ? `${totalApprovalRequired - approvedCount} group waiting for approval`
-              : "All flexible loads approved"}
+              ? `${totalApprovalRequired - approvedCount} ${t("group waiting for approval", "nhóm thiết bị chờ phê duyệt")}`
+              : t("All flexible loads approved", "Đã phê duyệt toàn bộ tải linh hoạt")}
           </div>
         </div>
 
         <div className="bg-white p-4 rounded-xl border border-slate-200/90 shadow-2xs">
           <div className="flex items-center justify-between text-slate-500 text-[11px] font-bold mb-1">
-            <span>Protected Critical Equipment</span>
+            <span>{t("Protected Critical Equipment", "Thiết Bị Trọng Yếu Được Bảo Vệ")}</span>
             <ShieldCheck className="w-4 h-4 text-blue-600" />
           </div>
           <div className="text-xl sm:text-2xl font-black text-blue-700 font-mono tabular-nums">
-            6 <span className="text-xs text-slate-500 font-sans font-semibold">Groups Locked</span>
+            6 <span className="text-xs text-slate-500 font-sans font-semibold">{t("Groups Locked", "Nhóm Khóa Bảo Vệ")}</span>
           </div>
           <div className="text-[11px] text-slate-500 font-medium mt-0.5">
-            Cranes &amp; Shore Power at 100% power
+            {t("Cranes & Shore Power at 100% power", "Cẩu STS & Điện Bờ OPS duy trì 100%")}
           </div>
         </div>
       </div>
@@ -449,18 +451,18 @@ export const OptimizationPage: React.FC<OptimizationPageProps> = () => {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
           <div>
             <h2 className="font-bold text-slate-900 text-sm">
-              24-Hour Substation Power: Before vs. After Peak Shaving
+              {t("24-Hour Substation Power: Before vs. After Peak Shaving", "Đường Cong Công Suất Trạm 24 Giờ: Trước & Sau Khi Cắt Đỉnh")}
             </h2>
             <div className="flex items-center gap-2 text-xs text-slate-500 mt-0.5">
-              <span>Without Control: 8,458 kW Peak</span>
+              <span>{t("Without Control: 8,458 kW Peak", "Chưa Điều Khiển: Đỉnh 8,458 kW")}</span>
               <span aria-hidden="true">·</span>
-              <span className="text-emerald-700 font-semibold">With Regen &amp; Load Control: 6,233 kW Peak</span>
+              <span className="text-emerald-700 font-semibold">{t("With Regen & Load Control: 6,233 kW Peak", "Sau Thu Hồi Động Năng & Điều Tải: Đỉnh 6,233 kW")}</span>
             </div>
           </div>
 
           <div className="flex items-center gap-4 text-xs font-semibold shrink-0">
-            <span className="text-slate-500 font-mono">● Before Control (8,458 kW)</span>
-            <span className="text-[#004B91] font-mono">● After Control (6,233 kW)</span>
+            <span className="text-slate-500 font-mono">● {t("Before Control (8,458 kW)", "Trước Điều Khiển (8,458 kW)")}</span>
+            <span className="text-[#004B91] font-mono">● {t("After Control (6,233 kW)", "Sau Điều Khiển (6,233 kW)")}</span>
           </div>
         </div>
 
@@ -477,7 +479,7 @@ export const OptimizationPage: React.FC<OptimizationPageProps> = () => {
               <Area
                 type="monotone"
                 dataKey="beforeKw"
-                name="Power Before Control"
+                name={t("Power Before Control", "Công Suất Trước Điều Khiển")}
                 fill="#CBD5E1"
                 fillOpacity={0.25}
                 stroke="#64748B"
@@ -487,7 +489,7 @@ export const OptimizationPage: React.FC<OptimizationPageProps> = () => {
               <Line
                 type="monotone"
                 dataKey="afterKw"
-                name="Power After Control"
+                name={t("Power After Control", "Công Suất Sau Điều Khiển")}
                 stroke="#004B91"
                 strokeWidth={2.5}
                 dot={{ r: 3, fill: "#004B91" }}
@@ -511,7 +513,7 @@ export const OptimizationPage: React.FC<OptimizationPageProps> = () => {
           <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
           <input
             type="text"
-            placeholder="Search equipment by name (Crane Regen, Reefer, Cranes), line (F-01..F-06)..."
+            placeholder={t("Search equipment by name (Crane Regen, Reefer, Cranes), line (F-01..F-06)...", "Tìm thiết bị theo tên (Thu hồi động năng, Reefer, Cẩu), lộ (F-01..F-06)...")}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-[#004B91] focus:bg-white"
@@ -519,12 +521,12 @@ export const OptimizationPage: React.FC<OptimizationPageProps> = () => {
         </div>
 
         <div className="flex items-center gap-1.5 flex-wrap">
-          <span className="text-slate-500 font-bold text-[11px] mr-1">Control Mode:</span>
+          <span className="text-slate-500 font-bold text-[11px] mr-1">{t("Control Mode:", "Chế Độ Điều Khiển:")}</span>
           {([
-            { id: "ALL", label: "All Equipment (12)" },
-            { id: "DIRECT_CONTROL", label: "Auto Regen & Solar (2)" },
-            { id: "OPERATOR_APPROVAL", label: "Needs Operator Approval (4)" },
-            { id: "MUST_RUN", label: "Protected / Locked (6)" }
+            { id: "ALL", label: t("All Equipment (12)", "Tất Cả Thiết Bị (12)") },
+            { id: "DIRECT_CONTROL", label: t("Auto Regen & Solar (2)", "Tự Động Regen & Solar (2)") },
+            { id: "OPERATOR_APPROVAL", label: t("Needs Operator Approval (4)", "Cần Phê Duyệt Ca (4)") },
+            { id: "MUST_RUN", label: t("Protected / Locked (6)", "Khóa Bảo Vệ 100% (6)") }
           ] as const).map((tab) => (
             <button
               key={tab.id}
@@ -589,12 +591,12 @@ export const OptimizationPage: React.FC<OptimizationPageProps> = () => {
                     }`}
                   >
                     {ast.operatorStatus === "AUTO_ACTIVE"
-                      ? "Auto Active"
+                      ? t("Auto Active", "Tự Động")
                       : ast.operatorStatus === "APPROVED"
-                      ? "Approved"
+                      ? t("Approved", "Đã Duyệt")
                       : ast.operatorStatus === "PENDING_REVIEW"
-                      ? "Needs Approval"
-                      : "Protected"}
+                      ? t("Needs Approval", "Chờ Duyệt")
+                      : t("Protected", "Bảo Vệ")}
                   </span>
                 </div>
 
@@ -603,15 +605,15 @@ export const OptimizationPage: React.FC<OptimizationPageProps> = () => {
                   hasSavings ? "bg-emerald-50/70 border-emerald-200" : "bg-slate-50 border-slate-200/80"
                 }`}>
                   <div className="flex items-baseline justify-between">
-                    <span className="text-[11px] font-bold text-slate-600">Peak Power Saved:</span>
+                    <span className="text-[11px] font-bold text-slate-600">{t("Peak Power Saved:", "Công Suất Đỉnh Đã Giảm:")}</span>
                     <strong className={`text-lg font-black font-mono tabular-nums ${
                       hasSavings ? "text-emerald-700" : "text-slate-600"
                     }`}>
-                      {hasSavings ? `-${ast.powerSavedKw.toLocaleString()} kW` : "0 kW (Locked)"}
+                      {hasSavings ? `-${ast.powerSavedKw.toLocaleString()} kW` : t("0 kW (Locked)", "0 kW (Khóa)")}
                     </strong>
                   </div>
                   <div className="flex items-center justify-between text-[11px] text-slate-500 mt-1">
-                    <span>Current Peak Load:</span>
+                    <span>{t("Current Peak Load:", "Tải Đỉnh Hiện Tại:")}</span>
                     <span className="font-mono font-bold text-slate-800 tabular-nums">
                       {ast.currentLoadKw.toLocaleString()} kW
                     </span>
@@ -621,15 +623,15 @@ export const OptimizationPage: React.FC<OptimizationPageProps> = () => {
                 {/* Operational Parameters */}
                 <div className="space-y-1.5 text-xs">
                   <div className="flex justify-between text-slate-600">
-                    <span className="text-slate-500">Max Equipment Rating:</span>
+                    <span className="text-slate-500">{t("Max Equipment Rating:", "Công Suất Định Mức:")}</span>
                     <strong className="text-slate-900 font-mono tabular-nums">
                       {ast.pMaxKw.toLocaleString()} kW
                     </strong>
                   </div>
                   <div className="flex justify-between text-slate-600">
-                    <span className="text-slate-500">Allowed Adjustment:</span>
+                    <span className="text-slate-500">{t("Allowed Adjustment:", "Biên Độ Điều Chỉnh:")}</span>
                     <strong className="text-slate-800 font-mono tabular-nums">
-                      {ast.maxReductionPercent > 0 ? `Up to ${ast.maxReductionPercent}%` : "0% (Must-Run)"}
+                      {ast.maxReductionPercent > 0 ? `${t("Up to", "Tối đa")} ${ast.maxReductionPercent}%` : t("0% (Must-Run)", "0% (Cố Định)")}
                     </strong>
                   </div>
                 </div>
@@ -647,7 +649,7 @@ export const OptimizationPage: React.FC<OptimizationPageProps> = () => {
                   className="py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-1.5 whitespace-nowrap shrink-0 cursor-pointer"
                 >
                   <Sliders className="w-3.5 h-3.5 text-[#004B91]" />
-                  <span>Load Settings</span>
+                  <span>{t("Load Settings", "Cấu Hình Tải")}</span>
                 </button>
 
                 <button
@@ -656,7 +658,7 @@ export const OptimizationPage: React.FC<OptimizationPageProps> = () => {
                   className="py-2 bg-[#004B91] hover:bg-[#00386E] text-white rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-1.5 shadow-2xs whitespace-nowrap shrink-0 cursor-pointer"
                 >
                   <FileText className="w-3.5 h-3.5" />
-                  <span>Savings Report</span>
+                  <span>{t("Savings Report", "Báo Cáo Tiết Kiệm")}</span>
                 </button>
               </div>
             </div>
@@ -674,7 +676,7 @@ export const OptimizationPage: React.FC<OptimizationPageProps> = () => {
               <div className="flex items-center gap-2">
                 <Sliders className="w-4 h-4 text-amber-400" />
                 <span className="font-bold text-sm">
-                  Equipment Load Settings — {selectedAsset.name}
+                  {t("Equipment Load Settings", "Cấu Hình Điều Khiển Phụ Tải")} — {selectedAsset.name}
                 </span>
               </div>
               <button
@@ -696,28 +698,28 @@ export const OptimizationPage: React.FC<OptimizationPageProps> = () => {
                   <h3 className="text-base font-black text-slate-900 mt-0.5">{selectedAsset.name}</h3>
                 </div>
                 <div className="font-mono text-xs font-bold text-slate-700 bg-slate-100 px-3 py-1.5 rounded-lg">
-                  Allowed Adjustment: {selectedAsset.maxReductionPercent}%
+                  {t("Allowed Adjustment", "Biên Độ Cho Phép")}: {selectedAsset.maxReductionPercent}%
                 </div>
               </div>
 
               {/* 4 Key Operational Metrics */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-slate-50 p-4 rounded-xl border border-slate-200 font-mono">
                 <div>
-                  <span className="text-slate-400 block text-[10px] font-sans uppercase font-bold">Max Capacity</span>
+                  <span className="text-slate-400 block text-[10px] font-sans uppercase font-bold">{t("Max Capacity", "Công Suất ĐM")}</span>
                   <strong className="text-slate-900 text-sm font-black">{selectedAsset.pMaxKw.toLocaleString()} kW</strong>
                 </div>
                 <div>
-                  <span className="text-slate-400 block text-[10px] font-sans uppercase font-bold">Before Control</span>
+                  <span className="text-slate-400 block text-[10px] font-sans uppercase font-bold">{t("Before Control", "Trước Điều Khiển")}</span>
                   <strong className="text-slate-700 text-sm font-black">{selectedAsset.unoptimizedPeakKw.toLocaleString()} kW</strong>
                 </div>
                 <div>
-                  <span className="text-slate-400 block text-[10px] font-sans uppercase font-bold">Current Power</span>
+                  <span className="text-slate-400 block text-[10px] font-sans uppercase font-bold">{t("Current Power", "Tải Hiện Tại")}</span>
                   <strong className="text-[#004B91] text-sm font-black">{selectedAsset.currentLoadKw.toLocaleString()} kW</strong>
                 </div>
                 <div>
-                  <span className="text-slate-400 block text-[10px] font-sans uppercase font-bold">Power Saved</span>
+                  <span className="text-slate-400 block text-[10px] font-sans uppercase font-bold">{t("Power Saved", "Công Suất Giảm")}</span>
                   <strong className="text-emerald-700 text-sm font-black">
-                    {selectedAsset.powerSavedKw > 0 ? `-${selectedAsset.powerSavedKw} kW` : "0 kW (Protected)"}
+                    {selectedAsset.powerSavedKw > 0 ? `-${selectedAsset.powerSavedKw} kW` : t("0 kW (Protected)", "0 kW (Bảo Vệ)")}
                   </strong>
                 </div>
               </div>
@@ -726,14 +728,14 @@ export const OptimizationPage: React.FC<OptimizationPageProps> = () => {
               <div className="space-y-3">
                 <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-1.5">
                   <div className="font-bold text-slate-900 uppercase tracking-wider text-[11px]">
-                    How Power Saving Works &amp; Safety Limits
+                    {t("How Power Saving Works & Safety Limits", "Cơ Chế Tiết Kiệm Công Suất & Giới Hạn An Toàn")}
                   </div>
                   <p className="text-slate-700 leading-relaxed">{selectedAsset.safetyConstraintSpec}</p>
                 </div>
 
                 <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-1.5">
                   <div className="font-bold text-slate-900 uppercase tracking-wider text-[11px]">
-                    Automatic Backup Rule
+                    {t("Automatic Backup Rule", "Quy Tắc Phục Hồi Dự Phòng Tự Động")}
                   </div>
                   <p className="text-slate-700 leading-relaxed">{selectedAsset.fallbackRule}</p>
                 </div>
@@ -742,13 +744,13 @@ export const OptimizationPage: React.FC<OptimizationPageProps> = () => {
               {/* Shift Operator Approval Control */}
               <div className="p-4 rounded-xl border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white">
                 <div>
-                  <div className="font-bold text-slate-900">Shift Operator Approval</div>
+                  <div className="font-bold text-slate-900">{t("Shift Operator Approval", "Phê Duyệt Của Trưởng Ca Vận Hành")}</div>
                   <div className="text-slate-500 text-[11px] mt-0.5">
                     {selectedAsset.controlTier === "OPERATOR_APPROVAL"
-                      ? "Flexible equipment requires operator approval before reducing power during peak hours."
+                      ? t("Flexible equipment requires operator approval before reducing power during peak hours.", "Thiết bị tải linh hoạt cần phê duyệt của Trưởng ca trước khi giảm tải giờ cao điểm.")
                       : selectedAsset.controlTier === "DIRECT_CONTROL"
-                      ? "Runs automatically within safe crane regen busbar and solar inverter limits."
-                      : "Protected equipment: locked at 100% power to protect ship schedules and port safety."}
+                      ? t("Runs automatically within safe crane regen busbar and solar inverter limits.", "Vận hành tự động trong giới hạn an toàn của thanh cái thu hồi động năng cẩu và biến tần Solar.")
+                      : t("Protected equipment: locked at 100% power to protect ship schedules and port safety.", "Thiết bị trọng yếu: khóa cứng ở 100% công suất nhằm đảm bảo tiến độ giải phóng tàu và an toàn cảng.")}
                   </div>
                 </div>
 
@@ -763,12 +765,12 @@ export const OptimizationPage: React.FC<OptimizationPageProps> = () => {
                     }`}
                   >
                     {selectedAsset.operatorStatus === "APPROVED"
-                      ? "Approved (Click to Pause)"
-                      : "Approve Power Saving"}
+                      ? t("Approved (Click to Pause)", "Đã Duyệt (Bấm Để Tạm Dừng)")
+                      : t("Approve Power Saving", "Phê Duyệt Giảm Tải")}
                   </button>
                 ) : (
                   <span className="font-mono font-bold text-xs text-slate-600 bg-slate-100 px-3 py-1.5 rounded-lg whitespace-nowrap shrink-0">
-                    {selectedAsset.controlTier === "MUST_RUN" ? "PROTECTED (100% POWER)" : "AUTOMATIC CONTROL"}
+                    {selectedAsset.controlTier === "MUST_RUN" ? t("PROTECTED (100% POWER)", "KHÓA BẢO VỆ (100% TẢI)") : t("AUTOMATIC CONTROL", "ĐIỀU KHIỂN TỰ ĐỘNG")}
                   </span>
                 )}
               </div>
@@ -782,14 +784,14 @@ export const OptimizationPage: React.FC<OptimizationPageProps> = () => {
                   }}
                   className="px-4 py-2 bg-[#004B91] text-white rounded-lg font-bold hover:bg-[#00386E] transition-colors cursor-pointer"
                 >
-                  View Daily Savings Report
+                  {t("View Daily Savings Report", "Xem Báo Cáo Tiết Kiệm Ngày")}
                 </button>
                 <button
                   type="button"
                   onClick={() => setShowLoadSettingsModal(false)}
                   className="px-4 py-2 bg-slate-100 text-slate-700 rounded-lg font-bold hover:bg-slate-200 transition-colors cursor-pointer"
                 >
-                  Close
+                  {t("Close", "Đóng")}
                 </button>
               </div>
             </div>
@@ -807,7 +809,7 @@ export const OptimizationPage: React.FC<OptimizationPageProps> = () => {
               <div className="flex items-center gap-2">
                 <FileText className="w-5 h-5 text-emerald-300" />
                 <span className="font-bold text-sm">
-                  Daily Peak Power &amp; Cost Savings Report
+                  {t("Daily Peak Power & Cost Savings Report", "Báo Cáo Cắt Đỉnh Công Suất & Tiết Kiệm Chi Phí Điện Hàng Ngày")}
                 </span>
               </div>
               <div className="flex items-center gap-2">
@@ -817,7 +819,7 @@ export const OptimizationPage: React.FC<OptimizationPageProps> = () => {
                   className="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
                 >
                   <Printer className="w-3.5 h-3.5" />
-                  <span>Print / Save PDF</span>
+                  <span>{t("Print / Save PDF", "In / Lưu PDF")}</span>
                 </button>
                 <button
                   type="button"
@@ -834,13 +836,13 @@ export const OptimizationPage: React.FC<OptimizationPageProps> = () => {
               <div className="flex justify-between items-start border-b-2 border-slate-900 pb-5">
                 <div>
                   <div className="text-xl font-black text-[#004B91] tracking-tight">
-                    SAIGON NEWPORT CORPORATION (SNP)
+                    {t("SAIGON NEWPORT CORPORATION (SNP)", "TỔNG CÔNG TY TÂN CẢNG SÀI GÒN (SNP)")}
                   </div>
                   <div className="text-slate-600 text-[11px] font-semibold mt-0.5">
-                    Cat Lai Terminal · Daily Peak Power Shaving &amp; Electricity Cost Savings Report
+                    {t("Cat Lai Terminal · Daily Peak Power Shaving & Electricity Cost Savings Report", "Cảng Tân Cảng Cát Lái · Báo Cáo Cắt Đỉnh Phụ Tải & Tiết Kiệm Chi Phí Điện Ngày")}
                   </div>
                   <div className="text-slate-400 text-[10px] mt-0.5">
-                    Main 110/22kV Substation · All 12 Equipment Groups
+                    {t("Main 110/22kV Substation · All 12 Equipment Groups", "Trạm Biến Áp 110/22kV Cát Lái · Tổng Hợp 12 Nhóm Thiết Bị")}
                   </div>
                 </div>
 
@@ -849,10 +851,10 @@ export const OptimizationPage: React.FC<OptimizationPageProps> = () => {
                     SAVINGS-2026-0928
                   </div>
                   <div className="text-slate-500 font-sans">
-                    Peak Window: 14:00 – 16:30
+                    {t("Peak Window", "Khung Cao Điểm")}: 14:00 – 16:30
                   </div>
                   <div className="text-emerald-700 font-bold text-[11px] mt-0.5">
-                    PEAK REDUCED: -2,225.4 kW (-26.3%)
+                    {t("PEAK REDUCED: -2,225.4 kW (-26.3%)", "GIẢM ĐỈNH: -2,225.4 kW (-26.3%)")}
                   </div>
                 </div>
               </div>
@@ -860,38 +862,38 @@ export const OptimizationPage: React.FC<OptimizationPageProps> = () => {
               {/* Summary Strip */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-200">
                 <div>
-                  <span className="text-slate-400 block text-[10px] uppercase font-bold">Power Before Control</span>
+                  <span className="text-slate-400 block text-[10px] uppercase font-bold">{t("Power Before Control", "Công Suất Trước Điều Khiển")}</span>
                   <strong className="text-slate-900 text-sm font-black font-mono">8,458.2 kW</strong>
-                  <span className="text-[11px] text-slate-500 block">Afternoon dual-ship peak</span>
+                  <span className="text-[11px] text-slate-500 block">{t("Afternoon dual-ship peak", "Đỉnh phụ tải 2 tàu buổi chiều")}</span>
                 </div>
                 <div>
-                  <span className="text-slate-400 block text-[10px] uppercase font-bold">Power After Control</span>
+                  <span className="text-slate-400 block text-[10px] uppercase font-bold">{t("Power After Control", "Công Suất Sau Điều Khiển")}</span>
                   <strong className="text-[#004B91] text-sm font-black font-mono">6,232.8 kW</strong>
-                  <span className="text-[11px] text-emerald-700 font-semibold block">Saved: -2,225.4 kW (-26.3%)</span>
+                  <span className="text-[11px] text-emerald-700 font-semibold block">{t("Saved: -2,225.4 kW (-26.3%)", "Đã giảm: -2,225.4 kW (-26.3%)")}</span>
                 </div>
                 <div>
-                  <span className="text-slate-400 block text-[10px] uppercase font-bold">Total Daily Cost Saved</span>
-                  <strong className="text-emerald-700 text-sm font-black font-mono">37.66M VND / Day</strong>
-                  <span className="text-[11px] text-slate-500 block">+25.59M VND Peak Penalty Avoided</span>
+                  <span className="text-slate-400 block text-[10px] uppercase font-bold">{t("Total Daily Cost Saved", "Tổng Chi Phí Tiết Kiệm Ngày")}</span>
+                  <strong className="text-emerald-700 text-sm font-black font-mono">{t("37.66M VND / Day", "37.66 Tr VNĐ / Ngày")}</strong>
+                  <span className="text-[11px] text-slate-500 block">{t("+25.59M VND Peak Penalty Avoided", "+25.59 Tr VNĐ Tránh Phạt Vượt Đỉnh")}</span>
                 </div>
               </div>
 
               {/* Complete 12-Equipment Table */}
               <div className="space-y-2">
                 <div className="font-extrabold text-slate-900 text-xs uppercase tracking-wider">
-                  Power Savings Breakdown by Equipment Group
+                  {t("Power Savings Breakdown by Equipment Group", "Bảng Phân Bổ Công Suất Tiết Kiệm Theo 12 Nhóm Thiết Bị")}
                 </div>
                 <div className="overflow-x-auto border border-slate-200 rounded-xl">
                   <table className="w-full text-left text-xs">
                     <thead className="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
                       <tr>
                         <th className="py-2 px-2.5">ID</th>
-                        <th className="py-2 px-2.5">Equipment Group</th>
-                        <th className="py-2 px-2.5">Line</th>
-                        <th className="py-2 px-2.5">Control Mode</th>
-                        <th className="py-2 px-2.5 text-right font-mono">Max Rating</th>
-                        <th className="py-2 px-2.5 text-right font-mono">Power Saved</th>
-                        <th className="py-2 px-2.5 text-right">Status</th>
+                        <th className="py-2 px-2.5">{t("Equipment Group", "Nhóm Thiết Bị")}</th>
+                        <th className="py-2 px-2.5">{t("Line", "Lộ")}</th>
+                        <th className="py-2 px-2.5">{t("Control Mode", "Chế Độ Điều Khiển")}</th>
+                        <th className="py-2 px-2.5 text-right font-mono">{t("Max Rating", "Công Suất ĐM")}</th>
+                        <th className="py-2 px-2.5 text-right font-mono">{t("Power Saved", "Công Suất Giảm")}</th>
+                        <th className="py-2 px-2.5 text-right">{t("Status", "Trạng Thái")}</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100">
@@ -915,12 +917,12 @@ export const OptimizationPage: React.FC<OptimizationPageProps> = () => {
                             </td>
                             <td className="py-2 px-2.5 text-right font-mono text-[10px] font-bold">
                               {row.operatorStatus === "AUTO_ACTIVE"
-                                ? "AUTO"
+                                ? t("AUTO", "TỰ ĐỘNG")
                                 : row.operatorStatus === "APPROVED"
-                                ? "APPROVED"
+                                ? t("APPROVED", "ĐÃ DUYỆT")
                                 : row.operatorStatus === "PENDING_REVIEW"
-                                ? "NEEDS APPROVAL"
-                                : "PROTECTED"}
+                                ? t("NEEDS APPROVAL", "CHỜ DUYỆT")
+                                : t("PROTECTED", "BẢO VỆ")}
                             </td>
                           </tr>
                         );
@@ -929,13 +931,13 @@ export const OptimizationPage: React.FC<OptimizationPageProps> = () => {
                     <tfoot className="bg-slate-100 font-black border-t-2 border-slate-300 font-mono">
                       <tr>
                         <td colSpan={5} className="py-2.5 px-3 text-right font-sans">
-                          TOTAL PEAK POWER SAVED (14:00 – 16:30):
+                          {t("TOTAL PEAK POWER SAVED (14:00 – 16:30):", "TỔNG CÔNG SUẤT ĐỈNH CẮT GIẢM (14:00 – 16:30):")}
                         </td>
                         <td className="py-2.5 px-2.5 text-right text-emerald-700 text-sm tabular-nums">
                           -2,225.4 kW
                         </td>
                         <td className="py-2.5 px-2.5 text-right text-slate-900">
-                          100% SAFE
+                          {t("100% SAFE", "100% AN TOÀN")}
                         </td>
                       </tr>
                     </tfoot>
@@ -950,7 +952,7 @@ export const OptimizationPage: React.FC<OptimizationPageProps> = () => {
                 onClick={() => setShowSavingsReportModal(false)}
                 className="px-4 py-2 bg-white border border-slate-200 text-slate-700 rounded-lg text-xs font-bold hover:bg-slate-100 transition-colors cursor-pointer"
               >
-                Close
+                {t("Close", "Đóng")}
               </button>
               <button
                 type="button"
@@ -958,7 +960,7 @@ export const OptimizationPage: React.FC<OptimizationPageProps> = () => {
                 className="px-5 py-2 bg-[#004B91] text-white rounded-lg text-xs font-bold hover:bg-[#00386E] transition-colors flex items-center gap-2 shadow-2xs cursor-pointer"
               >
                 <Download className="w-3.5 h-3.5" />
-                <span>Download PDF Report</span>
+                <span>{t("Download PDF Report", "Tải Báo Cáo PDF")}</span>
               </button>
             </div>
           </div>
@@ -975,7 +977,7 @@ export const OptimizationPage: React.FC<OptimizationPageProps> = () => {
               <div className="flex items-center gap-2">
                 <Lock className="w-4 h-4 text-emerald-400" />
                 <span className="font-bold text-sm">
-                  Port Equipment Safety &amp; Control Rules
+                  {t("Port Equipment Safety & Control Rules", "Quy Tắc An Toàn & Điều Khiển Phụ Tải Thiết Bị Cảng")}
                 </span>
               </div>
               <button
@@ -990,23 +992,32 @@ export const OptimizationPage: React.FC<OptimizationPageProps> = () => {
             <div className="p-6 space-y-4 text-xs text-slate-800">
               <div className="space-y-2.5">
                 <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200">
-                  <div className="font-bold text-[#004B91]">1. Automatic Control (Crane Regenerative Braking &amp; Solar Panels)</div>
+                  <div className="font-bold text-[#004B91]">{t("1. Automatic Control (Crane Regenerative Braking & Solar Panels)", "1. Điều Khiển Tự Động (Thu Hồi Động Năng Cẩu & Điện Mặt Trời Áp Mái)")}</div>
                   <p className="text-slate-600 mt-1">
-                    The 1.5 MW Crane Regenerative Braking busbar and 2,450 kWp Solar system automatically recover hoist lowering energy and supply clean solar power during afternoon peak hours within strict substation power quality limits (PF ≥ 0.98, THD ≤ 3.0%).
+                    {t(
+                      "The 1.5 MW Crane Regenerative Braking busbar and 2,450 kWp Solar system automatically recover hoist lowering energy and supply clean solar power during afternoon peak hours within strict substation power quality limits (PF ≥ 0.98, THD ≤ 3.0%).",
+                      "Hệ thống thanh cái Thu hồi động năng cẩu 1.5 MW và Điện mặt trời áp mái 2,450 kWp tự động thu hồi năng lượng hãm hạ hàng và hòa lưới nội bộ giờ cao điểm chiều theo chuẩn chất lượng điện năng (PF ≥ 0.98, THD ≤ 3.0%)."
+                    )}
                   </p>
                 </div>
 
                 <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200">
-                  <div className="font-bold text-amber-800">2. Operator-Approved Flexible Loads (Reefers, Truck Chargers, Warehouse A/C)</div>
+                  <div className="font-bold text-amber-800">{t("2. Operator-Approved Flexible Loads (Reefers, Truck Chargers, Warehouse A/C)", "2. Phụ Tải Linh Hoạt Cần Trưởng Ca Phê Duyệt (Bãi Reefer, Trạm Sạc EV, Điều Hòa Kho)")}</div>
                   <p className="text-slate-600 mt-1">
-                    Reefer pre-cooling (max 45 mins, cargo temp within ±0.4 °C) and electric truck smart charging require Shift Operator approval. Operators can pause power reduction on any group with a single click.
+                    {t(
+                      "Reefer pre-cooling (max 45 mins, cargo temp within ±0.4 °C) and electric truck smart charging require Shift Operator approval. Operators can pause power reduction on any group with a single click.",
+                      "Làm lạnh sớm bãi container lạnh (tối đa 45 phút, biên độ nhiệt độ ±0.4 °C) và điều chỉnh sạc xe đầu kéo EV yêu cầu phê duyệt của Trưởng ca. Trưởng ca có thể tạm dừng giảm tải bất cứ lúc nào chỉ với 1 cú nhấp chuột."
+                    )}
                   </p>
                 </div>
 
                 <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200">
-                  <div className="font-bold text-slate-900">3. Protected Equipment (Quay Cranes, Shore Power, Fire Pumps, Safety Lights)</div>
+                  <div className="font-bold text-slate-900">{t("3. Protected Equipment (Quay Cranes, Shore Power, Fire Pumps, Safety Lights)", "3. Thiết Bị Khóa Bảo Vệ 100% (Cẩu Bờ STS, Điện Bờ OPS, Bơm PCCC, Đèn Pha An Toàn)")}</div>
                   <p className="text-slate-600 mt-1">
-                    Quay Cranes (S01–S05), Ship Shore Power (OPS), Yard Safety Floodlights, Seawater Fire Pumps, and IT Servers are hardware-locked at 100% power so ship unloading speed and worker safety are never affected.
+                    {t(
+                      "Quay Cranes (S01–S05), Ship Shore Power (OPS), Yard Safety Floodlights, Seawater Fire Pumps, and IT Servers are hardware-locked at 100% power so ship unloading speed and worker safety are never affected.",
+                      "Cẩu bờ STS (S01–S05), Điện bờ cho tàu (OPS), Đèn pha chiếu sáng bãi, Trạm bơm PCCC và Máy chủ điều hành TOS được khóa cứng ở 100% công suất để không bao giờ ảnh hưởng đến tiến độ làm hàng và an toàn lao động."
+                    )}
                   </p>
                 </div>
               </div>
@@ -1017,7 +1028,7 @@ export const OptimizationPage: React.FC<OptimizationPageProps> = () => {
                   onClick={() => setShowSafetyRulesModal(false)}
                   className="px-4 py-2 bg-slate-900 text-white rounded-lg font-bold hover:bg-slate-800 transition-colors cursor-pointer"
                 >
-                  Close
+                  {t("Close", "Đóng")}
                 </button>
               </div>
             </div>

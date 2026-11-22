@@ -45,6 +45,7 @@ import { VesselCarbonInvoicePage } from "./pages/VesselCarbonInvoicePage";
 import { VesselSchedulePage } from "./pages/VesselSchedulePage";
 import { PartnersPage } from "./pages/PartnersPage";
 import { MeterTelemetryModal, MeterModalMode } from "./components/MeterTelemetryModal";
+import { LanguageProvider } from "./context/LanguageContext";
 
 import { 
   X, 
@@ -191,6 +192,7 @@ export default function App() {
   };
 
   return (
+    <LanguageProvider>
     <div className="h-screen w-screen overflow-hidden bg-slate-100 text-slate-900 font-sans flex flex-col antialiased">
       {/* ENTERPRISE TOP HEADER - Fixed at top, zero scrollbars */}
       <div className="flex-none z-40">
@@ -531,5 +533,6 @@ export default function App() {
         }
       />
     </div>
+    </LanguageProvider>
   );
 }
