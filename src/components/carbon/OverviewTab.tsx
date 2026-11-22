@@ -18,6 +18,7 @@ import {
 } from "recharts";
 import { useLanguage } from "../../context/LanguageContext";
 import { CHART, SERIES } from "../../theme/tokens";
+import { ChartCard, KpiCard } from "../ui";
 import { useFormat } from "../../utils/format";
 import {
   BALANCE_STATS,
@@ -39,25 +40,16 @@ export const Panel: React.FC<{ title: string; note?: string; right?: React.React
   className,
   id,
 }) => (
-  <section id={id} className={`bg-white rounded-2xl p-5 border border-slate-200/90 shadow-2xs space-y-3 min-w-0 scroll-mt-4 ${className ?? ""}`}>
-    <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2">
-      <div>
-        <h3 className="font-bold text-slate-900 text-sm">{title}</h3>
-        {note && <div className="text-xs text-slate-500 mt-0.5">{note}</div>}
-      </div>
-      {right}
-    </div>
+  <ChartCard id={id} title={title} description={note} toolbar={right} className={className}>
     {children}
-  </section>
+  </ChartCard>
 );
 
-export const Kpi: React.FC<{ label: string; value: string; sub?: React.ReactNode; tone?: "default" | "good" }> = ({ label, value, sub, tone = "default" }) => (
-  <div className={`p-4 rounded-xl border ${tone === "good" ? "bg-emerald-50/60 border-emerald-200" : "bg-white border-slate-200/90"}`}>
-    <div className="text-slate-500 text-xs font-bold mb-1">{label}</div>
-    <div className="text-lg sm:text-xl font-black text-slate-900 tabular-nums">{value}</div>
-    {sub && <div className="text-xs text-slate-500 tabular-nums">{sub}</div>}
-  </div>
-);
+export const Kpi: React.FC<{ label: string; value: string; sub?: React.ReactNode; tone?: "default" | "good" }> = ({ label, value, sub }) => {
+  // split "471,79 tCO₂e" into value + unit so all KPI cards share one structure
+  const m = value.match(/^([−+-]?[\d.,]+)\s*(.*)$/);
+  return <KpiCard label={label} value={m ? m[1] : value} unit={m ? m[2] || undefined : undefined} hint={sub} />;
+};
 
 export const PERIODS: { id: PeriodKind; en: string; vn: string }[] = [
   { id: "DAY", en: "Day", vn: "Ngày" },
@@ -118,7 +110,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({ period, calls, filtere
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-end gap-2">
-        <div className="text-xs text-slate-500">
+        <div className="text-xs text-muted">
           {filtered
             ? t(`KPIs follow the filter: ${calls.length} vessel calls`, `KPI theo bộ lọc: ${calls.length} lượt tàu`)
             : period === "DAY"
@@ -127,7 +119,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({ period, calls, filtere
         </div>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
         <Kpi
           label={t("Total (Scope 1 / Scope 2)", "Tổng (Scope 1 / Scope 2)")}
           value={`${num(s1 + s2, 2)} tCO₂e`}
@@ -203,8 +195,8 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({ period, calls, filtere
                 </PieChart>
               </ResponsiveContainer>
               <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                <span className="font-black text-slate-900 text-sm tabular-nums">{num(donutTotal / 1000, 1)}</span>
-                <span className="text-xs text-slate-500">tCO₂e</span>
+                <span className="font-semibold text-ink text-sm tabular-nums">{num(donutTotal / 1000, 1)}</span>
+                <span className="text-xs text-muted">tCO₂e</span>
               </div>
             </div>
             <ul className="space-y-1 text-xs">

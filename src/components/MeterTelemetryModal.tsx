@@ -1002,7 +1002,7 @@ export const MeterTelemetryModal: React.FC<MeterTelemetryModalProps> = ({
                 className="px-2.5 py-1.5 rounded-xl bg-white/15 hover:bg-white/25 text-white font-bold text-xs flex items-center gap-1.5 transition-colors cursor-pointer shrink-0"
               >
                 <ArrowLeft className="w-3.5 h-3.5" />
-                <span>{t("All Voyage Meters", "Tất Cả Đồng Hồ Chuyến Tàu")}</span>
+                <span>{t("All voyage meters", "Tất cả đồng hồ chuyến tàu")}</span>
               </button>
             ) : (
               <div
@@ -1026,7 +1026,7 @@ export const MeterTelemetryModal: React.FC<MeterTelemetryModalProps> = ({
                   <>
                     <span className="inline-flex items-center gap-1 text-xs font-mono font-bold px-2 py-0.5 rounded-md bg-emerald-500/25 text-emerald-200 border border-emerald-400/30">
                       <CheckCircle2 className="w-3 h-3" />
-                      {t("Completed Invoice Meter Records", "Hồ Sơ Đồng Hồ Đã Chốt Hóa Đơn")}
+                      {t("Completed invoice meter records", "Hồ sơ đồng hồ đã chốt hóa đơn")}
                     </span>
                     <span className="text-xs font-mono text-white/75">
                       #{currentPortCall.invoiceNumber}
@@ -1085,7 +1085,7 @@ export const MeterTelemetryModal: React.FC<MeterTelemetryModalProps> = ({
               </span>
               <span className="text-slate-300">·</span>
               <span>
-                {t("Recorded Window:", "Thời Gian Đo Đếm:")}{" "}
+                {t("Recorded window:", "Thời gian đo Đếm:")}{" "}
                 <strong className="font-mono text-slate-900">
                   {currentPortCall.arrivalWindow} → {currentPortCall.departureWindow}
                 </strong>{" "}
@@ -1093,7 +1093,7 @@ export const MeterTelemetryModal: React.FC<MeterTelemetryModalProps> = ({
               </span>
               <span className="text-slate-300">·</span>
               <span>
-                {t("Volume:", "Sản Lượng:")}{" "}
+                {t("Volume:", "Sản lượng:")}{" "}
                 <strong className="font-mono text-slate-900">
                   {currentPortCall.teuHandled.toLocaleString()} TEU
                 </strong>
@@ -1102,7 +1102,7 @@ export const MeterTelemetryModal: React.FC<MeterTelemetryModalProps> = ({
           ) : (
             <div className="flex flex-wrap items-center gap-1.5">
               <span className="text-xs font-bold text-slate-400 mr-1">
-                {t("Terminal Vessel:", "Tàu Tại Cảng:")}
+                {t("Terminal vessel:", "Tàu tại cảng:")}
               </span>
               {PORT_CALL_METERS.filter((c) => c.useCaseId !== "UC-03").map(
                 (call) => {
@@ -1138,7 +1138,7 @@ export const MeterTelemetryModal: React.FC<MeterTelemetryModalProps> = ({
           <div className="flex flex-wrap items-center gap-2 text-xs">
             <div className="px-2.5 py-1 rounded-lg bg-blue-50 border border-blue-200 text-blue-900 font-semibold flex items-center gap-1.5">
               <Zap className="w-3.5 h-3.5 text-blue-600" />
-              <span>{t("Scope 2 Elec:", "Điện Scope 2:")}</span>
+              <span>{t("Scope 2 elec:", "Điện Scope 2:")}</span>
               <strong className="font-mono">
                 {currentPortCall.totalElectricityKwh.toLocaleString()} kWh (
                 {currentPortCall.totalScope2Tons.toFixed(2)} tCO₂e)
@@ -1146,7 +1146,7 @@ export const MeterTelemetryModal: React.FC<MeterTelemetryModalProps> = ({
             </div>
             <div className="px-2.5 py-1 rounded-lg bg-amber-50 border border-amber-200 text-amber-900 font-semibold flex items-center gap-1.5">
               <Fuel className="w-3.5 h-3.5 text-amber-600" />
-              <span>{t("Scope 1 Fuel:", "Nhiên Liệu Scope 1:")}</span>
+              <span>{t("Scope 1 fuel:", "Nhiên liệu Scope 1:")}</span>
               <strong className="font-mono">
                 {currentPortCall.totalFuelLiters.toLocaleString()} L (
                 {currentPortCall.totalScope1Tons.toFixed(2)} tCO₂e)
@@ -1360,7 +1360,7 @@ export const MeterTelemetryModal: React.FC<MeterTelemetryModalProps> = ({
                       </span>
 
                       <span className="font-bold text-brand-hover group-hover:translate-x-0.5 transition-transform flex items-center gap-1">
-                        <span>{t("Inspect In-Depth", "Xem Chi Tiết")}</span>
+                        <span>{t("Inspect In-Depth", "Xem chi tiết")}</span>
                         <ChevronRight className="w-3.5 h-3.5" />
                       </span>
                     </div>
@@ -1895,7 +1895,7 @@ export const MeterTelemetryModal: React.FC<MeterTelemetryModalProps> = ({
               onClick={onClose}
               className="px-4 py-1.5 rounded-xl bg-brand-hover hover:bg-[#002047] text-white font-bold text-xs transition-colors cursor-pointer"
             >
-              {t("Done", "Hoàn Tất")}
+              {t("Done", "Hoàn tất")}
             </button>
           </div>
         </div>

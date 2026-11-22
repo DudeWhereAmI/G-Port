@@ -30,9 +30,9 @@ export const BerthGantt: React.FC<BerthGanttProps> = ({ vessels, baseVessels, do
     <div className="relative" style={{ marginLeft: TIMELINE_LEFT, marginRight: TIMELINE_RIGHT }}>
       <div className="space-y-1">
         {BERTHS.map((berth) => (
-          <div key={berth} className="relative h-7 bg-slate-50 rounded-md border border-slate-100">
+          <div key={berth} className="relative h-7 bg-slate-50 rounded-md border border-line">
             <div
-              className="absolute top-1/2 -translate-y-1/2 text-xs font-black text-slate-600 text-right"
+              className="absolute top-1/2 -translate-y-1/2 text-xs font-semibold text-slate-600 text-right"
               style={{ left: -TIMELINE_LEFT, width: TIMELINE_LEFT - 6 }}
             >
               {berth}
@@ -87,7 +87,7 @@ export const BerthGantt: React.FC<BerthGanttProps> = ({ vessels, baseVessels, do
                       onFocus={() => onHover(v.id)}
                       onBlur={() => onHover(null)}
                       title={tooltip}
-                      className={`absolute top-0.5 bottom-0.5 rounded px-1.5 text-left text-xs font-bold text-white overflow-hidden whitespace-nowrap transition-all cursor-pointer ${
+                      className={`absolute top-0.5 bottom-0.5 rounded px-1.5 text-left text-xs font-medium text-white overflow-hidden whitespace-nowrap transition-all cursor-pointer ${
                         isHi ? "ring-2 ring-orange-400 z-10" : ""
                       } ${dim ? "opacity-40" : ""}`}
                       style={{
@@ -110,7 +110,7 @@ export const BerthGantt: React.FC<BerthGanttProps> = ({ vessels, baseVessels, do
           </div>
         ))}
       </div>
-      <div className="mt-1 text-xs text-slate-500 font-semibold">
+      <div className="mt-1 text-xs text-muted font-semibold">
         {t(
           "Bars: ETA → ETD · faded edge = ETA uncertainty (±2σ from historical ETA–ATA error) · hover a vessel to highlight its load on the chart",
           "Thanh: ETA → ETD · viền mờ = độ bất định ETA (±2σ theo sai số ETA–ATA lịch sử) · rê chuột vào tàu để làm nổi phụ tải của tàu trên biểu đồ"

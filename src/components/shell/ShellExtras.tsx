@@ -13,7 +13,7 @@ export const StatusBar: React.FC = () => {
     <footer className="h-8 shrink-0 bg-white border-t border-line px-4 flex items-center gap-4 text-xs text-muted">
       <span className="inline-flex items-center gap-1.5">
         <span className="w-2 h-2 rounded-full bg-success-dot" aria-hidden="true" />
-        {t("Connected TOS · SCADA · Meters: normal", "Kết nối TOS · SCADA · Công tơ: bình thường")}
+        {t("Connected TOS · SCADA · meters: normal", "Kết nối TOS · SCADA · Công tơ: bình thường")}
       </span>
       <span className="hidden sm:inline">
         {t("Mode", "Chế độ")}: <span className="text-ink font-medium">{t("Recommendation", "Khuyến nghị")}</span>

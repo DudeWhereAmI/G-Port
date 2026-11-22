@@ -37,7 +37,7 @@ const Mini: React.FC<{ children: React.ReactElement }> = ({ children }) => (
 
 const tip = (fmt: (p: any) => string) => (props: any) =>
   props.active && props.payload?.length ? (
-    <div className="bg-white border border-slate-300 rounded-md shadow px-2 py-1 text-xs text-slate-900">{fmt(props.payload[0].payload)}</div>
+    <div className="bg-white border border-slate-300 rounded-md shadow px-2 py-1 text-xs text-ink">{fmt(props.payload[0].payload)}</div>
   ) : null;
 
 /** B5 – constraint compliance with mini-charts. */
@@ -131,24 +131,24 @@ export const ConstraintPanel: React.FC<{ result: DispatchResult }> = ({ result }
   return (
     <div className="space-y-2">
       {rows.map((r) => (
-        <div key={r.title} className="grid grid-cols-[1fr_minmax(0,140px)] gap-3 items-center border border-slate-200 rounded-xl px-3 py-2">
+        <div key={r.title} className="grid grid-cols-[1fr_minmax(0,140px)] gap-3 items-center border border-line rounded-card px-3 py-2">
           <div className="min-w-0">
-            <div className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+            <div className="text-xs font-medium text-ink flex items-center gap-1.5">
               {r.ok ? <CheckCircle2 className="w-4 h-4 text-success shrink-0" aria-hidden="true" /> : <AlertTriangle className="w-4 h-4 text-warning shrink-0" aria-hidden="true" />} {r.title}
             </div>
-            <div className="text-xs text-slate-500">{r.note}</div>
+            <div className="text-xs text-muted">{r.note}</div>
           </div>
           <Mini>{r.chart}</Mini>
         </div>
       ))}
-      <div className="border border-slate-200 rounded-xl px-3 py-2">
-        <div className="text-xs font-bold text-slate-900 flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4 text-success shrink-0" aria-hidden="true" /> {t("Protected loads at 100%", "Tải được bảo vệ chạy 100%")}</div>
-        <div className="text-xs text-slate-500">
+      <div className="border border-line rounded-card px-3 py-2">
+        <div className="text-xs font-medium text-ink flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4 text-success shrink-0" aria-hidden="true" /> {t("Protected loads at 100%", "Tải được bảo vệ chạy 100%")}</div>
+        <div className="text-xs text-muted">
           {PROTECTED_GROUPS.map((g) => t(g.name.en, g.name.vn)).join(" · ")} · {t("never curtailed", "không bao giờ bị cắt")}
         </div>
       </div>
       {maxOff > 0 && (
-        <div className="text-xs text-slate-500">
+        <div className="text-xs text-muted">
           {t(
             `Reefer reduction spans ${maxOff} intervals; each sub-group rests at most 45 min (rotation).`,
             `Giảm reefer kéo dài ${maxOff} chu kỳ; mỗi nhóm con nghỉ tối đa 45 phút (luân phiên).`

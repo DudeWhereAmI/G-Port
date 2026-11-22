@@ -2274,7 +2274,7 @@ export const PortTerminal2DStrategyMap: React.FC<
         <div className="px-2.5 py-2.5 border-b border-slate-100 flex items-center justify-between gap-2">
           {!leftListCollapsed && (
             <span className="text-xs font-black text-slate-900 truncate pl-0.5">
-              {t("Port Zones", "Khu vực Cảng")} ({TERMINAL_STRATEGY_ZONES.length})
+              {t("Port zones", "Khu vực cảng")} ({TERMINAL_STRATEGY_ZONES.length})
             </span>
           )}
           <button
@@ -2311,10 +2311,10 @@ export const PortTerminal2DStrategyMap: React.FC<
               </div>
               <div className="min-w-0 flex-1">
                 <div className="text-xs font-bold truncate">
-                  {t("All Terminal Zones", "Toàn bộ Cảng")}
+                  {t("All terminal zones", "Toàn bộ cảng")}
                 </div>
                 <div className="text-xs text-slate-500 truncate">
-                  {t("Channel · 3 Berths · 4 Major Bays", "Luồng biển · 3 Cầu bến · 4 Bãi lớn")}
+                  {t("Channel · 3 berths · 4 major bays", "Luồng biển · 3 Cầu bến · 4 Bãi lớn")}
                 </div>
               </div>
             </button>
@@ -2418,9 +2418,9 @@ export const PortTerminal2DStrategyMap: React.FC<
             {(
               [
                 { id: "VESSELS", label: t("Vessels", "Tàu biển"), count: 3, icon: Ship, color: "#1A73E8" },
-                { id: "CRANES", label: t("Quay Cranes", "Cẩu bờ STS"), count: 4, icon: Anchor, color: "#0284C7" },
-                { id: "TRUCKS", label: t("Yard Trucks", "Xe đầu kéo"), count: 4, icon: Truck, color: "#EA580C" },
-                { id: "BAYS", label: t("Container Bays", "Bãi Container"), count: 4, icon: Container, color: "#0D9488" },
+                { id: "CRANES", label: t("Quay cranes", "Cẩu bờ STS"), count: 4, icon: Anchor, color: "#0284C7" },
+                { id: "TRUCKS", label: t("Yard trucks", "Xe đầu kéo"), count: 4, icon: Truck, color: "#EA580C" },
+                { id: "BAYS", label: t("Container bays", "Bãi container"), count: 4, icon: Container, color: "#0D9488" },
               ] as const
             ).map((cat) => {
               const Icon = cat.icon;

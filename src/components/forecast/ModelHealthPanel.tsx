@@ -19,16 +19,16 @@ import { FEATURE_IMPORTANCE, LAST_7_DAYS, LAST_RETRAIN } from "../../data/module
 const GROUP_COLOR = { LAG: "#004B91", TOS: "#7C3AED", WEATHER: "#059669", CALENDAR: "#94A3B8" } as const;
 
 const Box: React.FC<{ title: string; children: React.ReactNode; note?: string }> = ({ title, children, note }) => (
-  <div className="rounded-xl border border-slate-200 p-3 space-y-2 min-w-0">
-    <div className="text-xs font-bold text-slate-800">{title}</div>
+  <div className="rounded-card border border-line p-3 space-y-2 min-w-0">
+    <div className="text-xs font-medium text-slate-800">{title}</div>
     {children}
-    {note && <div className="text-xs text-slate-500">{note}</div>}
+    {note && <div className="text-xs text-muted">{note}</div>}
   </div>
 );
 
 const SimpleTooltip: React.FC<any> = ({ active, payload, label, render }) =>
   active && payload?.length ? (
-    <div className="bg-white border border-slate-300 rounded-lg shadow px-2.5 py-1.5 text-xs text-slate-900 space-y-0.5">
+    <div className="bg-white border border-slate-300 rounded-control shadow px-2.5 py-1.5 text-xs text-ink space-y-0.5">
       {render(payload, label)}
     </div>
   ) : null;
@@ -64,10 +64,10 @@ export const ModelHealthPanel: React.FC = () => {
     <div className="space-y-4 text-xs">
       <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-2">
         {tiles.map((tile) => (
-          <div key={tile.label} className="rounded-xl bg-slate-50 border border-slate-200 p-2.5">
-            <div className="text-xs font-bold text-slate-500">{tile.label}</div>
-            <div className="font-black text-slate-900 tabular-nums text-sm">{tile.value}</div>
-            {tile.sub && <div className="text-xs text-emerald-700 font-semibold">{tile.sub}</div>}
+          <div key={tile.label} className="rounded-card bg-slate-50 border border-line p-2.5">
+            <div className="text-xs font-medium text-muted">{tile.label}</div>
+            <div className="font-semibold text-ink tabular-nums text-sm">{tile.value}</div>
+            {tile.sub && <div className="text-xs text-success font-semibold">{tile.sub}</div>}
           </div>
         ))}
       </div>
@@ -95,7 +95,7 @@ export const ModelHealthPanel: React.FC = () => {
                     <SimpleTooltip
                       render={(p: any[]) => (
                         <>
-                          <div className="font-bold">{p[0].payload.label}</div>
+                          <div className="font-medium">{p[0].payload.label}</div>
                           <div>MAPE <b className="">{pct(p[0].payload.mapePct, 2)}</b></div>
                           <div>RMSE <b className="">{kw(p[0].payload.rmseKw, 1)}</b></div>
                         </>
@@ -123,7 +123,7 @@ export const ModelHealthPanel: React.FC = () => {
                     <SimpleTooltip
                       render={(p: any[]) => (
                         <>
-                          <div className="font-bold">{p[0].payload.label}</div>
+                          <div className="font-medium">{p[0].payload.label}</div>
                           <div>
                             {groupLabel[p[0].payload.group as keyof typeof groupLabel]} · <b className="">{pct(p[0].payload.gainPct, 1)}</b>
                           </div>
@@ -168,7 +168,7 @@ export const ModelHealthPanel: React.FC = () => {
                         const d = p[0].payload;
                         return (
                           <>
-                            <div className="font-bold">{d.name}</div>
+                            <div className="font-medium">{d.name}</div>
                             <div>{t("Forecast peak", "Đỉnh dự báo")} <b className="">{kw(d.forecastPeakKw)}</b></div>
                             <div>{t("Actual peak", "Đỉnh thực tế")} <b className="">{kw(d.actualPeakKw)}</b></div>
                             <div>MAPE <b className="">{pct(d.mapePct, 2)}</b> · RMSE <b className="">{kw(d.rmseKw, 1)}</b></div>

@@ -3,6 +3,8 @@ import { useLanguage } from "../context/LanguageContext";
 import { CarbonInvoice, TosVesselSchedule, SubPageId } from "../types/gport";
 import { MeterModalMode } from "../components/MeterTelemetryModal";
 import { LayoutDashboard, Scale, Ship, FileCheck2, ShieldCheck, Filter, FileSpreadsheet, Sheet, X } from "lucide-react";
+import { Button, MetaLine, PageHeader, PageSkeleton, Select, Tabs, TabItem, useToast } from "../components/ui";
+import { breadcrumbOf } from "../components/shell/pages";
 import { CALL_RECORDS, CallRecord, PERIOD, PORT_NAME, PeriodKind } from "../data/module2Carbon";
 import { downloadLedgerCsv, downloadReportingExcel } from "../utils/carbonExport";
 import { activeFactor } from "../data/emissionFactors";
@@ -42,6 +44,7 @@ export function findCall(identifier: string): CallRecord | undefined {
 
 export const VesselCarbonInvoicePage: React.FC<VesselCarbonInvoicePageProps> = ({ focusedInvoiceId, onClearFocusedInvoice, initialTab, onClearInitialTab, onNavigate }) => {
   const { t, lang } = useLanguage();
+  const toast = useToast();
   const { num } = useFormat();
   const [tab, setTab] = useState<CarbonTab>("OVERVIEW");
   const [openCall, setOpenCall] = useState<CallRecord | null>(null);
@@ -81,124 +84,97 @@ export const VesselCarbonInvoicePage: React.FC<VesselCarbonInvoicePageProps> = (
     onClearInitialTab?.();
   }, [initialTab, onClearInitialTab]);
 
-  const tabs: { id: CarbonTab; label: string; icon: React.ElementType }[] = [
+  const tabs: TabItem<CarbonTab>[] = [
     { id: "OVERVIEW", label: t("Inventory overview", "Tổng quan kiểm kê"), icon: LayoutDashboard },
-    { id: "BALANCE", label: t("Balance & reconciliation", "Cân bằng & Đối soát"), icon: Scale },
+    { id: "BALANCE", label: t("Balance & reconciliation", "Cân bằng & đối soát"), icon: Scale },
     { id: "CALLS", label: t("Vessel calls", "Lượt tàu"), icon: Ship },
-    { id: "REPORTING", label: t("Reporting & compliance", "Báo cáo & Tuân thủ"), icon: FileCheck2 },
-    { id: "METHOD", label: t("Methodology & audit", "Phương pháp & Kiểm toán"), icon: ShieldCheck },
+    { id: "REPORTING", label: t("Reporting & compliance", "Báo cáo & tuân thủ"), icon: FileCheck2 },
+    { id: "METHOD", label: t("Methodology & audit", "Phương pháp & kiểm toán"), icon: ShieldCheck },
   ];
 
   return (
-    <div className="space-y-5 pb-12">
-      <div className="bg-white p-6 rounded-2xl border border-slate-200/90 shadow-2xs space-y-4">
-        <div>
-          <div className="text-xs font-bold text-brand mb-1">{t("Emissions & records (M-2 · e-INV)", "Phát thải & hồ sơ (M-2 · e-INV)")}</div>
-          <h1 className="text-2xl font-black text-slate-900 tracking-tight">
-            {t("Carbon Accounting & Vessel-Call Emission Records", "Kế toán Carbon & Hồ sơ Phát thải Lượt tàu")}
-          </h1>
-          <div className="text-xs text-slate-600 mt-1">
-            {t(
-              `Dataset v2 · ${PERIOD.fromIso} – ${PERIOD.toIso} · ${PORT_NAME.en} · grid EF ${grid.value} kgCO₂e/kWh (${grid.year})`,
-              `Dataset v2 · 17/11 – 23/11/2026 · ${PORT_NAME.vn} · EF lưới ${num(grid.value, 4)} kgCO₂e/kWh (${grid.year})`
-            )}
-          </div>
-        </div>
-        <div className="flex gap-1 overflow-x-auto bg-slate-100 p-1 rounded-xl text-xs" role="tablist">
-          {tabs.map((x) => (
-            <button
-              key={x.id}
-              type="button"
-              role="tab"
-              aria-selected={tab === x.id}
-              onClick={() => switchTab(x.id)}
-              className={`px-3 py-2 rounded-lg font-bold flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
-                tab === x.id ? "bg-white text-slate-900 shadow-2xs" : "text-slate-600 hover:text-slate-900"
-              }`}
+    <div className="space-y-6 pb-8">
+      <PageHeader
+        breadcrumb={breadcrumbOf("VESSEL_CARBON_INVOICE", t)}
+        title={t("Carbon accounting", "Kế toán carbon")}
+        description={t("Facility inventory and vessel-call emission records (GLEC · ISO 14083)", "Kiểm kê cấp cơ sở và hồ sơ phát thải lượt tàu (GLEC · ISO 14083)")}
+        meta={
+          <MetaLine
+            items={[
+              t(`Dataset v2 · ${PERIOD.fromIso} – ${PERIOD.toIso}`, "Dataset v2 · 17/11/2026 – 23/11/2026"),
+              t(PORT_NAME.en, PORT_NAME.vn),
+              t(`Grid EF ${grid.value} kgCO₂e/kWh (${grid.year})`, `EF lưới ${num(grid.value, 4)} kgCO₂e/kWh (${grid.year})`),
+              t("Updated 23/11/2026 11:30", "Cập nhật lúc 23/11/2026 11:30"),
+            ]}
+          />
+        }
+        actions={
+          <>
+            <Button
+              icon={FileSpreadsheet}
+              onClick={() => {
+                downloadLedgerCsv(calls);
+                toast(t("Ledger CSV downloaded", "Đã tải CSV sổ cái"));
+              }}
             >
-              <x.icon className="w-3.5 h-3.5" />
-              {x.label}
-            </button>
-          ))}
-        </div>
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-2">
-          <div className="flex flex-wrap items-center gap-2 text-xs">
-            <Filter className="w-3.5 h-3.5 text-slate-500" />
-            <label className="flex items-center gap-1 font-bold text-slate-600">
-              {t("Period", "Kỳ báo cáo")}
-              <select value={period} onChange={(e) => setPeriod(e.target.value as PeriodKind)} className="px-2 py-1 border border-slate-200 rounded-lg bg-white font-semibold cursor-pointer">
-                {PERIODS.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {t(p.en, p.vn)}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className="flex items-center gap-1 font-bold text-slate-600">
-              {t("Berth", "Cầu bến")}
-              <select value={berth} onChange={(e) => setBerth(e.target.value as typeof berth)} className="px-2 py-1 border border-slate-200 rounded-lg bg-white font-semibold cursor-pointer">
-                <option value="ALL">{t("All", "Tất cả")}</option>
-                <option value="B1">B1</option>
-                <option value="B2">B2</option>
-                <option value="B3">B3</option>
-              </select>
-            </label>
-            <label className="flex items-center gap-1 font-bold text-slate-600">
-              {t("Carrier", "Hãng tàu")}
-              <select value={carrier} onChange={(e) => setCarrier(e.target.value)} className="px-2 py-1 border border-slate-200 rounded-lg bg-white font-semibold cursor-pointer max-w-[200px]">
-                <option value="ALL">{t("All", "Tất cả")}</option>
-                {carriers.map((c) => (
-                  <option key={c} value={c}>
-                    {c}
-                  </option>
-                ))}
-              </select>
-            </label>
-            {filtered && (
-              <button
-                type="button"
-                onClick={() => {
-                  setBerth("ALL");
-                  setCarrier("ALL");
-                }}
-                className="px-2 py-1 rounded-lg bg-slate-100 font-bold text-slate-700 flex items-center gap-1 cursor-pointer"
-              >
-                <X className="w-3 h-3" />
-                {t(`${calls.length}/${CALL_RECORDS.length} calls · clear`, `${calls.length}/${CALL_RECORDS.length} lượt tàu · bỏ lọc`)}
-              </button>
-            )}
-          </div>
-          <div className="flex flex-wrap gap-1.5">
-            <button
-              type="button"
-              onClick={() => downloadLedgerCsv(calls)}
-              className="px-2.5 py-1.5 rounded-lg border border-slate-200 text-xs font-bold text-slate-700 hover:bg-slate-50 flex items-center gap-1 cursor-pointer"
-            >
-              <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-700" />
               {t("Ledger CSV", "CSV sổ cái")}
-            </button>
-            <button
-              type="button"
-              onClick={() => downloadReportingExcel("ND06", t("Facility GHG inventory (Decree 06/2022)", "Kiểm kê KNK cấp cơ sở (NĐ 06/2022)"), lang)}
-              className="px-2.5 py-1.5 rounded-lg border border-slate-200 text-xs font-bold text-slate-700 hover:bg-slate-50 flex items-center gap-1 cursor-pointer"
+            </Button>
+            <Button
+              variant="primary"
+              icon={Sheet}
+              onClick={() => {
+                downloadReportingExcel("ND06", t("Facility GHG inventory (Decree 06/2022)", "Kiểm kê KNK cấp cơ sở (NĐ 06/2022)"), lang);
+                toast(t("Excel form downloaded", "Đã tải biểu mẫu Excel"));
+              }}
             >
-              <Sheet className="w-3.5 h-3.5 text-brand" />
-              {t("Excel form", "Excel biểu mẫu")}
-            </button>
-          </div>
+              {t("Excel form", "Biểu mẫu Excel")}
+            </Button>
+          </>
+        }
+      />
+
+      <div className="space-y-4">
+        <Tabs items={tabs} value={tab} onChange={switchTab} />
+        <div className="flex flex-wrap items-center gap-3">
+          <Filter className="w-4 h-4 text-muted" aria-hidden="true" />
+          <Select label={t("Period", "Kỳ báo cáo")} value={period} onChange={(e) => setPeriod(e.target.value as PeriodKind)}>
+            {PERIODS.map((p) => (
+              <option key={p.id} value={p.id}>
+                {t(p.en, p.vn)}
+              </option>
+            ))}
+          </Select>
+          <Select label={t("Berth", "Cầu bến")} value={berth} onChange={(e) => setBerth(e.target.value as typeof berth)}>
+            <option value="ALL">{t("All", "Tất cả")}</option>
+            <option value="B1">B1</option>
+            <option value="B2">B2</option>
+            <option value="B3">B3</option>
+          </Select>
+          <Select label={t("Carrier", "Hãng tàu")} value={carrier} onChange={(e) => setCarrier(e.target.value)}>
+            <option value="ALL">{t("All", "Tất cả")}</option>
+            {carriers.map((c) => (
+              <option key={c} value={c}>
+                {c}
+              </option>
+            ))}
+          </Select>
+          {filtered && (
+            <Button
+              size="sm"
+              variant="ghost"
+              icon={X}
+              onClick={() => {
+                setBerth("ALL");
+                setCarrier("ALL");
+              }}
+            >
+              {t(`${calls.length}/${CALL_RECORDS.length} calls · clear`, `${calls.length}/${CALL_RECORDS.length} lượt tàu · bỏ lọc`)}
+            </Button>
+          )}
         </div>
       </div>
 
-      {loading && (
-        <div className="space-y-4 animate-pulse" aria-busy="true">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-            {[0, 1, 2, 3].map((i) => (
-              <div key={i} className="h-20 rounded-xl bg-slate-200/70" />
-            ))}
-          </div>
-          <div className="h-64 rounded-2xl bg-slate-200/70" />
-        </div>
-      )}
+      {loading && <PageSkeleton />}
 
       {!loading && tab === "OVERVIEW" && (
         <OverviewTab

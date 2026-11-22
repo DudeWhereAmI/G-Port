@@ -40,7 +40,7 @@ export const IpmvpPanel: React.FC<{ onOpenM3?: () => void }> = ({ onOpenM3 }) =>
       )}
       right={
         onOpenM3 && (
-          <button type="button" onClick={onOpenM3} className="px-2.5 py-1.5 rounded-lg border border-slate-200 text-xs font-bold text-brand hover:bg-blue-50 flex items-center gap-1 whitespace-nowrap cursor-pointer">
+          <button type="button" onClick={onOpenM3} className="px-2.5 py-1.5 rounded-control border border-line text-xs font-medium text-brand hover:bg-blue-50 flex items-center gap-1 whitespace-nowrap cursor-pointer">
             {t("View the M-3 dispatch plan", "Xem lịch điều độ ở M-3")}
             <ExternalLink className="w-3 h-3" />
           </button>
@@ -53,9 +53,9 @@ export const IpmvpPanel: React.FC<{ onOpenM3?: () => void }> = ({ onOpenM3 }) =>
           { l: "CO₂e", v: `${num(IPMVP.savedT, 2)} tCO₂e/${t("day", "ngày")}` },
           { l: t("Cost", "Chi phí"), v: `${vnd(IPMVP.savedVnd)}/${t("day", "ngày")}` },
         ].map((x) => (
-          <div key={x.l} className="rounded-xl bg-emerald-50 border border-emerald-200 p-2.5">
-            <div className="text-xs font-bold text-emerald-800">{x.l}</div>
-            <div className="font-black text-emerald-900 tabular-nums text-sm">{x.v}</div>
+          <div key={x.l} className="rounded-card bg-emerald-50 border border-emerald-200 p-2.5">
+            <div className="text-xs font-medium text-emerald-800">{x.l}</div>
+            <div className="font-semibold text-emerald-900 tabular-nums text-sm">{x.v}</div>
           </div>
         ))}
       </div>
@@ -73,7 +73,7 @@ export const IpmvpPanel: React.FC<{ onOpenM3?: () => void }> = ({ onOpenM3 }) =>
           </ComposedChart>
         </ResponsiveContainer>
       </div>
-      <div className="text-xs text-slate-500">
+      <div className="text-xs text-muted">
         {t(
           `Peak ${num(IPMVP.peakBefore)} → ${num(IPMVP.peakAfter)} kW. Intervals after the last update are verified as metering arrives.`,
           `Đỉnh ${num(IPMVP.peakBefore)} → ${num(IPMVP.peakAfter)} kW. Các chu kỳ sau lần cập nhật cuối được xác minh khi có số đo.`
@@ -122,39 +122,39 @@ export const FactorLibrary: React.FC = () => {
       title={t("Emission-factor library (versioned)", "Thư viện hệ số phát thải (có phiên bản)")}
       note={t("Locked records keep their factor version; only new periods use a new version", "Hồ sơ đã khóa giữ hệ số cũ; chỉ kỳ mới áp dụng phiên bản mới")}
       right={
-        <button type="button" onClick={() => setOpen((o) => !o)} className="px-2.5 py-1.5 rounded-lg bg-brand text-white text-xs font-bold flex items-center gap-1 whitespace-nowrap cursor-pointer">
+        <button type="button" onClick={() => setOpen((o) => !o)} className="px-2.5 py-1.5 rounded-control bg-brand text-white text-xs font-medium flex items-center gap-1 whitespace-nowrap cursor-pointer">
           <Plus className="w-3.5 h-3.5" />
           {t("Add grid EF version", "Thêm phiên bản EF lưới")}
         </button>
       }
     >
       {open && (
-        <div className="flex flex-wrap items-end gap-2 bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs">
+        <div className="flex flex-wrap items-end gap-2 bg-slate-50 border border-line rounded-card p-3 text-xs">
           <label className="space-y-0.5">
-            <div className="font-bold text-slate-600">{t("Value (kgCO₂e/kWh)", "Giá trị (kgCO₂e/kWh)")}</div>
-            <input value={form.value} onChange={(e) => setForm({ ...form, value: e.target.value })} placeholder="0,6" className="w-24 px-2 py-1 border border-slate-200 rounded-lg" />
+            <div className="font-medium text-slate-600">{t("Value (kgCO₂e/kWh)", "Giá trị (kgCO₂e/kWh)")}</div>
+            <input value={form.value} onChange={(e) => setForm({ ...form, value: e.target.value })} placeholder="0,6" className="w-24 px-2 py-1 border border-line rounded-control" />
           </label>
           <label className="space-y-0.5">
-            <div className="font-bold text-slate-600">{t("Data year", "Năm số liệu")}</div>
-            <input value={form.year} onChange={(e) => setForm({ ...form, year: e.target.value })} className="w-20 px-2 py-1 border border-slate-200 rounded-lg" />
+            <div className="font-medium text-slate-600">{t("Data year", "Năm số liệu")}</div>
+            <input value={form.year} onChange={(e) => setForm({ ...form, year: e.target.value })} className="w-20 px-2 py-1 border border-line rounded-control" />
           </label>
           <label className="space-y-0.5">
-            <div className="font-bold text-slate-600">{t("Effective from", "Hiệu lực từ")}</div>
-            <input type="date" value={form.from} onChange={(e) => setForm({ ...form, from: e.target.value })} className="px-2 py-1 border border-slate-200 rounded-lg" />
+            <div className="font-medium text-slate-600">{t("Effective from", "Hiệu lực từ")}</div>
+            <input type="date" value={form.from} onChange={(e) => setForm({ ...form, from: e.target.value })} className="px-2 py-1 border border-line rounded-control" />
           </label>
-          <button type="button" onClick={add} className="px-3 py-1.5 rounded-lg bg-emerald-600 text-white font-bold cursor-pointer">
+          <button type="button" onClick={add} className="px-3 py-1.5 rounded-control bg-emerald-600 text-white font-medium cursor-pointer">
             {t("Activate", "Kích hoạt")}
           </button>
         </div>
       )}
       {lockedOnOld > 0 && (
-        <div className="rounded-xl border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-900 font-semibold">
+        <div className="rounded-card border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-900 font-semibold">
           <AlertTriangle className="w-4 h-4 text-warning shrink-0" aria-hidden="true" /> {t(`${lockedOnOld} locked records use an older factor version and are kept unchanged.`, `${lockedOnOld} hồ sơ dùng phiên bản cũ và được giữ nguyên.`)}
         </div>
       )}
-      <div className="overflow-x-auto border border-slate-200 rounded-xl">
+      <div className="overflow-x-auto border border-line rounded-card">
         <table className="w-full text-left text-xs">
-          <thead className="bg-slate-50 text-slate-600 font-bold">
+          <thead className="bg-slate-50 text-slate-600 font-medium">
             <tr>
               <th className="py-2 px-2.5">{t("Factor", "Loại hệ số")}</th>
               <th className="py-2 px-2.5 text-right">{t("Value", "Giá trị")}</th>
@@ -172,13 +172,13 @@ export const FactorLibrary: React.FC = () => {
                   {t(f.name.en, f.name.vn)}
                   <div className="font-code text-xs text-slate-400">{f.id}</div>
                 </td>
-                <td className="py-1.5 px-2.5 text-right tabular-nums font-bold">{num(f.value, f.value < 1 ? 4 : 3)}</td>
+                <td className="py-1.5 px-2.5 text-right tabular-nums font-medium">{num(f.value, f.value < 1 ? 4 : 3)}</td>
                 <td className="py-1.5 px-2.5">{f.unit}</td>
                 <td className="py-1.5 px-2.5 text-xs">{t(f.source.en, f.source.vn)}</td>
                 <td className="py-1.5 px-2.5">{f.year}</td>
                 <td className="py-1.5 px-2.5 whitespace-nowrap">{f.effectiveFrom.split("-").reverse().join("/")}</td>
                 <td className="py-1.5 px-2.5">
-                  <span className={`px-1.5 py-0.5 rounded text-xs font-bold ${f.status === "ACTIVE" ? "bg-emerald-100 text-emerald-800" : "bg-slate-100 text-slate-500"}`}>
+                  <span className={`px-1.5 py-0.5 rounded text-xs font-medium ${f.status === "ACTIVE" ? "bg-emerald-100 text-emerald-800" : "bg-slate-100 text-muted"}`}>
                     {f.status === "ACTIVE" ? t("In use", "Đang dùng") : t("Archived", "Lưu trữ")}
                   </span>
                 </td>
@@ -228,7 +228,7 @@ export const UncertaintyPanel: React.FC<{ calls: CallRecord[] }> = ({ calls }) =
             </div>
           ))}
       </div>
-      <div className="text-xs text-slate-500">{t("Share of the variance contributed by each source", "Tỷ trọng đóng góp vào phương sai theo nguồn")}</div>
+      <div className="text-xs text-muted">{t("Share of the variance contributed by each source", "Tỷ trọng đóng góp vào phương sai theo nguồn")}</div>
     </Panel>
   );
 };
@@ -280,7 +280,7 @@ export const ReductionWhatIf: React.FC = () => {
         <div className="space-y-3">
           {sliders.map((s) => (
             <label key={s.l} className="block space-y-1">
-              <div className="flex justify-between text-xs font-bold">
+              <div className="flex justify-between text-xs font-medium">
                 <span className="text-slate-700">{s.l}</span>
                 <span className="tabular-nums">{s.d}</span>
               </div>
@@ -290,21 +290,21 @@ export const ReductionWhatIf: React.FC = () => {
         </div>
         <div className="space-y-2">
           <div className="grid grid-cols-3 gap-2 text-xs">
-            <div className="rounded-xl bg-slate-50 border border-slate-200 p-2">
-              <div className="text-xs font-bold text-slate-500">tCO₂e/{t("year", "năm")}</div>
-              <div className="font-black tabular-nums">
+            <div className="rounded-card bg-slate-50 border border-line p-2">
+              <div className="text-xs font-medium text-muted">tCO₂e/{t("year", "năm")}</div>
+              <div className="font-semibold tabular-nums">
                 {num(total(calc.now))} → {num(total(calc.next))}
               </div>
             </div>
-            <div className="rounded-xl bg-slate-50 border border-slate-200 p-2">
-              <div className="text-xs font-bold text-slate-500">kgCO₂e/TEU</div>
-              <div className="font-black tabular-nums">
+            <div className="rounded-card bg-slate-50 border border-line p-2">
+              <div className="text-xs font-medium text-muted">kgCO₂e/TEU</div>
+              <div className="font-semibold tabular-nums">
                 {num((total(calc.now) * 1000) / teuYear, 2)} → {num((total(calc.next) * 1000) / teuYear, 2)}
               </div>
             </div>
-            <div className="rounded-xl bg-violet-50 border border-violet-200 p-2">
-              <div className="text-xs font-bold text-violet-800">{t("Ship emissions avoided (influence)", "Phát thải tàu tránh được (ảnh hưởng)")}</div>
-              <div className="font-black tabular-nums text-violet-900">{num(calc.next.avoided)} t/{t("yr", "năm")}</div>
+            <div className="rounded-card bg-violet-50 border border-violet-200 p-2">
+              <div className="text-xs font-medium text-violet-800">{t("Ship emissions avoided (influence)", "Phát thải tàu tránh được (ảnh hưởng)")}</div>
+              <div className="font-semibold tabular-nums text-violet-900">{num(calc.next.avoided)} t/{t("yr", "năm")}</div>
             </div>
           </div>
           <div className="h-44">
@@ -319,7 +319,7 @@ export const ReductionWhatIf: React.FC = () => {
               </BarChart>
             </ResponsiveContainer>
           </div>
-          <div className="text-xs text-slate-500">
+          <div className="text-xs text-muted">
             {t(
               "More OPS raises the port's Scope 2 but removes ship auxiliary-engine emissions (carriers' Scope 3).",
               "Tăng OPS làm tăng Scope 2 của cảng nhưng loại bỏ phát thải máy phụ của tàu (Scope 3 của hãng tàu)."

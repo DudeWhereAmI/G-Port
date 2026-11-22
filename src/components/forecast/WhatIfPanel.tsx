@@ -35,9 +35,9 @@ const Slider: React.FC<{
   hint?: string;
 }> = ({ label, valueLabel, min, max, step, value, onChange, changed, hint }) => (
   <label className="block space-y-1">
-    <div className="flex items-center justify-between text-xs font-bold">
+    <div className="flex items-center justify-between text-xs font-medium">
       <span className="text-slate-700">{label}</span>
-      <span className={`tabular-nums ${changed ? "text-orange-700" : "text-slate-900"}`}>{valueLabel}</span>
+      <span className={`tabular-nums ${changed ? "text-warning" : "text-ink"}`}>{valueLabel}</span>
     </div>
     <input
       type="range"
@@ -48,7 +48,7 @@ const Slider: React.FC<{
       onChange={(e) => onChange(Number(e.target.value))}
       className="w-full accent-brand cursor-pointer"
     />
-    {hint && <div className="text-xs text-slate-500">{hint}</div>}
+    {hint && <div className="text-xs text-muted">{hint}</div>}
   </label>
 );
 
@@ -76,23 +76,23 @@ export const WhatIfPanel: React.FC<WhatIfPanelProps> = ({ value, onChange, onRes
   const delta = ck.peakNetGrid.netGrid - bk.peakNetGrid.netGrid;
 
   return (
-    <div className="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-2xs space-y-4 text-xs">
+    <div className="bg-white rounded-card p-4 border border-line space-y-4 text-xs">
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <FlaskConical className="w-4 h-4 text-brand" />
-          <h3 className="font-bold text-slate-900 text-sm">{t("What-if simulation", "Mô phỏng What-if")}</h3>
+          <h3 className="font-medium text-ink text-sm">{t("What-if simulation", "Mô phỏng what-if")}</h3>
         </div>
         <button
           type="button"
           onClick={onReset}
           disabled={isDefault}
-          className="px-2 py-1 rounded-lg border border-slate-200 text-xs font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1 cursor-pointer"
+          className="px-2 py-1 rounded-control border border-line text-xs font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1 cursor-pointer"
         >
           <RotateCcw className="w-3 h-3" />
           {t("Restore original", "Khôi phục kịch bản gốc")}
         </button>
       </div>
-      <p className="text-xs text-slate-500 -mt-2">
+      <p className="text-xs text-muted -mt-2">
         {t(
           "Client-side approximation of the forecast model; locked (past) intervals are not changed.",
           "Mô hình xấp xỉ phía trình duyệt; các chu kỳ quá khứ đã khóa không bị thay đổi."
@@ -100,11 +100,11 @@ export const WhatIfPanel: React.FC<WhatIfPanelProps> = ({ value, onChange, onRes
       </p>
 
       <div className="space-y-1">
-        <span className="text-xs font-bold text-slate-700">{t("Vessel", "Tàu")}</span>
+        <span className="text-xs font-medium text-slate-700">{t("Vessel", "Tàu")}</span>
         <select
           value={vessel.id}
           onChange={(e) => onChange({ ...value, vesselId: e.target.value, etaShiftMin: 0, cranes: null })}
-          className="w-full px-2 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-brand cursor-pointer"
+          className="w-full px-2 py-1.5 bg-slate-50 border border-line rounded-control text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-brand cursor-pointer"
         >
           {WHAT_IF_VESSELS.map((v) => (
             <option key={v.id} value={v.id}>
@@ -164,9 +164,9 @@ export const WhatIfPanel: React.FC<WhatIfPanelProps> = ({ value, onChange, onRes
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -6 }}
             transition={{ duration: 0.2 }}
-            className="rounded-xl border-2 border-orange-400 bg-orange-50 p-2.5 space-y-1"
+            className="rounded-card border border-amber-200 bg-warning-soft p-2.5 space-y-1"
           >
-            <div className="flex items-center gap-1.5 font-black text-orange-800 text-xs">
+            <div className="flex items-center gap-1.5 font-semibold text-orange-800 text-xs">
               <Zap className="w-3.5 h-3.5" />
               {t("Event-based re-forecast triggered", "Kích hoạt tái dự báo theo sự kiện")}
             </div>
@@ -179,23 +179,23 @@ export const WhatIfPanel: React.FC<WhatIfPanelProps> = ({ value, onChange, onRes
         )}
       </AnimatePresence>
 
-      <div className="grid grid-cols-2 gap-2 pt-1 border-t border-slate-100">
-        <div className="rounded-lg bg-slate-50 p-2">
-          <div className="text-xs font-bold text-slate-500">{t("Net grid peak", "Đỉnh điện lưới")}</div>
-          <motion.div key={ck.peakNetGrid.netGrid} initial={{ opacity: 0.3 }} animate={{ opacity: 1 }} className="font-black text-slate-900 tabular-nums">
+      <div className="grid grid-cols-2 gap-2 pt-1 border-t border-line">
+        <div className="rounded-control bg-slate-50 p-2">
+          <div className="text-xs font-medium text-muted">{t("Net grid peak", "Đỉnh điện lưới")}</div>
+          <motion.div key={ck.peakNetGrid.netGrid} initial={{ opacity: 0.3 }} animate={{ opacity: 1 }} className="font-semibold text-ink tabular-nums">
             {kw(ck.peakNetGrid.netGrid)}
           </motion.div>
-          <div className={`text-xs font-bold ${delta > 0 ? "text-red-700" : delta < 0 ? "text-emerald-700" : "text-slate-500"}`}>
+          <div className={`text-xs font-medium ${delta > 0 ? "text-danger" : delta < 0 ? "text-success" : "text-muted"}`}>
             {delta === 0 ? t("= plan", "= kế hoạch") : `${delta > 0 ? "+" : "−"}${kw(Math.abs(delta))} · ${ck.peakNetGrid.label}`}
           </div>
         </div>
-        <div className="rounded-lg bg-slate-50 p-2">
-          <div className="text-xs font-bold text-slate-500">{t("Alert windows", "Khung cảnh báo")}</div>
-          <motion.div key={ck.alertWindows.length} initial={{ opacity: 0.3 }} animate={{ opacity: 1 }} className="font-black text-slate-900 tabular-nums">
+        <div className="rounded-control bg-slate-50 p-2">
+          <div className="text-xs font-medium text-muted">{t("Alert windows", "Khung cảnh báo")}</div>
+          <motion.div key={ck.alertWindows.length} initial={{ opacity: 0.3 }} animate={{ opacity: 1 }} className="font-semibold text-ink tabular-nums">
             {ck.alertWindows.length}
-            <span className="text-xs text-slate-500 font-sans font-bold"> / {t("plan", "KH")} {bk.alertWindows.length}</span>
+            <span className="text-xs text-muted font-sans font-medium"> / {t("plan", "KH")} {bk.alertWindows.length}</span>
           </motion.div>
-          <div className="text-xs font-bold text-slate-500">
+          <div className="text-xs font-medium text-muted">
             {t(`${num(ck.switchIntervals)} intervals on P90`, `${num(ck.switchIntervals)} chu kỳ theo P90`)}
           </div>
         </div>

@@ -1,10 +1,10 @@
 import React from "react";
 import { motion } from "motion/react";
-import { Layers, X } from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import { useLanguage } from "../../context/LanguageContext";
 import { useFormat } from "../../utils/format";
 import { FEEDERS, ForecastWindowRecord } from "../../data/module1Forecast";
+import { Button, ChartTooltipBox, DetailDrawer } from "../ui";
 
 interface FeederDrawerProps {
   window: ForecastWindowRecord;
@@ -12,7 +12,7 @@ interface FeederDrawerProps {
   onOpenReport: () => void;
 }
 
-/** Right-hand drawer: 6-feeder split (donut + bars) at the window's peak interval. */
+/** 6-feeder split (donut + bars) at the window's peak interval. */
 export const FeederDrawer: React.FC<FeederDrawerProps> = ({ window: w, onClose, onOpenReport }) => {
   const { t } = useLanguage();
   const { num, kw, pct } = useFormat();
@@ -21,131 +21,83 @@ export const FeederDrawer: React.FC<FeederDrawerProps> = ({ window: w, onClose, 
   const max = Math.max(...rows.map((r) => r.kw));
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end">
-      <motion.button
-        type="button"
-        aria-label={t("Close", "Đóng")}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className="absolute inset-0 bg-slate-950/50 cursor-default"
-        onClick={onClose}
-      />
-      <motion.aside
-        initial={{ x: 40, opacity: 0 }}
-        animate={{ x: 0, opacity: 1 }}
-        transition={{ duration: 0.22 }}
-        className="relative h-full w-full max-w-md bg-white shadow-2xl border-l border-slate-200 flex flex-col"
-      >
-        <div className="bg-slate-900 text-white px-5 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Layers className="w-4 h-4 text-sky-400" />
-            <span className="font-bold text-sm">
-              {t("6-line breakdown", "Chi tiết 6 lộ")} — {w.timeWindow}
-            </span>
+    <DetailDrawer
+      width={480}
+      title={t(`6 feeders · ${w.timeWindow}`, `6 lộ · ${w.timeWindow}`)}
+      subtitle={t(`Peak interval ${w.peakTime}`, `Chu kỳ đỉnh ${w.peakTime}`)}
+      onClose={onClose}
+      footer={
+        <Button variant="primary" onClick={onOpenReport}>
+          {t("View 24h report", "Xem báo cáo 24h")}
+        </Button>
+      }
+    >
+      <div className="space-y-6">
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <div className="text-xs text-muted">{t("Load P50", "Phụ tải P50")}</div>
+            <div className="text-base font-semibold text-ink">{kw(w.p50Kw)}</div>
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center cursor-pointer"
-          >
-            <X className="w-4 h-4" />
-          </button>
+          <div>
+            <div className="text-xs text-muted">{t("Net grid", "Điện lưới thuần")}</div>
+            <div className="text-base font-semibold text-ink">{kw(w.netGridKw)}</div>
+          </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-5 space-y-5 text-xs text-slate-800">
-          <div className="grid grid-cols-3 gap-2 bg-slate-50 p-3 rounded-xl border border-slate-200">
-            <div>
-              <div className="text-xs font-bold text-slate-400">{t("Peak interval", "Chu kỳ đỉnh")}</div>
-              <div className="font-black text-slate-900">{w.peakTime}</div>
-            </div>
-            <div>
-              <div className="text-xs font-bold text-slate-400">{t("Load P50", "Phụ tải P50")}</div>
-              <div className="font-black text-slate-900">{kw(w.p50Kw)}</div>
-            </div>
-            <div>
-              <div className="text-xs font-bold text-slate-400">{t("Net grid", "Điện lưới thuần")}</div>
-              <div className="font-black text-brand">{kw(w.netGridKw)}</div>
-            </div>
+        <div className="relative h-52">
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart>
+              <Pie data={rows} dataKey="kw" nameKey="label" innerRadius="62%" outerRadius="90%" paddingAngle={1} stroke="none" isAnimationActive animationDuration={200}>
+                {rows.map((r) => (
+                  <Cell key={r.key} fill={r.color} />
+                ))}
+              </Pie>
+              <Tooltip
+                content={({ active, payload }: any) =>
+                  active && payload?.length ? (
+                    <ChartTooltipBox title={`${payload[0].payload.id} · ${payload[0].payload.label}`}>
+                      <div className="tabular-nums">{kw(payload[0].value)}</div>
+                    </ChartTooltipBox>
+                  ) : null
+                }
+              />
+            </PieChart>
+          </ResponsiveContainer>
+          <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+            <span className="text-xs text-muted">{t("Total", "Tổng")}</span>
+            <span className="text-xl font-semibold text-ink tabular-nums">{num(total)}</span>
+            <span className="text-xs text-muted">kW</span>
           </div>
+        </div>
 
-          <div className="relative h-52">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie data={rows} dataKey="kw" nameKey="label" innerRadius="58%" outerRadius="88%" paddingAngle={1.5} isAnimationActive>
-                  {rows.map((r) => (
-                    <Cell key={r.key} fill={r.color} />
-                  ))}
-                </Pie>
-                <Tooltip
-                  content={({ active, payload }: any) =>
-                    active && payload?.length ? (
-                      <div className="bg-white border border-slate-300 rounded-lg shadow px-2.5 py-1.5 text-xs text-slate-900">
-                        <b>{payload[0].payload.id}</b> {payload[0].payload.label}: <b className="">{kw(payload[0].value)}</b>
-                      </div>
-                    ) : null
-                  }
-                />
-              </PieChart>
-            </ResponsiveContainer>
-            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-              <span className="text-xs font-bold text-slate-500">{t("Total", "Tổng")}</span>
-              <span className="font-black text-slate-900 text-base">{num(total)}</span>
-              <span className="text-xs text-slate-500">kW</span>
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            {rows.map((r) => (
-              <div key={r.key} className="space-y-0.5">
-                <div className="flex items-center justify-between gap-2">
-                  <span className="flex items-center gap-1.5 font-semibold text-slate-700">
-                    <span className="inline-block w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: r.color }} />
-                    <b className="text-brand">{r.id}</b> {r.label}
-                  </span>
-                  <span className="tabular-nums font-bold text-slate-900">
-                    {kw(r.kw)} <span className="text-slate-500 font-semibold">· {pct(total ? (r.kw / total) * 100 : 0)}</span>
-                  </span>
-                </div>
-                <div className="h-2 rounded-full bg-slate-100 overflow-hidden">
-                  <motion.div
-                    initial={{ width: 0 }}
-                    animate={{ width: `${max ? (r.kw / max) * 100 : 0}%` }}
-                    transition={{ duration: 0.4 }}
-                    className="h-full rounded-full"
-                    style={{ backgroundColor: r.color }}
-                  />
-                </div>
+        <ul className="space-y-3">
+          {rows.map((r) => (
+            <li key={r.key} className="space-y-1">
+              <div className="flex items-center justify-between gap-2 text-sm">
+                <span className="flex items-center gap-2 text-ink">
+                  <span className="w-2.5 h-2.5 rounded-[3px]" style={{ backgroundColor: r.color }} aria-hidden="true" />
+                  <span className="text-muted">{r.id}</span> {r.label}
+                </span>
+                <span className="tabular-nums text-ink">
+                  {kw(r.kw)} <span className="text-muted">· {pct(total ? (r.kw / total) * 100 : 0)}</span>
+                </span>
               </div>
-            ))}
-          </div>
+              <div className="h-1.5 rounded-full bg-slate-100 overflow-hidden">
+                <motion.div initial={{ width: 0 }} animate={{ width: `${max ? (r.kw / max) * 100 : 0}%` }} transition={{ duration: 0.2 }} className="h-full rounded-full" style={{ backgroundColor: r.color }} />
+              </div>
+            </li>
+          ))}
+        </ul>
 
-          <div className="text-xs text-slate-500 border-t border-slate-100 pt-3 space-y-0.5">
-            <div>
-              {t("Vessels", "Tàu")}: <b className="text-slate-800">{w.vessels.join(" & ") || "—"}</b> · {w.stsCranes} STS · {num(w.reeferPlugs)} reefer
-            </div>
-            <div>
-              PV: <b className="text-emerald-700">{kw(w.pvKw)}</b> · {t("Ambient", "Nhiệt độ")} {num(w.tempAmbC, 1)} °C
-            </div>
+        <div className="text-xs text-muted border-t border-line pt-3 space-y-1">
+          <div>
+            {t("Vessels", "Tàu")}: <span className="text-ink">{w.vessels.join(" & ") || "—"}</span> · {w.stsCranes} STS · {num(w.reeferPlugs)} reefer
+          </div>
+          <div>
+            PV {kw(w.pvKw)} · {t("ambient", "nhiệt độ")} {num(w.tempAmbC, 1)} °C
           </div>
         </div>
-
-        <div className="border-t border-slate-200 p-4 flex justify-end gap-2">
-          <button
-            type="button"
-            onClick={onOpenReport}
-            className="px-4 py-2 bg-brand text-white rounded-lg text-xs font-bold hover:bg-brand-hover cursor-pointer"
-          >
-            {t("View 24h report", "Xem báo cáo 24h")}
-          </button>
-          <button
-            type="button"
-            onClick={onClose}
-            className="px-4 py-2 bg-slate-100 text-slate-700 rounded-lg text-xs font-bold hover:bg-slate-200 cursor-pointer"
-          >
-            {t("Close", "Đóng")}
-          </button>
-        </div>
-      </motion.aside>
-    </div>
+      </div>
+    </DetailDrawer>
   );
 };

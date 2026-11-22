@@ -25,9 +25,9 @@ const Slider: React.FC<{ label: string; value: number; min: number; max: number;
   changed,
 }) => (
   <label className="block space-y-1">
-    <div className="flex items-center justify-between text-xs font-bold">
+    <div className="flex items-center justify-between text-xs font-medium">
       <span className="text-slate-700">{label}</span>
-      <span className={`tabular-nums ${changed ? "text-orange-700" : "text-slate-900"}`}>{display}</span>
+      <span className={`tabular-nums ${changed ? "text-warning" : "text-ink"}`}>{display}</span>
     </div>
     <input type="range" min={min} max={max} step={step} value={value} onChange={(e) => onChange(Number(e.target.value))} className="w-full accent-brand cursor-pointer" />
   </label>
@@ -55,17 +55,17 @@ export const M3WhatIfPanel: React.FC<Props> = ({ settings, defaults, onChange, r
     });
 
   return (
-    <div className="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-2xs space-y-3.5 text-xs">
+    <div className="bg-white rounded-card p-4 border border-line space-y-3.5 text-xs">
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <FlaskConical className="w-4 h-4 text-brand" />
-          <h3 className="font-bold text-slate-900 text-sm">{t("What-if", "Mô phỏng What-if")}</h3>
+          <h3 className="font-medium text-ink text-sm">{t("What-if", "Mô phỏng what-if")}</h3>
         </div>
         <button
           type="button"
           onClick={reset}
           disabled={isDefault}
-          className="px-2 py-1 rounded-lg border border-slate-200 text-xs font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-40 flex items-center gap-1 cursor-pointer disabled:cursor-not-allowed"
+          className="px-2 py-1 rounded-control border border-line text-xs font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-40 flex items-center gap-1 cursor-pointer disabled:cursor-not-allowed"
         >
           <RotateCcw className="w-3 h-3" />
           {t("Reset", "Khôi phục")}
@@ -112,10 +112,10 @@ export const M3WhatIfPanel: React.FC<Props> = ({ settings, defaults, onChange, r
         onChange={(v) => onChange({ ...settings, itvReserve: v })}
         changed={settings.itvReserve !== defaults.itvReserve}
       />
-      <label className="flex items-center justify-between gap-2 text-xs font-bold text-slate-700 cursor-pointer">
+      <label className="flex items-center justify-between gap-2 text-xs font-medium text-slate-700 cursor-pointer">
         <span>
           {t("With BESS", "Có BESS")}{" "}
-          <span className="font-normal text-slate-500">
+          <span className="font-normal text-muted">
             ({kw(BESS_OPTION.powerKw)} / {num(BESS_OPTION.energyKwh)} kWh, {t("not installed", "chưa lắp đặt")})
           </span>
         </span>
@@ -124,15 +124,15 @@ export const M3WhatIfPanel: React.FC<Props> = ({ settings, defaults, onChange, r
 
       <AnimatePresence>
         {!result.feasible && result.infeasible && (
-          <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="rounded-xl border-2 border-red-300 bg-red-50 p-2.5 text-xs text-red-900 space-y-0.5">
-            <div className="flex items-center gap-1.5 font-black">
+          <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="rounded-card border border-red-200 bg-danger-soft p-2.5 text-xs text-red-900 space-y-0.5">
+            <div className="flex items-center gap-1.5 font-semibold">
               <AlertOctagon className="w-3.5 h-3.5" />
               {t("Infeasible", "Không khả thi")}
             </div>
             <div>
               {t("Violates", "Vi phạm ràng buộc")}: {t(result.infeasible.constraint.en, result.infeasible.constraint.vn)}
             </div>
-            <div className="text-red-700">
+            <div className="text-danger">
               {t(
                 `Short by ${kw(result.infeasible.shortfallKw)} at ${minuteLabel(result.infeasible.minute)} (P90 planning basis)`,
                 `Thiếu ${kw(result.infeasible.shortfallKw)} lúc ${minuteLabel(result.infeasible.minute)} (cơ sở lập kế hoạch P90)`
@@ -142,20 +142,20 @@ export const M3WhatIfPanel: React.FC<Props> = ({ settings, defaults, onChange, r
         )}
       </AnimatePresence>
 
-      <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100">
+      <div className="grid grid-cols-2 gap-2 pt-2 border-t border-line">
         {[
           { l: t("Peak after", "Đỉnh sau"), v: kw(result.peakAfter.kw), d: result.peakAfter.kw - base.peakAfter.kw, unit: "kW", inv: true },
           { l: t("Saving / day", "Tiết kiệm / ngày"), v: vnd(result.savingVndPerDay), d: result.savingVndPerDay - base.savingVndPerDay, unit: "vnd", inv: false },
           { l: t("Grid energy saved", "Điện lưới giảm"), v: `${num(result.energy.savedKwh)} kWh`, d: 0, unit: "", inv: false },
           { l: "CO₂e", v: tco2(result.co2SavedT * 1000), d: 0, unit: "", inv: false },
         ].map((x) => (
-          <div key={x.l} className="rounded-lg bg-slate-50 p-2">
-            <div className="text-xs font-bold text-slate-500">{x.l}</div>
-            <motion.div key={x.v} initial={{ opacity: 0.3 }} animate={{ opacity: 1 }} className="font-black text-slate-900 tabular-nums">
+          <div key={x.l} className="rounded-control bg-slate-50 p-2">
+            <div className="text-xs font-medium text-muted">{x.l}</div>
+            <motion.div key={x.v} initial={{ opacity: 0.3 }} animate={{ opacity: 1 }} className="font-semibold text-ink tabular-nums">
               {x.v}
             </motion.div>
             {x.d !== 0 && (
-              <div className={`text-xs font-bold ${(x.d < 0) === x.inv ? "text-emerald-700" : "text-red-700"}`}>
+              <div className={`text-xs font-medium ${(x.d < 0) === x.inv ? "text-success" : "text-danger"}`}>
                 {x.d > 0 ? "+" : "−"}
                 {x.unit === "vnd" ? vnd(Math.abs(x.d)) : kw(Math.abs(x.d))}
               </div>

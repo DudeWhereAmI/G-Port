@@ -1,5 +1,7 @@
 import React, { useState, useMemo } from "react";
 import { useLanguage } from "../context/LanguageContext";
+import { MetaLine } from "../components/ui";
+import { breadcrumbOf } from "../components/shell/pages";
 import {
   Ship,
   Truck,
@@ -294,13 +296,13 @@ export const InputLayerPage: React.FC<InputLayerPageProps> = ({
   const getEntityTimelineTitle = (category: TerminalEntityCategory) => {
     switch (category) {
       case "VESSELS":
-        return t("Vessel Sea-to-Berth & Towage Turnaround", "Hành Trình Tàu Từ Ngoài Khơi, Lai Dắt & Cập Bến");
+        return t("Vessel Sea-to-Berth & towage turnaround", "Hành trình tàu từ ngoài khơi, lai dắt & cập bến");
       case "CRANES":
-        return t("Quay Crane Shift & Hoist Timeline", "Tiến Độ Ca Trực & Chu Kỳ Cẩu Bờ STS");
+        return t("Quay crane shift & hoist timeline", "Tiến độ ca trực & chu kỳ cẩu bờ STS");
       case "TRUCKS":
-        return t("Yard Truck Route & Stops Timeline", "Lộ Trình & Điểm Dừng Xe Đầu Kéo Nội Cảng");
+        return t("Yard truck route & stops timeline", "Lộ trình & điểm dừng xe đầu kéo nội cảng");
       case "BAYS":
-        return t("Container Bay Stacking & Cooling Timeline", "Chu Kỳ Xếp Chồng & Làm Lạnh Bãi Container");
+        return t("Container bay stacking & cooling timeline", "Chu kỳ xếp chồng & làm lạnh bãi container");
     }
   };
 
@@ -315,7 +317,17 @@ export const InputLayerPage: React.FC<InputLayerPageProps> = ({
       selectedEntity !== null);
 
   return (
-    <div className="relative w-full h-full flex-1 min-h-0 rounded-2xl overflow-hidden border border-slate-200 shadow-xs bg-[#AADAFF] select-none flex flex-col">
+    <div className="w-full h-full flex-1 min-h-0 flex flex-col gap-3">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-2 px-1 shrink-0">
+        <div className="min-w-0">
+          <div className="text-xs text-muted">{breadcrumbOf("INPUT_LAYER", t).join(" / ")}</div>
+          <h1 className="text-2xl font-semibold text-ink tracking-tight">{t("Telemetry", "Telemetry")}</h1>
+        </div>
+        <div className="text-xs text-muted">
+          <MetaLine items={[t("Live 2D / 3D terminal map", "Bản đồ cảng 2D / 3D trực tuyến"), t("Source: SCADA · TOS N4 · meters", "Nguồn: SCADA · TOS N4 · công tơ"), t("Updated 11:40", "Cập nhật lúc 11:40")]} />
+        </div>
+      </div>
+    <div className="relative w-full flex-1 min-h-0 rounded-card overflow-hidden border border-line bg-[#AADAFF] select-none flex flex-col">
       {/* 1. Primary 2D Strategic Port Terminal Map */}
       {mapMode === "2D" ? (
         <PortTerminal2DStrategyMap
@@ -484,7 +496,7 @@ export const InputLayerPage: React.FC<InputLayerPageProps> = ({
                   className="py-1.5 px-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center gap-1 text-xs font-bold transition-colors shadow-xs cursor-pointer"
                 >
                   <Activity className="w-3 h-3 shrink-0" />
-                  <span className="truncate">{t("Telemetry Report", "Báo Cáo Telemetry")}</span>
+                  <span className="truncate">{t("Telemetry report", "Báo cáo telemetry")}</span>
                 </button>
                 <button
                   type="button"
@@ -498,7 +510,7 @@ export const InputLayerPage: React.FC<InputLayerPageProps> = ({
                   className="py-1.5 px-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 flex items-center justify-center gap-1 text-xs font-bold transition-colors cursor-pointer"
                 >
                   <Gauge className="w-3 h-3 text-blue-600 shrink-0" />
-                  <span className="truncate">{t("Meter Diagram", "Sơ Đồ Đồng Hồ")}</span>
+                  <span className="truncate">{t("Meter diagram", "Sơ đồ đồng hồ")}</span>
                 </button>
               </div>
             </div>
@@ -561,7 +573,7 @@ export const InputLayerPage: React.FC<InputLayerPageProps> = ({
                       onClick={() => setFocusedWaypoint(null)}
                       className="px-2 py-0.5 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-bold cursor-pointer"
                     >
-                      {t("Reset Zoom", "Thu nhỏ")}
+                      {t("Reset zoom", "Thu nhỏ")}
                     </button>
                   )}
                   <button
@@ -579,8 +591,8 @@ export const InputLayerPage: React.FC<InputLayerPageProps> = ({
                   >
                     <span>
                       {selectedEntity.category === "VESSELS"
-                        ? t("Port Call Audit", "Kiểm toán Lượt tàu")
-                        : t("2D Route Log", "Nhật ký Lộ trình 2D")}
+                        ? t("Port call audit", "Kiểm toán Lượt tàu")
+                        : t("2D Route log", "Nhật ký Lộ trình 2D")}
                     </span>
                     <ArrowUpRight className="w-3 h-3" />
                   </button>
@@ -722,7 +734,7 @@ export const InputLayerPage: React.FC<InputLayerPageProps> = ({
                 <span className="text-xs font-black text-slate-800 truncate">
                   {selectedZone
                     ? `${selectedZone.name}`
-                    : t("Terminal Entities List", "Danh sách Đối tượng Terminal")}
+                    : t("Terminal entities list", "Danh sách đối tượng terminal")}
                 </span>
                 <button
                   type="button"
@@ -921,7 +933,7 @@ export const InputLayerPage: React.FC<InputLayerPageProps> = ({
                   }`}
                 >
                   <Activity className="w-3.5 h-3.5" />
-                  <span>{t("1. SCADA Feeder & Telemetry Curve", "1. Lộ Xuất Tuyến SCADA & Đồ Thị Telemetry")}</span>
+                  <span>{t("1. SCADA feeder & telemetry curve", "1. Lộ xuất tuyến SCADA & đồ thị telemetry")}</span>
                 </button>
                 <button
                   type="button"
@@ -934,7 +946,7 @@ export const InputLayerPage: React.FC<InputLayerPageProps> = ({
                 >
                   <Layers className="w-3.5 h-3.5" />
                   <span>
-                    {t("2. ePort Container Manifest", "2. Bảng Kê Container ePort")} (
+                    {t("2. ePort container manifest", "2. Bảng Kê container ePort")} (
                     {detailModalEntity.containersManifest.length})
                   </span>
                 </button>
@@ -948,12 +960,12 @@ export const InputLayerPage: React.FC<InputLayerPageProps> = ({
                   }`}
                 >
                   <MapIcon className="w-3.5 h-3.5" />
-                  <span>{t("3. Historical Voyage & 2D Map Replay", "3. Lịch Sử Chuyến Tàu & Mô Phỏng 2D")}</span>
+                  <span>{t("3. Historical voyage & 2D map replay", "3. Lịch sử chuyến tàu & mô phỏng 2D")}</span>
                 </button>
               </div>
 
               <span className="text-xs font-mono text-slate-400 pb-2 hidden sm:inline">
-                {t("Sub-Meter ID:", "Mã Đồng Hồ:")} {detailModalEntity.feederReport.meterId}
+                {t("Sub-Meter ID:", "Mã đồng hồ:")} {detailModalEntity.feederReport.meterId}
               </span>
             </div>
 
@@ -1550,6 +1562,7 @@ export const InputLayerPage: React.FC<InputLayerPageProps> = ({
           </div>
         </div>
       )}
+    </div>
     </div>
   );
 };

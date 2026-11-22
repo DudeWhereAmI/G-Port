@@ -74,7 +74,7 @@ function touRuns(intervals: { minute: number; tou: TouBand }[]) {
 }
 
 const Box: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <div className="bg-white border border-slate-300 rounded-xl shadow-lg px-3 py-2 text-xs text-slate-900 space-y-0.5 min-w-[200px]">{children}</div>
+  <div className="bg-white border border-slate-300 rounded-card shadow-lg px-3 py-2 text-xs text-ink space-y-0.5 min-w-[200px]">{children}</div>
 );
 const Row: React.FC<{ c: string; l: string; v: string; b?: boolean }> = ({ c, l, v, b }) => (
   <div className="flex items-center justify-between gap-4">
@@ -82,7 +82,7 @@ const Row: React.FC<{ c: string; l: string; v: string; b?: boolean }> = ({ c, l,
       <span className="inline-block w-2 h-2 rounded-full" style={{ backgroundColor: c }} />
       {l}
     </span>
-    <span className={`tabular-nums ${b ? "font-bold" : "font-semibold"}`}>{v}</span>
+    <span className={`tabular-nums ${b ? "font-medium" : "font-semibold"}`}>{v}</span>
   </div>
 );
 
@@ -110,7 +110,7 @@ export const BeforeAfterChart: React.FC<{ result: DispatchResult; basis: "GRID" 
     const adj = (Object.keys(x.adjust) as AdjustKey[]).filter((k) => x.adjust[k] !== 0);
     return (
       <Box>
-        <div className="font-bold mb-1">
+        <div className="font-medium mb-1">
           {x.label} – {minuteLabel(x.minute + INTERVAL_MINUTES)}
         </div>
         <Row c={M3_COLORS.before} l={t("Before (M-1 forecast)", "Trước (dự báo M-1)")} v={kw(x.b)} />
@@ -254,7 +254,7 @@ export const WaterfallChart: React.FC<{ result: DispatchResult }> = ({ result })
             content={({ active, payload }: any) =>
               active && payload?.length ? (
                 <Box>
-                  <div className="font-bold">{payload[0].payload.name}</div>
+                  <div className="font-medium">{payload[0].payload.name}</div>
                   <div className="tabular-nums">{payload[0].payload.total ? kw(payload[0].payload.delta) : `${payload[0].payload.delta > 0 ? "+" : "−"}${kw(Math.abs(payload[0].payload.delta))}`}</div>
                 </Box>
               ) : null
@@ -327,7 +327,7 @@ export const PowerBalanceChart: React.FC<{ result: DispatchResult }> = ({ result
             content={({ active, payload }: any) =>
               active && payload?.length ? (
                 <Box>
-                  <div className="font-bold">{payload[0].payload.label}</div>
+                  <div className="font-medium">{payload[0].payload.label}</div>
                   {series.map((s) => (
                     <Row key={s.key} c={s.color} l={`${s.side === "src" ? "▲" : "▼"} ${s.name}`} v={kw(Math.abs(payload[0].payload[s.key]))} />
                   ))}
@@ -375,7 +375,7 @@ export const ObjectiveChart: React.FC<{ before: CostBreakdown; after: CostBreakd
             content={({ active, payload }: any) =>
               active && payload?.length ? (
                 <Box>
-                  <div className="font-bold">{payload[0].payload.name}</div>
+                  <div className="font-medium">{payload[0].payload.name}</div>
                   <Row c={M3_COLORS.before} l={t("Before", "Trước")} v={vnd(payload[0].payload.before * 1e6)} />
                   <Row c={M3_COLORS.after} l={t("After", "Sau")} v={vnd(payload[0].payload.after * 1e6)} b />
                 </Box>

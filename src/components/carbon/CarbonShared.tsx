@@ -1,5 +1,6 @@
 import React from "react";
 import { useLanguage } from "../../context/LanguageContext";
+import { StatusBadge } from "../ui";
 import { DataLevel, RecordStatus } from "../../data/module2Carbon";
 
 export const LEVEL_STYLE: Record<DataLevel, string> = {
@@ -16,7 +17,7 @@ export function useLevelLabel() {
 
 export const LevelBadge: React.FC<{ level: DataLevel }> = ({ level }) => {
   const label = useLevelLabel();
-  return <span className={`inline-flex px-1.5 py-0.5 rounded border text-xs font-bold whitespace-nowrap ${LEVEL_STYLE[level]}`}>{label(level)}</span>;
+  return <StatusBadge status={level}>{label(level)}</StatusBadge>;
 };
 
 export const STATUS_STEPS: RecordStatus[] = ["DRAFT", "RECONCILED", "LOCKED", "SHARED"];
@@ -42,7 +43,7 @@ const STATUS_STYLE: Record<RecordStatus, string> = {
 
 export const RecordStatusBadge: React.FC<{ status: RecordStatus }> = ({ status }) => {
   const label = useStatusLabel();
-  return <span className={`inline-flex px-1.5 py-0.5 rounded text-xs font-bold whitespace-nowrap ${STATUS_STYLE[status]}`}>{label(status)}</span>;
+  return <StatusBadge status={status}>{label(status)}</StatusBadge>;
 };
 
 /** Draft → Reconciled → Locked → Shared stepper. */
@@ -53,8 +54,8 @@ export const StatusStepper: React.FC<{ status: RecordStatus }> = ({ status }) =>
     <div className="flex items-center gap-1 flex-wrap">
       {STATUS_STEPS.map((s, i) => (
         <React.Fragment key={s}>
-          {i > 0 && <span className={`h-0.5 w-3 ${i <= idx ? "bg-emerald-500" : "bg-slate-200"}`} />}
-          <span className={`px-1.5 py-0.5 rounded text-xs font-bold ${i <= idx ? "bg-emerald-600 text-white" : "bg-slate-100 text-slate-500"}`}>{label(s)}</span>
+          {i > 0 && <span className={`h-px w-3 ${i <= idx ? "bg-brand" : "bg-slate-200"}`} />}
+          <span className={`h-6 px-2 inline-flex items-center rounded-full text-xs font-medium ${i <= idx ? "bg-brand-soft text-brand" : "bg-slate-100 text-muted"}`}>{label(s)}</span>
         </React.Fragment>
       ))}
     </div>

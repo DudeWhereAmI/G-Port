@@ -167,10 +167,10 @@ export const BalanceTab: React.FC<BalanceTabProps> = ({ calls, onOpenCall }) => 
           <div className="flex flex-col items-center gap-2">
             <Gauge value={DELTA_BAL_PCT} max={2} threshold={BALANCE_STATS.thresholdPct} label={pct(DELTA_BAL_PCT, 2)} />
             <div className="text-xs text-center">
-              <span className="font-bold text-red-700">{pct(BALANCE_STATS.rawDeltaBalPct, 2)}</span> {t("raw data", "dữ liệu thô")} →{" "}
-              <span className="font-bold text-emerald-700">{pct(DELTA_BAL_PCT, 2)}</span> {t("after cleaning", "sau làm sạch")}
+              <span className="font-medium text-danger">{pct(BALANCE_STATS.rawDeltaBalPct, 2)}</span> {t("raw data", "dữ liệu thô")} →{" "}
+              <span className="font-medium text-success">{pct(DELTA_BAL_PCT, 2)}</span> {t("after cleaning", "sau làm sạch")}
             </div>
-            <div className="text-xs text-slate-500 text-center">Δbal = |E_grid − (Σ6 − E_PV + E_loss)| / E_grid</div>
+            <div className="text-xs text-muted text-center">Δbal = |E_grid − (Σ6 − E_PV + E_loss)| / E_grid</div>
           </div>
         </Panel>
         <Panel
@@ -181,7 +181,7 @@ export const BalanceTab: React.FC<BalanceTabProps> = ({ calls, onOpenCall }) => 
             <div className="min-w-[640px] space-y-[2px]">
               {QUALITY_GRID.map((row, f) => (
                 <div key={f} className="flex items-center gap-2 h-4">
-                  <span className="w-10 text-xs font-bold text-slate-600">{FEEDERS[f].id}</span>
+                  <span className="w-10 text-xs font-medium text-slate-600">{FEEDERS[f].id}</span>
                   <div className="flex-1 grid h-full" style={{ gridTemplateColumns: "repeat(96, minmax(0, 1fr))" }}>
                     {row.map((q, i) => (
                       <button
@@ -207,7 +207,7 @@ export const BalanceTab: React.FC<BalanceTabProps> = ({ calls, onOpenCall }) => 
             ))}
           </div>
           {cell && (
-            <div className="text-xs bg-slate-50 border border-slate-200 rounded-lg px-3 py-2">
+            <div className="text-xs bg-slate-50 border border-line rounded-control px-3 py-2">
               <b>
                 {FEEDERS[cell.f].id} · {minuteLabel(cell.i * 15)}–{minuteLabel(cell.i * 15 + 15)}
               </b>{" "}
@@ -227,7 +227,7 @@ export const BalanceTab: React.FC<BalanceTabProps> = ({ calls, onOpenCall }) => 
           title={t("Fuel reconciliation", "Đối soát nhiên liệu")}
           note={t("Opening + receipts − closing ± adjustment = F_tot vs ΣF_k", "Tồn đầu + Nhập − Tồn cuối ± Hiệu chỉnh = F_tot so với ΣF_k")}
           right={
-            <span className={`px-2 py-0.5 rounded text-xs font-bold ${fuelOk ? "bg-emerald-100 text-emerald-800" : "bg-red-100 text-red-800"}`}>
+            <span className={`px-2 py-0.5 rounded text-xs font-medium ${fuelOk ? "bg-emerald-100 text-emerald-800" : "bg-red-100 text-red-800"}`}>
               {fuelOk ? <CheckCircle2 className="w-4 h-4 text-success shrink-0" aria-hidden="true" /> : <AlertTriangle className="w-4 h-4 text-warning shrink-0" aria-hidden="true" />} {t("Difference", "Chênh lệch")} {pct(FUEL_RECON.diffPct)} ({t("limit", "ngưỡng")} {FUEL_THRESHOLD_PCT}%)
             </span>
           }
@@ -252,9 +252,9 @@ export const BalanceTab: React.FC<BalanceTabProps> = ({ calls, onOpenCall }) => 
           </div>
         </Panel>
         <Panel title={t("Discrepancies to review", "Chênh lệch cần kiểm tra")}>
-          <div className="overflow-x-auto border border-slate-200 rounded-xl">
+          <div className="overflow-x-auto border border-line rounded-card">
             <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50 text-slate-600 font-bold">
+              <thead className="bg-slate-50 text-slate-600 font-medium">
                 <tr>
                   <th className="py-2 px-3">{t("When", "Thời điểm")}</th>
                   <th className="py-2 px-3">{t("Meter", "Công tơ")}</th>
@@ -269,10 +269,10 @@ export const BalanceTab: React.FC<BalanceTabProps> = ({ calls, onOpenCall }) => 
                     <td className="py-2 px-3">{d.meter}</td>
                     <td className="py-2 px-3">
                       {t(d.deviation.en, d.deviation.vn)}
-                      <div className="text-xs text-slate-500">{t(d.action.en, d.action.vn)}</div>
+                      <div className="text-xs text-muted">{t(d.action.en, d.action.vn)}</div>
                     </td>
                     <td className="py-2 px-3">
-                      <span className={`px-1.5 py-0.5 rounded text-xs font-bold ${d.status === "RESOLVED" ? "bg-emerald-100 text-emerald-800" : "bg-amber-100 text-amber-900"}`}>
+                      <span className={`px-1.5 py-0.5 rounded text-xs font-medium ${d.status === "RESOLVED" ? "bg-emerald-100 text-emerald-800" : "bg-amber-100 text-amber-900"}`}>
                         {d.status === "RESOLVED" ? t("Resolved", "Đã xử lý") : t("Investigating", "Đang kiểm tra")}
                       </span>
                     </td>

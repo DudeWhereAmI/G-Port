@@ -5,6 +5,7 @@ import { useFormat, useMoneyFormat } from "../../utils/format";
 import { BilingualText, EV_FLEET, INTERVAL_MINUTES, NOW_MINUTE, minuteLabel } from "../../data/module1Forecast";
 import { ApprovalState, DispatchResult, FlexGroupId } from "../../data/module3PeakShaving";
 import { REEFER_BAND } from "./ConstraintPanel";
+import { StatusBadge } from "../ui";
 
 export const APPROVAL_GROUPS: FlexGroupId[] = ["ITV", "REEFER", "SWAP", "HVAC"];
 
@@ -123,18 +124,18 @@ export const ApprovalQueue: React.FC<ApprovalQueueProps> = ({ result, approvals,
         const state = approvals[g];
         // a rejected group is excluded from the dispatch; show its potential from the plan stats
         return (
-          <div key={g} className={`border rounded-xl p-3 space-y-1.5 ${state === "PENDING" ? "border-amber-300 bg-amber-50/40" : "border-slate-200"}`}>
+          <div key={g} className={`border rounded-card p-3 space-y-1.5 ${state === "PENDING" ? "border-amber-300 bg-white" : "border-line"}`}>
             <div className="flex items-start justify-between gap-2">
-              <div className="text-xs font-bold text-slate-900">{groupName(g)}</div>
-              <span className={`px-1.5 py-0.5 rounded text-xs font-bold whitespace-nowrap ${stateStyle[state]}`}>{stateLabel[state]}</span>
+              <div className="text-xs font-medium text-ink">{groupName(g)}</div>
+              <StatusBadge status={state}>{stateLabel[state]}</StatusBadge>
             </div>
             {state === "REJECTED" ? (
-              <div className="text-xs text-slate-500">{t("Excluded from the dispatch plan.", "Đã loại khỏi kế hoạch điều độ.")}</div>
+              <div className="text-xs text-muted">{t("Excluded from the dispatch plan.", "Đã loại khỏi kế hoạch điều độ.")}</div>
             ) : (
               <>
                 <div className="text-xs text-slate-800">{r.action}</div>
-                <div className="text-xs text-slate-500">{r.safety}</div>
-                <div className="text-xs font-bold text-emerald-700">
+                <div className="text-xs text-muted">{r.safety}</div>
+                <div className="text-xs font-medium text-success">
                   −{kw(st.maxReduceKw)} · {vnd(st.benefitVnd)}/{t("day", "ngày")}
                 </div>
               </>
@@ -144,7 +145,7 @@ export const ApprovalQueue: React.FC<ApprovalQueueProps> = ({ result, approvals,
                 <select
                   value={reason}
                   onChange={(e) => setReason(e.target.value)}
-                  className="px-2 py-1 border border-slate-200 rounded-lg text-xs bg-white cursor-pointer"
+                  className="px-2 py-1 border border-line rounded-control text-xs bg-white cursor-pointer"
                 >
                   {REJECT_REASONS.map((x) => (
                     <option key={x.id} value={x.id}>
@@ -158,11 +159,11 @@ export const ApprovalQueue: React.FC<ApprovalQueueProps> = ({ result, approvals,
                     onDecide(g, "REJECTED", reason);
                     setRejecting(null);
                   }}
-                  className="px-2 py-1 rounded-lg bg-red-600 text-white text-xs font-bold cursor-pointer"
+                  className="px-2 py-1 rounded-control bg-red-600 text-white text-xs font-medium cursor-pointer"
                 >
                   {t("Confirm reject", "Xác nhận từ chối")}
                 </button>
-                <button type="button" onClick={() => setRejecting(null)} className="px-2 py-1 rounded-lg bg-slate-100 text-xs font-bold cursor-pointer">
+                <button type="button" onClick={() => setRejecting(null)} className="px-2 py-1 rounded-control bg-slate-100 text-xs font-medium cursor-pointer">
                   {t("Cancel", "Hủy")}
                 </button>
               </div>
@@ -172,7 +173,7 @@ export const ApprovalQueue: React.FC<ApprovalQueueProps> = ({ result, approvals,
                   <button
                     type="button"
                     onClick={() => onDecide(g, "APPROVED")}
-                    className="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center gap-1 cursor-pointer"
+                    className="px-2.5 py-1 rounded-control bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-medium flex items-center gap-1 cursor-pointer"
                   >
                     <Check className="w-3 h-3" />
                     {t("Approve", "Duyệt")}
@@ -182,7 +183,7 @@ export const ApprovalQueue: React.FC<ApprovalQueueProps> = ({ result, approvals,
                   <button
                     type="button"
                     onClick={() => setRejecting(g)}
-                    className="px-2.5 py-1 rounded-lg border border-red-200 text-red-700 hover:bg-red-50 text-xs font-bold flex items-center gap-1 cursor-pointer"
+                    className="px-2.5 py-1 rounded-control border border-red-200 text-danger hover:bg-red-50 text-xs font-medium flex items-center gap-1 cursor-pointer"
                   >
                     <X className="w-3 h-3" />
                     {t("Reject", "Từ chối")}
@@ -195,7 +196,7 @@ export const ApprovalQueue: React.FC<ApprovalQueueProps> = ({ result, approvals,
       })}
 
       <div className="pt-1">
-        <div className="text-xs font-bold text-slate-700">{t("Decision log", "Nhật ký quyết định")}</div>
+        <div className="text-xs font-medium text-slate-700">{t("Decision log", "Nhật ký quyết định")}</div>
         {log.length === 0 ? (
           <div className="text-xs text-slate-400">{t("No decisions yet in this session.", "Chưa có quyết định nào trong phiên này.")}</div>
         ) : (
@@ -203,7 +204,7 @@ export const ApprovalQueue: React.FC<ApprovalQueueProps> = ({ result, approvals,
             {log.map((e, i) => (
               <li key={i}>
                 {minuteLabel(e.minute)} · {groupName(e.group)} ·{" "}
-                <b className={e.action === "REJECTED" ? "text-red-700" : "text-emerald-700"}>{e.action === "REJECTED" ? t("rejected", "từ chối") : t("approved", "duyệt")}</b>
+                <b className={e.action === "REJECTED" ? "text-danger" : "text-success"}>{e.action === "REJECTED" ? t("rejected", "từ chối") : t("approved", "duyệt")}</b>
                 {e.reasonId && (
                   <>
                     {" "}– {t(REJECT_REASONS.find((r) => r.id === e.reasonId)!.label.en, REJECT_REASONS.find((r) => r.id === e.reasonId)!.label.vn)}{" "}

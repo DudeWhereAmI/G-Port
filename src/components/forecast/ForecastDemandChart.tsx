@@ -99,7 +99,7 @@ const TooltipRow: React.FC<{ color: string; label: string; value: string; strong
       <span className="inline-block w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: color }} />
       {label}
     </span>
-    <span className={`tabular-nums ${strong ? "font-bold" : "font-semibold"} ${valueClass ?? ""}`}>{value}</span>
+    <span className={`tabular-nums ${strong ? "font-medium" : "font-semibold"} ${valueClass ?? ""}`}>{value}</span>
   </div>
 );
 
@@ -113,15 +113,15 @@ const ChartTooltip: React.FC<any> = ({ active, payload, mode, highlightVessel })
   const switched = !p.locked && p.pPeak >= P_PEAK_SWITCH;
 
   return (
-    <div className="bg-white border border-slate-300 rounded-xl shadow-lg px-3 py-2.5 text-xs text-slate-900 min-w-[236px]">
+    <div className="bg-white border border-slate-300 rounded-card shadow-lg px-3 py-2.5 text-xs text-ink min-w-[236px]">
       <div className="flex items-center justify-between gap-3 mb-1.5">
-        <span className="font-bold text-slate-900">
+        <span className="font-medium text-ink">
           {p.label} – {minuteLabel(p.minute + INTERVAL_MINUTES)}
         </span>
         {p.locked ? (
-          <span className="text-xs font-bold text-slate-600 inline-flex items-center gap-1"><Lock className="w-3.5 h-3.5 text-slate-500 shrink-0" aria-hidden="true" />{t("Locked", "Đã khóa")}</span>
+          <span className="text-xs font-medium text-slate-600 inline-flex items-center gap-1"><Lock className="w-3.5 h-3.5 text-muted shrink-0" aria-hidden="true" />{t("Locked", "Đã khóa")}</span>
         ) : switched ? (
-          <span className="text-xs font-bold text-orange-700">{t("Planned on P90", "Lập kế hoạch theo P90")}</span>
+          <span className="text-xs font-medium text-warning">{t("Planned on P90", "Lập kế hoạch theo P90")}</span>
         ) : null}
       </div>
       <div className="space-y-1">
@@ -130,7 +130,7 @@ const ChartTooltip: React.FC<any> = ({ active, payload, mode, highlightVessel })
             {FEEDERS.map((f) => (
               <TooltipRow key={f.key} color={f.color} label={`${f.id} ${t(f.name.en, f.name.vn)}`} value={kw(p.feeders[f.key])} />
             ))}
-            <div className="pt-1 mt-1 border-t border-slate-200">
+            <div className="pt-1 mt-1 border-t border-line">
               <TooltipRow color={FORECAST_CHART_COLORS.p50} label={t("Total load P50", "Tổng phụ tải P50")} value={kw(p.p50)} strong />
             </div>
           </>
@@ -152,20 +152,20 @@ const ChartTooltip: React.FC<any> = ({ active, payload, mode, highlightVessel })
         )}
         <TooltipRow color={FORECAST_CHART_COLORS.pv} label={t("Solar PV", "Điện mặt trời (PV)")} value={kw(p.pv)} />
         <TooltipRow color={FORECAST_CHART_COLORS.netGrid} label={t("Net grid import", "Điện lưới thuần")} value={kw(p.netGrid)} strong />
-        <div className="pt-1 mt-1 border-t border-slate-200 space-y-1">
+        <div className="pt-1 mt-1 border-t border-line space-y-1">
           <TooltipRow
             color={FORECAST_CHART_COLORS.limit}
             label={t("Of 8,000 kW limit (grid)", "So với ngưỡng 8.000 kW (lưới)")}
             value={pct(limitShare)}
             strong
-            valueClass={over ? "text-red-700" : ""}
+            valueClass={over ? "text-danger" : ""}
           />
           {!p.locked && (
             <TooltipRow
               color="#F97316"
               label={t("Exceedance probability", "Xác suất vượt ngưỡng")}
               value={pct(p.pPeak * 100, p.pPeak < 0.1 && p.pPeak > 0 ? 1 : 0)}
-              valueClass={switched ? "text-orange-700" : ""}
+              valueClass={switched ? "text-warning" : ""}
             />
           )}
         </div>
