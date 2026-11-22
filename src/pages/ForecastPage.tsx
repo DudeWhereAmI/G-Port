@@ -1,39 +1,39 @@
 import React, { useState } from "react";
 import { useLanguage } from "../context/LanguageContext";
-import { 
-  ForecastInterval, 
-  TosVesselSchedule, 
-  PvSystemStatus, 
-  ElectricityTariffTou 
+import {
+  ForecastInterval,
+  TosVesselSchedule,
+  PvSystemStatus,
+  ElectricityTariffTou
 } from "../types/gport";
-import { 
-  TrendingUp, 
-  AlertTriangle, 
-  SunMedium, 
-  FileText, 
-  Search, 
-  Clock, 
-  CheckCircle2, 
-  Gauge, 
-  Printer, 
-  Download, 
-  X, 
-  ShieldCheck, 
+import {
+  TrendingUp,
+  AlertTriangle,
+  SunMedium,
+  FileText,
+  Search,
+  Clock,
+  Gauge,
+  Printer,
+  Download,
+  X,
+  ShieldCheck,
   Layers,
   Settings
 } from "lucide-react";
-import { 
-  ComposedChart, 
-  Area, 
-  Line, 
-  XAxis, 
-  YAxis, 
-  Tooltip, 
-  ResponsiveContainer, 
-  CartesianGrid, 
-  ReferenceLine,
-  Bar
-} from "recharts";
+import {
+  FORECAST_POINTS,
+  FORECAST_WINDOWS,
+  ForecastWindowRecord,
+  MODULE1_KPIS,
+  MODEL_METRICS,
+  ACCURACY_HISTORY,
+  SUBSTATION_LIMIT_KW,
+  TouBand,
+  WindowStatus
+} from "../data/module1Forecast";
+import { useFormat } from "../utils/format";
+import { ForecastDemandChart, ForecastChartMode } from "../components/forecast/ForecastDemandChart";
 
 interface ForecastPageProps {
   forecastData: ForecastInterval[];
@@ -45,338 +45,66 @@ interface ForecastPageProps {
   onClearFocusedWindow?: () => void;
 }
 
-export interface ForecastWindowRecord {
-  id: string;
-  timeWindow: string;
-  touBand: "OFF_PEAK" | "STANDARD" | "PEAK";
-  touLabel: string;
-  status: "OVERLOAD_WARNING" | "HIGH_SOLAR" | "NORMAL";
-  actualKw: number;
-  lowBoundKw: number;
-  expectedKw: number;
-  highBoundKw: number;
-  solarKw: number;
-  netGridKw: number;
-  overloadRiskPercent: number;
-  vesselCode: string;
-  vesselName: string;
-  berth: string;
-  stsCranes: number;
-  reeferPlugs: number;
-  shorePowerKw: number;
-  tempAmbC: number;
-  solarIrradianceWm2: number;
-  operationSummary: string;
-  feeders: {
-    f01StsKw: number;
-    f02RtgKw: number;
-    f03ReeferKw: number;
-    f04OpsKw: number;
-    f05EvBessKw: number;
-    f06AuxKw: number;
-  };
+export type { ForecastWindowRecord };
+
+// ---------------------------------------------------------------------------
+// Badges: TOU tariff band and operational status are shown separately
+// ---------------------------------------------------------------------------
+
+const TOU_BADGE_STYLE: Record<TouBand, string> = {
+  OFF_PEAK: "bg-sky-50 text-sky-800 border-sky-200",
+  STANDARD: "bg-slate-50 text-slate-700 border-slate-200",
+  PEAK: "bg-rose-50 text-rose-800 border-rose-200",
+};
+
+const STATUS_BADGE_STYLE: Record<WindowStatus, string> = {
+  NORMAL: "bg-emerald-50 text-emerald-800 border-emerald-200",
+  HIGH_SOLAR: "bg-lime-50 text-lime-800 border-lime-200",
+  WARNING: "bg-amber-100 text-amber-900 border-amber-300",
+  OVERLOAD: "bg-red-600 text-white border-red-600",
+};
+
+function useBadgeLabels() {
+  const { t } = useLanguage();
+  const tou = (b: TouBand) =>
+    b === "OFF_PEAK" ? t("Off-peak", "Thấp điểm") : b === "PEAK" ? t("Peak", "Cao điểm") : t("Normal", "Bình thường");
+  const status = (s: WindowStatus) =>
+    s === "OVERLOAD"
+      ? t("Overload", "Quá tải")
+      : s === "WARNING"
+      ? t("Warning", "Cảnh báo")
+      : s === "HIGH_SOLAR"
+      ? t("Solar peak", "Đỉnh mặt trời")
+      : t("Normal", "Bình thường");
+  return { tou, status };
 }
 
-// 24-hour power demand forecast windows (from G-PORT Report Table PL3.4c)
-const FORECAST_WINDOWS: ForecastWindowRecord[] = [
-  {
-    id: "00:00",
-    timeWindow: "00:00 – 02:00",
-    touBand: "OFF_PEAK",
-    touLabel: "Off-Peak Rate",
-    status: "NORMAL",
-    actualKw: 2798.0,
-    lowBoundKw: 2587,
-    expectedKw: 2766.6,
-    highBoundKw: 2987,
-    solarKw: 0,
-    netGridKw: 2767,
-    overloadRiskPercent: 0.0,
-    vesselCode: "UC-04",
-    vesselName: "TAN CANG GLORY",
-    berth: "Berth B1",
-    stsCranes: 2,
-    reeferPlugs: 185,
-    shorePowerKw: 480,
-    tempAmbC: 26.4,
-    solarIrradianceWm2: 0,
-    operationSummary: "Finishing night cargo operations (2 Quay Cranes active)",
-    feeders: { f01StsKw: 840, f02RtgKw: 420, f03ReeferKw: 680, f04OpsKw: 480, f05EvBessKw: 180, f06AuxKw: 167 }
-  },
-  {
-    id: "02:00",
-    timeWindow: "02:00 – 04:00",
-    touBand: "OFF_PEAK",
-    touLabel: "Off-Peak Rate",
-    status: "NORMAL",
-    actualKw: 2693.5,
-    lowBoundKw: 2565,
-    expectedKw: 2745.2,
-    highBoundKw: 2965,
-    solarKw: 0,
-    netGridKw: 2745,
-    overloadRiskPercent: 0.0,
-    vesselCode: "UC-04",
-    vesselName: "TAN CANG GLORY",
-    berth: "Berth B1",
-    stsCranes: 2,
-    reeferPlugs: 180,
-    shorePowerKw: 480,
-    tempAmbC: 25.8,
-    solarIrradianceWm2: 0,
-    operationSummary: "Low-rate night window; EV tractor charging & reefer pre-cooling",
-    feeders: { f01StsKw: 760, f02RtgKw: 380, f03ReeferKw: 650, f04OpsKw: 480, f05EvBessKw: 315, f06AuxKw: 160 }
-  },
-  {
-    id: "04:00",
-    timeWindow: "04:00 – 06:00",
-    touBand: "STANDARD",
-    touLabel: "Normal Rate",
-    status: "NORMAL",
-    actualKw: 2460.8,
-    lowBoundKw: 2310,
-    expectedKw: 2489.5,
-    highBoundKw: 2710,
-    solarKw: 0,
-    netGridKw: 2490,
-    overloadRiskPercent: 0.0,
-    vesselCode: "UC-04",
-    vesselName: "TAN CANG GLORY",
-    berth: "Berth B1",
-    stsCranes: 1,
-    reeferPlugs: 175,
-    shorePowerKw: 320,
-    tempAmbC: 25.5,
-    solarIrradianceWm2: 0,
-    operationSummary: "Ship departing Berth B1; morning shift handover",
-    feeders: { f01StsKw: 520, f02RtgKw: 340, f03ReeferKw: 640, f04OpsKw: 320, f05EvBessKw: 490, f06AuxKw: 180 }
-  },
-  {
-    id: "06:00",
-    timeWindow: "06:00 – 08:00",
-    touBand: "STANDARD",
-    touLabel: "Normal Rate",
-    status: "NORMAL",
-    actualKw: 2424.1,
-    lowBoundKw: 2235,
-    expectedKw: 2415.4,
-    highBoundKw: 2635,
-    solarKw: 52,
-    netGridKw: 2363,
-    overloadRiskPercent: 0.0,
-    vesselCode: "UC-01",
-    vesselName: "SPIRIT OF MUMBAI",
-    berth: "Berth B2",
-    stsCranes: 2,
-    reeferPlugs: 240,
-    shorePowerKw: 620,
-    tempAmbC: 26.8,
-    solarIrradianceWm2: 85,
-    operationSummary: "SPIRIT OF MUMBAI arrives at Berth B2; shore power connected",
-    feeders: { f01StsKw: 680, f02RtgKw: 310, f03ReeferKw: 645, f04OpsKw: 620, f05EvBessKw: 0, f06AuxKw: 160 }
-  },
-  {
-    id: "08:00",
-    timeWindow: "08:00 – 10:00",
-    touBand: "STANDARD",
-    touLabel: "Normal Rate",
-    status: "HIGH_SOLAR",
-    actualKw: 3979.4,
-    lowBoundKw: 3816,
-    expectedKw: 3996.2,
-    highBoundKw: 4216,
-    solarKw: 887,
-    netGridKw: 3109,
-    overloadRiskPercent: 0.0,
-    vesselCode: "UC-01",
-    vesselName: "SPIRIT OF MUMBAI",
-    berth: "Berth B2",
-    stsCranes: 4,
-    reeferPlugs: 310,
-    shorePowerKw: 750,
-    tempAmbC: 29.4,
-    solarIrradianceWm2: 460,
-    operationSummary: "4 Quay Cranes working; reefer yard cooling demand rising",
-    feeders: { f01StsKw: 1680, f02RtgKw: 620, f03ReeferKw: 786, f04OpsKw: 750, f05EvBessKw: 0, f06AuxKw: 160 }
-  },
-  {
-    id: "10:00",
-    timeWindow: "10:00 – 12:00",
-    touBand: "PEAK",
-    touLabel: "Peak Rate",
-    status: "HIGH_SOLAR",
-    actualKw: 4199.7,
-    lowBoundKw: 3965,
-    expectedKw: 4144.5,
-    highBoundKw: 4365,
-    solarKw: 1616,
-    netGridKw: 2528,
-    overloadRiskPercent: 0.0,
-    vesselCode: "UC-01",
-    vesselName: "SPIRIT OF MUMBAI",
-    berth: "Berth B2",
-    stsCranes: 4,
-    reeferPlugs: 325,
-    shorePowerKw: 760,
-    tempAmbC: 32.1,
-    solarIrradianceWm2: 790,
-    operationSummary: "Morning peak electricity rate; Solar panels cover 1,616 kW",
-    feeders: { f01StsKw: 1740, f02RtgKw: 660, f03ReeferKw: 824, f04OpsKw: 760, f05EvBessKw: 0, f06AuxKw: 160 }
-  },
-  {
-    id: "12:00",
-    timeWindow: "12:00 – 14:00",
-    touBand: "STANDARD",
-    touLabel: "Normal Rate",
-    status: "HIGH_SOLAR",
-    actualKw: 4008.4,
-    lowBoundKw: 3823,
-    expectedKw: 4003.3,
-    highBoundKw: 4223,
-    solarKw: 1880,
-    netGridKw: 2124,
-    overloadRiskPercent: 0.0,
-    vesselCode: "UC-01",
-    vesselName: "SPIRIT OF MUMBAI",
-    berth: "Berth B2",
-    stsCranes: 4,
-    reeferPlugs: 330,
-    shorePowerKw: 750,
-    tempAmbC: 33.8,
-    solarIrradianceWm2: 920,
-    operationSummary: "Solar power reaches daily high (1,880 kW), cutting grid draw in half",
-    feeders: { f01StsKw: 1580, f02RtgKw: 590, f03ReeferKw: 883, f04OpsKw: 750, f05EvBessKw: 40, f06AuxKw: 160 }
-  },
-  {
-    id: "14:00",
-    timeWindow: "14:00 – 16:00",
-    touBand: "STANDARD",
-    touLabel: "Normal Rate",
-    status: "OVERLOAD_WARNING",
-    actualKw: 8144.4,
-    lowBoundKw: 7971,
-    expectedKw: 8151.0,
-    highBoundKw: 8371,
-    solarKw: 1612,
-    netGridKw: 6539,
-    overloadRiskPercent: 2.1,
-    vesselCode: "UC-01 + UC-02",
-    vesselName: "ONE APUS & SPIRIT OF MUMBAI",
-    berth: "Berth B2 & B3",
-    stsCranes: 5,
-    reeferPlugs: 465,
-    shorePowerKw: 1480,
-    tempAmbC: 34.2,
-    solarIrradianceWm2: 780,
-    operationSummary: "OVERLOAD ALERT: 2 large ships running 5 Quay Cranes + Shore Power",
-    feeders: { f01StsKw: 3420, f02RtgKw: 1410, f03ReeferKw: 1461, f04OpsKw: 1480, f05EvBessKw: 200, f06AuxKw: 180 }
-  },
-  {
-    id: "16:00",
-    timeWindow: "16:00 – 18:00",
-    touBand: "STANDARD",
-    touLabel: "Normal Rate",
-    status: "OVERLOAD_WARNING",
-    actualKw: 8137.3,
-    lowBoundKw: 7849,
-    expectedKw: 8028.7,
-    highBoundKw: 8249,
-    solarKw: 883,
-    netGridKw: 7146,
-    overloadRiskPercent: 0.3,
-    vesselCode: "UC-01 + UC-02",
-    vesselName: "ONE APUS & SPIRIT OF MUMBAI",
-    berth: "Berth B2 & B3",
-    stsCranes: 5,
-    reeferPlugs: 480,
-    shorePowerKw: 1490,
-    tempAmbC: 32.6,
-    solarIrradianceWm2: 430,
-    operationSummary: "OVERLOAD ALERT: Heavy dual-ship crane work & 480 reefer containers",
-    feeders: { f01StsKw: 3340, f02RtgKw: 1380, f03ReeferKw: 1458, f04OpsKw: 1490, f05EvBessKw: 180, f06AuxKw: 180 }
-  },
-  {
-    id: "18:00",
-    timeWindow: "18:00 – 20:00",
-    touBand: "PEAK",
-    touLabel: "Peak Rate",
-    status: "NORMAL",
-    actualKw: 6678.1,
-    lowBoundKw: 6490,
-    expectedKw: 6688.9,
-    highBoundKw: 6909,
-    solarKw: 52,
-    netGridKw: 6637,
-    overloadRiskPercent: 0.0,
-    vesselCode: "UC-01 + UC-02",
-    vesselName: "ONE APUS & SPIRIT OF MUMBAI",
-    berth: "Berth B2 & B3",
-    stsCranes: 5,
-    reeferPlugs: 450,
-    shorePowerKw: 1420,
-    tempAmbC: 29.8,
-    solarIrradianceWm2: 25,
-    operationSummary: "Evening shift change; solar power ends for the day",
-    feeders: { f01StsKw: 2790, f02RtgKw: 1120, f03ReeferKw: 1169, f04OpsKw: 1420, f05EvBessKw: 0, f06AuxKw: 190 }
-  },
-  {
-    id: "20:00",
-    timeWindow: "20:00 – 22:00",
-    touBand: "PEAK",
-    touLabel: "Peak Rate",
-    status: "NORMAL",
-    actualKw: 6160.2,
-    lowBoundKw: 5970,
-    expectedKw: 6149.7,
-    highBoundKw: 6370,
-    solarKw: 0,
-    netGridKw: 6150,
-    overloadRiskPercent: 0.0,
-    vesselCode: "UC-01 + UC-02",
-    vesselName: "ONE APUS & SPIRIT OF MUMBAI",
-    berth: "Berth B2 & B3",
-    stsCranes: 4,
-    reeferPlugs: 430,
-    shorePowerKw: 1380,
-    tempAmbC: 28.1,
-    solarIrradianceWm2: 0,
-    operationSummary: "Steady night container unloading across 2 ships",
-    feeders: { f01StsKw: 2480, f02RtgKw: 1020, f03ReeferKw: 1080, f04OpsKw: 1380, f05EvBessKw: 0, f06AuxKw: 190 }
-  },
-  {
-    id: "22:00",
-    timeWindow: "22:00 – 24:00",
-    touBand: "OFF_PEAK",
-    touLabel: "Off-Peak Rate",
-    status: "NORMAL",
-    actualKw: 4554.5,
-    lowBoundKw: 4380,
-    expectedKw: 4559.8,
-    highBoundKw: 4780,
-    solarKw: 0,
-    netGridKw: 4560,
-    overloadRiskPercent: 0.0,
-    vesselCode: "UC-02",
-    vesselName: "ONE APUS",
-    berth: "Berth B3",
-    stsCranes: 3,
-    reeferPlugs: 390,
-    shorePowerKw: 980,
-    tempAmbC: 27.2,
-    solarIrradianceWm2: 0,
-    operationSummary: "SPIRIT OF MUMBAI departs; off-peak electricity rate begins",
-    feeders: { f01StsKw: 1680, f02RtgKw: 740, f03ReeferKw: 920, f04OpsKw: 980, f05EvBessKw: 60, f06AuxKw: 180 }
-  }
-];
+const TouBadge: React.FC<{ band: TouBand }> = ({ band }) => {
+  const { t } = useLanguage();
+  const labels = useBadgeLabels();
+  return (
+    <span
+      className={`inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded border whitespace-nowrap ${TOU_BADGE_STYLE[band]}`}
+      title={t("Time-of-use tariff band", "Khung giá điện TOU")}
+    >
+      <span className="opacity-70">TOU</span>
+      <span>{labels.tou(band)}</span>
+    </span>
+  );
+};
 
-const ACCURACY_HISTORY = [
-  { windowDays: 5, samples: 480, accuracyPercent: "97.8%", avgErrorKw: 124.6, rangeCoverage: "96.9%" },
-  { windowDays: 10, samples: 960, accuracyPercent: "98.5%", avgErrorKw: 82.8, rangeCoverage: "100.0%" },
-  { windowDays: 15, samples: 1440, accuracyPercent: "98.6%", avgErrorKw: 81.8, rangeCoverage: "100.0%" },
-  { windowDays: 20, samples: 1920, accuracyPercent: "98.8%", avgErrorKw: 62.9, rangeCoverage: "100.0%" },
-  { windowDays: 25, samples: 2400, accuracyPercent: "98.7%", avgErrorKw: 63.7, rangeCoverage: "100.0%" },
-  { windowDays: 30, samples: 2880, accuracyPercent: "98.7%", avgErrorKw: 66.7, rangeCoverage: "100.0%" }
-];
+const StatusBadge: React.FC<{ status: WindowStatus }> = ({ status }) => {
+  const { t } = useLanguage();
+  const labels = useBadgeLabels();
+  return (
+    <span
+      className={`inline-flex items-center text-[10px] font-bold uppercase px-1.5 py-0.5 rounded border whitespace-nowrap ${STATUS_BADGE_STYLE[status]}`}
+      title={t("Substation status (net grid import)", "Trạng thái trạm (theo điện lưới thuần)")}
+    >
+      {labels.status(status)}
+    </span>
+  );
+};
 
 export const ForecastPage: React.FC<ForecastPageProps> = ({
   focusedWindowId,
@@ -384,21 +112,24 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
   onClearFocusedWindow,
 }) => {
   const { t } = useLanguage();
+  const { num, kw, pct } = useFormat();
   const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<"ALL" | "OVERLOAD_WARNING" | "HIGH_SOLAR" | "OFF_PEAK">("ALL");
-  const [chartMode, setChartMode] = useState<"DEMAND_RANGE" | "NET_VS_SOLAR">("DEMAND_RANGE");
+  const [statusFilter, setStatusFilter] = useState<"ALL" | "ALERTS" | "HIGH_SOLAR" | "OFF_PEAK">("ALL");
+  const [chartMode, setChartMode] = useState<ForecastChartMode>("DEMAND_RANGE");
 
-  // Clean Popups
+  // Popups
   const [selectedWindow, setSelectedWindow] = useState<ForecastWindowRecord | null>(null);
   const [showPowerBreakdownModal, setShowPowerBreakdownModal] = useState(false);
   const [showForecastReportModal, setShowForecastReportModal] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
 
+  const kpis = MODULE1_KPIS;
+  const limitKw = kw(SUBSTATION_LIMIT_KW);
+
   React.useEffect(() => {
     if (!focusedWindowId) return;
     const found =
-      FORECAST_WINDOWS.find((w) => w.id === focusedWindowId) ||
-      FORECAST_WINDOWS[7];
+      FORECAST_WINDOWS.find((w) => w.id === focusedWindowId) || kpis.peakWindow;
     setSelectedWindow(found);
     if (focusedWindowOpenReport) {
       setShowForecastReportModal(true);
@@ -408,21 +139,21 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
       setShowForecastReportModal(false);
     }
     onClearFocusedWindow?.();
-  }, [focusedWindowId, focusedWindowOpenReport, onClearFocusedWindow]);
-
-  const substationLimitKw = 8000;
+  }, [focusedWindowId, focusedWindowOpenReport, onClearFocusedWindow, kpis.peakWindow]);
 
   const filteredWindows = FORECAST_WINDOWS.filter((w) => {
+    const q = searchQuery.toLowerCase();
     const matchesSearch =
-      w.timeWindow.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      w.vesselCode.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      w.vesselName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      w.operationSummary.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      w.berth.toLowerCase().includes(searchQuery.toLowerCase());
+      w.timeWindow.toLowerCase().includes(q) ||
+      w.vesselCodes.join(" ").toLowerCase().includes(q) ||
+      w.vessels.join(" ").toLowerCase().includes(q) ||
+      w.summary.en.toLowerCase().includes(q) ||
+      w.summary.vn.toLowerCase().includes(q) ||
+      w.berth.toLowerCase().includes(q);
 
     if (!matchesSearch) return false;
-    if (statusFilter === "OVERLOAD_WARNING") return w.status === "OVERLOAD_WARNING";
-    if (statusFilter === "HIGH_SOLAR") return w.solarKw >= 800;
+    if (statusFilter === "ALERTS") return w.status === "OVERLOAD" || w.status === "WARNING";
+    if (statusFilter === "HIGH_SOLAR") return w.peakPvKw >= 800;
     if (statusFilter === "OFF_PEAK") return w.touBand === "OFF_PEAK";
     return true;
   });
@@ -445,22 +176,26 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
     }
   };
 
+  const berthLabel = (w: ForecastWindowRecord) => `${t("Berth", "Cầu bến")} ${w.berth}`;
+  const vesselLabel = (w: ForecastWindowRecord) => w.vessels.join(" & ");
+  const alertWindows = [...kpis.overloadWindows, ...kpis.warningWindows];
+
   return (
     <div className="space-y-6 pb-12">
       {/* ================================================================== */}
-      {/* 1. CLEAN HEADER BAR */}
+      {/* 1. HEADER BAR */}
       {/* ================================================================== */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200/90 shadow-2xs">
         <div>
-          <div className="flex items-center gap-2 text-xs font-semibold text-slate-500 mb-1">
+          <div className="flex flex-wrap items-center gap-2 text-xs font-semibold text-slate-500 mb-1">
             <span className="font-bold text-[#004B91]">
               {t("24-Hour Power Forecast", "Dự Báo Phụ Tải Điện 24 Giờ")}
             </span>
             <span aria-hidden="true">·</span>
-            <span>{t("Updated every 15 minutes", "Cập nhật mỗi 15 phút")}</span>
+            <span>{t("96 intervals × 15 minutes", "96 chu kỳ × 15 phút")}</span>
             <span aria-hidden="true">·</span>
             <span className="text-amber-700 font-bold">
-              {t("Substation Limit: 8,000 kW", "Giới hạn Trạm biến áp: 8,000 kW")}
+              {t(`Substation limit: ${limitKw} (net grid)`, `Giới hạn trạm biến áp: ${limitKw} (điện lưới thuần)`)}
             </span>
           </div>
           <h1 className="text-2xl font-black text-slate-900 tracking-tight">
@@ -483,7 +218,7 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
 
           <button
             type="button"
-            onClick={() => handleOpenForecastReport(FORECAST_WINDOWS[7])}
+            onClick={() => handleOpenForecastReport(kpis.peakWindow)}
             className="px-4 py-2 rounded-xl bg-[#004B91] hover:bg-[#00386E] text-white text-xs font-bold flex items-center gap-1.5 shadow-2xs transition-colors whitespace-nowrap shrink-0 cursor-pointer"
           >
             <FileText className="w-3.5 h-3.5" />
@@ -493,36 +228,41 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
       </div>
 
       {/* ================================================================== */}
-      {/* 2. TOP 4 HIGHLIGHTED KPI CARDS */}
+      {/* 2. KPI CARDS (all derived from module1Forecast data) */}
       {/* ================================================================== */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
         <div className="bg-white p-4 rounded-xl border border-slate-200/90 shadow-2xs">
           <div className="flex items-center justify-between text-slate-500 text-[11px] font-bold mb-1">
-            <span>{t("Peak Expected Power", "Đỉnh Phụ Tải Dự Kiến")}</span>
+            <span>{t("Peak Net Grid Demand", "Đỉnh Điện Lưới Thuần Dự Kiến")}</span>
             <TrendingUp className="w-4 h-4 text-[#004B91]" />
           </div>
           <div className="text-xl sm:text-2xl font-black text-slate-900 font-mono tabular-nums">
-            8,151 <span className="text-xs text-slate-500 font-sans font-semibold">kW</span>
+            {num(kpis.peakNetGrid.netGrid)} <span className="text-xs text-slate-500 font-sans font-semibold">kW</span>
           </div>
           <div className="text-[11px] text-slate-500 font-medium mt-0.5">
-            {t("At 14:00 · Max range up to 8,371 kW", "Lúc 14:00 · Biên độ cực đại 8,371 kW")}
+            {t(
+              `At ${kpis.peakNetGrid.label} · Load P50 ${kw(kpis.peakNetGrid.p50)} (P90 ${kw(kpis.peakNetGrid.p90)})`,
+              `Lúc ${kpis.peakNetGrid.label} · Tải P50 ${kw(kpis.peakNetGrid.p50)} (P90 ${kw(kpis.peakNetGrid.p90)})`
+            )}
           </div>
         </div>
 
         {/* Highlighted Warning Card */}
         <div className="bg-amber-50/70 p-4 rounded-xl border-2 border-amber-300 shadow-2xs">
           <div className="flex items-center justify-between text-amber-900 text-[11px] font-bold mb-1">
-            <span>{t("Overload Warnings (>8,000 kW)", "Cảnh Báo Vượt Ngưỡng (>8,000 kW)")}</span>
+            <span>{t(`Grid Overload Warnings (>${limitKw})`, `Cảnh Báo Vượt Ngưỡng Lưới (>${limitKw})`)}</span>
             <AlertTriangle className="w-4 h-4 text-amber-600" />
           </div>
           <div className="text-xl sm:text-2xl font-black text-amber-800 font-mono tabular-nums">
-            {t("2 Hours", "2 Khung Giờ")}{" "}
+            {alertWindows.length}{" "}
             <span className="text-xs text-amber-700 font-sans font-bold">
-              {t("Flagged", "Cảnh báo")}
+              {t("time windows", "khung giờ")}
             </span>
           </div>
           <div className="text-[11px] text-amber-800 font-bold mt-0.5">
-            14:00 (8,151 kW) &amp; 16:00 (8,029 kW)
+            {alertWindows.length === 0
+              ? t("No window above the limit", "Không có khung giờ vượt ngưỡng")
+              : alertWindows.map((w) => `${w.id} (${kw(w.netGridKw)})`).join(" & ")}
           </div>
         </div>
 
@@ -532,10 +272,13 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
             <SunMedium className="w-4 h-4 text-emerald-600" />
           </div>
           <div className="text-xl sm:text-2xl font-black text-emerald-700 font-mono tabular-nums">
-            1,880 <span className="text-xs text-slate-500 font-sans font-semibold">kW</span>
+            {num(kpis.peakPv.pv)} <span className="text-xs text-slate-500 font-sans font-semibold">kW</span>
           </div>
           <div className="text-[11px] text-slate-500 font-medium mt-0.5">
-            {t("At 12:00 · Reduces grid draw to 2,124 kW", "Lúc 12:00 · Giảm điện lưới còn 2,124 kW")}
+            {t(
+              `At ${kpis.peakPv.label} · Net grid drops to ${kw(kpis.peakPv.netGrid)}`,
+              `Lúc ${kpis.peakPv.label} · Điện lưới giảm còn ${kw(kpis.peakPv.netGrid)}`
+            )}
           </div>
         </div>
 
@@ -545,31 +288,31 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
             <ShieldCheck className="w-4 h-4 text-blue-600" />
           </div>
           <div className="text-xl sm:text-2xl font-black text-blue-700 font-mono tabular-nums">
-            98.7%{" "}
+            {pct(kpis.accuracyPct)}{" "}
             <span className="text-xs text-slate-500 font-sans font-semibold">
-              {t("±1.3% error", "Sai số ±1.3%")}
+              {t("(1 − MAPE)", "(1 − MAPE)")}
             </span>
           </div>
           <div className="text-[11px] text-emerald-700 font-semibold mt-0.5">
-            {t("Avg deviation: ±66.7 kW", "Độ lệch trung bình: ±66.7 kW")}
+            RMSE {kw(MODEL_METRICS.rmseKw, 1)} · MAPE {pct(MODEL_METRICS.mapePct, 2)}
           </div>
         </div>
       </div>
 
       {/* ================================================================== */}
-      {/* 3. CLEAN 24-HOUR POWER DEMAND CHART */}
+      {/* 3. 24-HOUR POWER DEMAND CHART (96 × 15 min) */}
       {/* ================================================================== */}
       <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-2xs space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
           <div>
             <h2 className="font-bold text-slate-900 text-sm">
-              {t("24-Hour Power Demand Curve (kW)", "Đường Cong Dự Báo Phụ Tải Điện 24 Giờ (kW)")}
+              {t("24-Hour Power Demand Curve", "Đường Cong Dự Báo Phụ Tải Điện 24 Giờ")}
             </h2>
-            <div className="flex items-center gap-2 text-xs text-slate-500 mt-0.5">
+            <div className="flex flex-wrap items-center gap-x-2 text-xs text-slate-500 mt-0.5">
               <span>
                 {t(
-                  "Dashed orange line shows 8,000 kW Substation Overload Limit",
-                  "Đường nét đứt màu cam thể hiện ngưỡng giới hạn 8,000 kW của Trạm biến áp"
+                  "Overload is assessed on net grid import (load − PV)",
+                  "Cảnh báo quá tải tính trên điện lưới thuần (tải − PV)"
                 )}
               </span>
               <span aria-hidden="true">·</span>
@@ -590,7 +333,7 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
                 chartMode === "DEMAND_RANGE" ? "bg-white text-slate-900 shadow-2xs" : "text-slate-600 hover:text-slate-900"
               }`}
             >
-              {t("Expected vs. High Load Range", "Phụ Tải Dự Kiến & Biên Độ Cao")}
+              {t("Load P50 & P10–P90 Range", "Phụ Tải P50 & Dải P10–P90")}
             </button>
             <button
               type="button"
@@ -599,80 +342,12 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
                 chartMode === "NET_VS_SOLAR" ? "bg-white text-slate-900 shadow-2xs" : "text-slate-600 hover:text-slate-900"
               }`}
             >
-              {t("Grid Power vs. Solar Power", "Điện Lưới Thuần & Điện Mặt Trời")}
+              {t("Net Grid vs. Solar Power", "Điện Lưới Thuần & Điện Mặt Trời")}
             </button>
           </div>
         </div>
 
-        <div className="h-64 w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <ComposedChart data={FORECAST_WINDOWS} margin={{ top: 8, right: 16, left: 4, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
-              <XAxis dataKey="id" stroke="#64748B" fontSize={11} tickLine={false} />
-              <YAxis stroke="#64748B" fontSize={11} tickLine={false} unit=" kW" domain={[0, 9200]} />
-              <Tooltip
-                contentStyle={{ backgroundColor: "#0F172A", borderColor: "#1E293B", borderRadius: "0.75rem", color: "#fff", fontSize: "11px" }}
-                formatter={(value: any, name: any) => [`${Number(value).toLocaleString()} kW`, name]}
-              />
-
-              {chartMode === "DEMAND_RANGE" ? (
-                <>
-                  <Area
-                    type="monotone"
-                    dataKey="highBoundKw"
-                    name="Worst-Case High Load"
-                    fill="#93C5FD"
-                    fillOpacity={0.18}
-                    stroke="#2563EB"
-                    strokeWidth={1.2}
-                    strokeDasharray="3 3"
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="expectedKw"
-                    name="Expected Power Demand"
-                    stroke="#004B91"
-                    strokeWidth={2.5}
-                    dot={{ r: 3, fill: "#004B91" }}
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="actualKw"
-                    name="Actual Metered Power"
-                    stroke="#0F172A"
-                    strokeWidth={1.5}
-                    dot={{ r: 2.5, fill: "#0F172A" }}
-                  />
-                </>
-              ) : (
-                <>
-                  <Bar
-                    dataKey="solarKw"
-                    name="Solar Power Generated"
-                    fill="#10B981"
-                    radius={[4, 4, 0, 0]}
-                    opacity={0.85}
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="netGridKw"
-                    name="Net Grid Power Needed"
-                    stroke="#004B91"
-                    strokeWidth={2.5}
-                    dot={{ r: 3, fill: "#004B91" }}
-                  />
-                </>
-              )}
-
-              <ReferenceLine
-                y={substationLimitKw}
-                stroke="#D97706"
-                strokeDasharray="5 5"
-                strokeWidth={1.5}
-              />
-            </ComposedChart>
-          </ResponsiveContainer>
-        </div>
+        <ForecastDemandChart points={FORECAST_POINTS} mode={chartMode} />
       </div>
 
       {/* ================================================================== */}
@@ -698,8 +373,8 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
             {t("Filter:", "Bộ lọc:")}
           </span>
           {([
-            { id: "ALL", label: t("All Time Windows (12)", "Tất cả Khung giờ (12)") },
-            { id: "OVERLOAD_WARNING", label: t("Overload Warnings (>8,000 kW)", "Cảnh báo Quá tải (>8,000 kW)") },
+            { id: "ALL", label: t(`All Time Windows (${FORECAST_WINDOWS.length})`, `Tất cả Khung giờ (${FORECAST_WINDOWS.length})`) },
+            { id: "ALERTS", label: t(`Overload & Warnings (>${limitKw})`, `Quá tải & Cảnh báo (>${limitKw})`) },
             { id: "HIGH_SOLAR", label: t("High Solar Hours", "Giờ Điện mặt trời cao") },
             { id: "OFF_PEAK", label: t("Off-Peak Rate Hours", "Giờ Thấp điểm TOU") }
           ] as const).map((tab) => (
@@ -720,78 +395,69 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
       </div>
 
       {/* ================================================================== */}
-      {/* 5. TIME WINDOW CARDS GRID (HIGHLIGHTING CRITICAL OVERLOAD DATA) */}
+      {/* 5. TIME WINDOW CARDS GRID */}
       {/* ================================================================== */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {filteredWindows.map((win) => {
-          const isOverload = win.status === "OVERLOAD_WARNING";
+          const isOverload = win.status === "OVERLOAD";
+          const isAlert = isOverload || win.status === "WARNING";
           return (
             <div
               key={win.id}
               className={`rounded-2xl p-5 border shadow-2xs transition-all flex flex-col justify-between space-y-4 ${
-                isOverload
+                isAlert
                   ? "bg-amber-50/40 border-2 border-amber-400"
                   : "bg-white border-slate-200/90 hover:border-slate-300"
               }`}
             >
               <div>
                 {/* Card Header */}
-                <div className="flex items-start justify-between gap-2 border-b border-slate-200/70 pb-3">
-                  <div>
+                <div className="border-b border-slate-200/70 pb-3">
+                  <div className="flex items-start justify-between gap-2">
                     <div className="flex items-center gap-1.5 text-[11px] font-bold text-slate-500">
-                      <span>{win.berth}</span>
+                      <span>{berthLabel(win)}</span>
                       <span aria-hidden="true">·</span>
                       <span className="text-[#004B91]">
-                        {win.stsCranes} {t("Cranes", "Cẩu STS")}
+                        {win.stsCranes} {t("STS cranes", "cẩu STS")}
                       </span>
                     </div>
-                    <h3 className="font-black text-slate-900 text-base font-mono mt-0.5">
+                    <StatusBadge status={win.status} />
+                  </div>
+                  <div className="flex items-center justify-between gap-2 mt-0.5">
+                    <h3 className="font-black text-slate-900 text-base font-mono">
                       {win.timeWindow}
                     </h3>
-                    <div className="text-xs text-slate-600 font-semibold line-clamp-1">
-                      {win.vesselName}
-                    </div>
+                    <TouBadge band={win.touBand} />
                   </div>
-
-                  <span
-                    className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded ${
-                      isOverload
-                        ? "bg-amber-500 text-white"
-                        : win.status === "HIGH_SOLAR"
-                        ? "bg-emerald-100 text-emerald-800"
-                        : "bg-slate-100 text-slate-600"
-                    }`}
+                  <div
+                    className="text-xs text-slate-600 font-semibold break-words leading-snug"
+                    title={vesselLabel(win)}
                   >
-                    {isOverload
-                      ? t("Overload Alert", "Báo Động Quá Tải")
-                      : win.status === "HIGH_SOLAR"
-                      ? t("Solar Active", "Đỉnh Mặt Trời")
-                      : win.touBand === "OFF_PEAK"
-                      ? t("Off-Peak Rate", "Giờ Thấp Điểm")
-                      : win.touBand === "PEAK"
-                      ? t("Peak Rate", "Giờ Cao Điểm")
-                      : t("Normal Rate", "Giờ Bình Thường")}
-                  </span>
+                    {vesselLabel(win)}
+                  </div>
                 </div>
 
-                {/* HIGHLIGHTED PRIMARY POWER METRIC */}
+                {/* PRIMARY POWER METRIC (at the window's peak net-grid interval) */}
                 <div className={`my-3 p-3 rounded-xl border ${
-                  isOverload ? "bg-amber-100/70 border-amber-300" : "bg-slate-50 border-slate-200/80"
+                  isAlert ? "bg-amber-100/70 border-amber-300" : "bg-slate-50 border-slate-200/80"
                 }`}>
+                  <div className="text-[10px] font-bold text-slate-500 mb-1">
+                    {t(`Peak interval ${win.peakTime}`, `Chu kỳ đỉnh ${win.peakTime}`)}
+                  </div>
                   <div className="flex items-baseline justify-between">
                     <span className="text-[11px] font-bold text-slate-600">
-                      {t("Expected Power:", "Công suất Dự kiến:")}
+                      {t("Load P50:", "Phụ tải P50:")}
                     </span>
                     <strong className={`text-lg font-black font-mono tabular-nums ${
-                      isOverload ? "text-amber-900" : "text-slate-900"
+                      isAlert ? "text-amber-900" : "text-slate-900"
                     }`}>
-                      {win.expectedKw.toLocaleString()} kW
+                      {kw(win.p50Kw)}
                     </strong>
                   </div>
                   <div className="flex items-center justify-between text-[11px] text-slate-500 mt-1">
-                    <span>{t("Possible Range:", "Biên độ Dao động:")}</span>
+                    <span>{t("P10–P90 range:", "Dải P10–P90:")}</span>
                     <span className="font-mono font-semibold text-slate-700 tabular-nums">
-                      {win.lowBoundKw.toLocaleString()} – {win.highBoundKw.toLocaleString()} kW
+                      {num(win.p10Kw)} – {kw(win.p90Kw)}
                     </span>
                   </div>
                 </div>
@@ -799,31 +465,37 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
                 {/* Secondary Operational Metrics */}
                 <div className="space-y-1.5 text-xs">
                   <div className="flex justify-between text-slate-600">
-                    <span className="text-slate-500">{t("Solar Power Offset:", "Bù trừ Điện mặt trời:")}</span>
+                    <span className="text-slate-500">{t("Solar PV offset:", "Bù trừ điện mặt trời:")}</span>
                     <strong className="text-emerald-700 font-mono tabular-nums">
-                      {win.solarKw > 0 ? `-${win.solarKw.toLocaleString()} kW` : "0 kW"}
+                      {win.pvKw > 0 ? `−${kw(win.pvKw)}` : kw(0)}
                     </strong>
                   </div>
                   <div className="flex justify-between text-slate-600">
-                    <span className="text-slate-500">{t("Net Grid Power Needed:", "Điện lưới Cần cấp:")}</span>
-                    <strong className="text-[#004B91] font-mono tabular-nums">
-                      {win.netGridKw.toLocaleString()} kW
+                    <span className="text-slate-500">{t("Net grid import:", "Điện lưới thuần:")}</span>
+                    <strong className={`font-mono tabular-nums ${isOverload ? "text-red-700" : "text-[#004B91]"}`}>
+                      {kw(win.netGridKw)}
                     </strong>
                   </div>
                   <div className="flex justify-between text-slate-600">
-                    <span className="text-slate-500">{t("Reefer Containers:", "Container Lạnh Reefer:")}</span>
+                    <span className="text-slate-500">{t("Of substation limit:", "So với ngưỡng trạm:")}</span>
+                    <strong className={`font-mono tabular-nums ${isOverload ? "text-red-700" : "text-slate-800"}`}>
+                      {pct((win.netGridKw / SUBSTATION_LIMIT_KW) * 100)}
+                    </strong>
+                  </div>
+                  <div className="flex justify-between text-slate-600">
+                    <span className="text-slate-500">{t("Reefer containers:", "Container lạnh:")}</span>
                     <strong className="text-slate-800 font-mono tabular-nums">
-                      {win.reeferPlugs} {t("Plugs", "Ổ cắm")}
+                      {num(win.reeferPlugs)} {t("plugs", "ổ cắm")}
                     </strong>
                   </div>
                 </div>
 
-                <p className="text-[11px] text-slate-600 mt-3 pt-2 border-t border-slate-100 line-clamp-2">
-                  {win.operationSummary}
+                <p className="text-[11px] text-slate-600 mt-3 pt-2 border-t border-slate-100 line-clamp-2" title={t(win.summary.en, win.summary.vn)}>
+                  {t(win.summary.en, win.summary.vn)}
                 </p>
               </div>
 
-              {/* Clear, Self-Explanatory Action Buttons */}
+              {/* Action Buttons */}
               <div className="pt-2 grid grid-cols-2 gap-2">
                 <button
                   type="button"
@@ -831,7 +503,7 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
                   className="py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-1.5 whitespace-nowrap shrink-0 cursor-pointer"
                 >
                   <Gauge className="w-3.5 h-3.5 text-[#004B91]" />
-                  <span>{t("Power Breakdown", "Chi Tiết 6 Lộ")}</span>
+                  <span>{t("6-Line Breakdown", "Chi Tiết 6 Lộ")}</span>
                 </button>
 
                 <button
@@ -840,7 +512,7 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
                   className="py-2 bg-[#004B91] hover:bg-[#00386E] text-white rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-1.5 shadow-2xs whitespace-nowrap shrink-0 cursor-pointer"
                 >
                   <FileText className="w-3.5 h-3.5" />
-                  <span>{t("Forecast Report", "Báo Cáo 24h")}</span>
+                  <span>{t("24h Report", "Báo Cáo 24h")}</span>
                 </button>
               </div>
             </div>
@@ -875,32 +547,35 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-slate-50 p-4 rounded-xl border border-slate-200">
                 <div>
                   <span className="text-slate-400 block text-[10px] uppercase font-bold">{t("Ships at Berth", "Tàu Cập Bến")}</span>
-                  <strong className="text-slate-900 font-bold">{selectedWindow.vesselName}</strong>
-                  <span className="text-[11px] text-slate-500 block">{selectedWindow.berth}</span>
+                  <strong className="text-slate-900 font-bold break-words">{vesselLabel(selectedWindow)}</strong>
+                  <span className="text-[11px] text-slate-500 block">{berthLabel(selectedWindow)}</span>
                 </div>
                 <div>
                   <span className="text-slate-400 block text-[10px] uppercase font-bold">{t("Active Equipment", "Thiết Bị Vận Hành")}</span>
-                  <strong className="text-slate-900 font-mono">{selectedWindow.stsCranes} {t("Quay Cranes", "Cẩu STS")}</strong>
-                  <span className="text-[11px] text-slate-500 block">{selectedWindow.reeferPlugs} {t("Reefers", "Ổ Reefer")}</span>
+                  <strong className="text-slate-900 font-mono">{selectedWindow.stsCranes} {t("STS cranes", "cẩu STS")}</strong>
+                  <span className="text-[11px] text-slate-500 block">{num(selectedWindow.reeferPlugs)} {t("reefers", "ổ reefer")}</span>
                 </div>
                 <div>
                   <span className="text-slate-400 block text-[10px] uppercase font-bold">{t("Weather", "Thời Tiết")}</span>
-                  <strong className="text-slate-900 font-mono">{selectedWindow.tempAmbC} °C</strong>
-                  <span className="text-[11px] text-slate-500 block">{t("Solar", "Điện Mặt Trời")}: {selectedWindow.solarKw} kW</span>
+                  <strong className="text-slate-900 font-mono">{num(selectedWindow.tempAmbC, 1)} °C</strong>
+                  <span className="text-[11px] text-slate-500 block">{t("Solar", "Điện mặt trời")}: {kw(selectedWindow.pvKw)}</span>
                 </div>
                 <div>
-                  <span className="text-slate-400 block text-[10px] uppercase font-bold">{t("Electricity Rate", "Khung Giá Điện")}</span>
-                  <strong className="text-[#004B91] font-mono">{selectedWindow.touLabel}</strong>
-                  <span className="text-[11px] text-slate-500 block">
-                    {selectedWindow.status === "OVERLOAD_WARNING" ? t("Over 8,000 kW limit", "Vượt ngưỡng 8,000 kW") : t("Within limit", "Trong giới hạn")}
-                  </span>
+                  <span className="text-slate-400 block text-[10px] uppercase font-bold">{t("Tariff & Status", "Khung Giá & Trạng Thái")}</span>
+                  <div className="flex flex-wrap gap-1 mt-0.5">
+                    <TouBadge band={selectedWindow.touBand} />
+                    <StatusBadge status={selectedWindow.status} />
+                  </div>
                 </div>
               </div>
 
               {/* 6 Substation Feeders Breakdown Table */}
               <div className="space-y-2">
                 <div className="font-bold text-slate-900 uppercase tracking-wider text-[11px]">
-                  {t("Expected Power by Substation Line (Feeders F-01 to F-06)", "Công Suất Dự Báo Theo 6 Lộ Xuất Tuyến (Lộ F-01 đến F-06)")}
+                  {t(
+                    `Expected Power by Substation Line (F-01 to F-06) · Peak interval ${selectedWindow.peakTime}`,
+                    `Công Suất Dự Báo Theo 6 Lộ (F-01 đến F-06) · Chu kỳ đỉnh ${selectedWindow.peakTime}`
+                  )}
                 </div>
                 <table className="w-full text-left border border-slate-200 rounded-xl overflow-hidden">
                   <thead className="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
@@ -913,20 +588,20 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
                   </thead>
                   <tbody className="divide-y divide-slate-100 font-mono">
                     {[
-                      { id: "F-01", name: t("Quay Cranes (S01–S05)", "Cẩu Bờ STS (S01–S05)"), kw: selectedWindow.feeders.f01StsKw },
-                      { id: "F-02", name: t("Yard e-RTG Cranes (12 Units)", "Cẩu Khung Bãi e-RTG (12 Cẩu)"), kw: selectedWindow.feeders.f02RtgKw },
-                      { id: "F-03", name: t("Reefer Container Yard (480 Plugs)", "Bãi Container Lạnh (480 Ổ Cắm)"), kw: selectedWindow.feeders.f03ReeferKw },
+                      { id: "F-01", name: t("Quay Cranes (STS)", "Cẩu Bờ STS"), kw: selectedWindow.feeders.f01StsKw },
+                      { id: "F-02", name: t("Yard e-RTG Cranes (12 units)", "Cẩu Khung Bãi e-RTG (12 cẩu)"), kw: selectedWindow.feeders.f02RtgKw },
+                      { id: "F-03", name: t("Reefer Container Yard", "Bãi Container Lạnh"), kw: selectedWindow.feeders.f03ReeferKw },
                       { id: "F-04", name: t("Ship Shore Power (OPS)", "Điện Bờ Cho Tàu (OPS)"), kw: selectedWindow.feeders.f04OpsKw },
                       { id: "F-05", name: t("EV Tractor Fast-Charging Hub", "Trạm Sạc Nhanh Xe Đầu Kéo EV"), kw: selectedWindow.feeders.f05EvBessKw },
                       { id: "F-06", name: t("Warehouse HVAC, Lighting & Fire Pumps", "Kho CFS, Đèn Bãi & Trạm Bơm PCCC"), kw: selectedWindow.feeders.f06AuxKw }
                     ].map((f) => {
-                      const share = ((f.kw / selectedWindow.expectedKw) * 100).toFixed(1);
+                      const share = (f.kw / selectedWindow.p50Kw) * 100;
                       return (
                         <tr key={f.id}>
                           <td className="py-2 px-3 font-bold text-[#004B91]">{f.id}</td>
                           <td className="py-2 px-3 font-sans text-slate-700">{f.name}</td>
-                          <td className="py-2 px-3 text-right font-bold text-slate-900 tabular-nums">{f.kw.toLocaleString()} kW</td>
-                          <td className="py-2 px-3 text-right text-slate-500 tabular-nums">{share}%</td>
+                          <td className="py-2 px-3 text-right font-bold text-slate-900 tabular-nums">{kw(f.kw)}</td>
+                          <td className="py-2 px-3 text-right text-slate-500 tabular-nums">{pct(share)}</td>
                         </tr>
                       );
                     })}
@@ -934,13 +609,13 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
                   <tfoot className="bg-slate-50 font-bold border-t border-slate-200 font-mono">
                     <tr>
                       <td colSpan={2} className="py-2.5 px-3 font-sans text-right text-slate-700">
-                        {t("Total Port Demand / Net Grid Power Needed:", "Tổng Phụ Tải Cảng / Điện Nhận Lưới EVN:")}
+                        {t("Total Load P50 / Net Grid Import:", "Tổng Phụ Tải P50 / Điện Lưới Thuần:")}
                       </td>
                       <td className="py-2.5 px-3 text-right text-slate-900 tabular-nums">
-                        {selectedWindow.expectedKw.toLocaleString()} kW
+                        {kw(selectedWindow.p50Kw)}
                       </td>
                       <td className="py-2.5 px-3 text-right text-[#004B91] tabular-nums">
-                        {t("Grid", "Lưới")}: {selectedWindow.netGridKw.toLocaleString()} kW
+                        {t("Grid", "Lưới")}: {kw(selectedWindow.netGridKw)}
                       </td>
                     </tr>
                   </tfoot>
@@ -976,7 +651,7 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
       {/* ================================================================== */}
       {showForecastReportModal && selectedWindow && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs overflow-y-auto">
-          <div className="relative w-full max-w-3xl bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden my-8">
+          <div className="relative w-full max-w-4xl bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden my-8">
             <div className="bg-[#004B91] text-white px-6 py-4 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <FileText className="w-5 h-5 text-emerald-300" />
@@ -1014,19 +689,22 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
                     {t("Cat Lai Terminal · 24-Hour Power Demand & Overload Warning Report", "Cảng Tân Cảng Cát Lái · Báo Cáo Dự Báo Phụ Tải 24 Giờ & Cảnh Báo Quá Tải")}
                   </div>
                   <div className="text-slate-400 text-[10px] mt-0.5">
-                    {t("Main 110/22kV Substation · Overload Warning Threshold: 8,000 kW", "Trạm Biến Áp 110/22kV Cát Lái · Ngưỡng Cảnh Báo Quá Tải: 8,000 kW")}
+                    {t(
+                      `Main 110/22kV Substation · Overload threshold (net grid import): ${limitKw}`,
+                      `Trạm Biến Áp 110/22kV Cát Lái · Ngưỡng cảnh báo (điện lưới thuần): ${limitKw}`
+                    )}
                   </div>
                 </div>
 
                 <div className="text-right font-mono">
                   <div className="text-base font-black text-slate-900">
-                    REPORT #{selectedWindow.id.replace(":", "")}
+                    {t("REPORT", "BÁO CÁO")} #{selectedWindow.id.replace(":", "")}
                   </div>
                   <div className="text-slate-500 font-sans">
                     {t("Selected Window", "Khung giờ chọn")}: {selectedWindow.timeWindow}
                   </div>
                   <div className="text-emerald-700 font-bold text-[11px] mt-0.5">
-                    {t("30-Day Accuracy: 98.7%", "Độ chính xác 30 ngày: 98.7%")}
+                    RMSE {kw(MODEL_METRICS.rmseKw, 1)} · MAPE {pct(MODEL_METRICS.mapePct, 2)}
                   </div>
                 </div>
               </div>
@@ -1036,41 +714,43 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
                 <div>
                   <span className="text-slate-400 block text-[10px] uppercase font-bold">{t("Time Window", "Khung Giờ")}</span>
                   <strong className="text-slate-900 text-sm font-black font-mono">{selectedWindow.timeWindow}</strong>
-                  <span className="text-[11px] text-slate-500 block">{selectedWindow.touLabel}</span>
+                  <div className="mt-0.5"><TouBadge band={selectedWindow.touBand} /></div>
                 </div>
                 <div>
-                  <span className="text-slate-400 block text-[10px] uppercase font-bold">{t("Expected Power", "Công Suất Dự Báo")}</span>
-                  <strong className="text-[#004B91] text-sm font-black font-mono">{selectedWindow.expectedKw.toLocaleString()} kW</strong>
-                  <span className="text-[11px] text-slate-500 font-mono block">Max: {selectedWindow.highBoundKw.toLocaleString()} kW</span>
+                  <span className="text-slate-400 block text-[10px] uppercase font-bold">{t("Load P50", "Phụ Tải P50")}</span>
+                  <strong className="text-[#004B91] text-sm font-black font-mono">{kw(selectedWindow.p50Kw)}</strong>
+                  <span className="text-[11px] text-slate-500 font-mono block">P10–P90: {num(selectedWindow.p10Kw)} – {kw(selectedWindow.p90Kw)}</span>
                 </div>
                 <div>
-                  <span className="text-slate-400 block text-[10px] uppercase font-bold">{t("Solar / Net Grid", "Điện Mặt Trời / Nhận Lưới")}</span>
-                  <strong className="text-emerald-700 text-sm font-black font-mono">-{selectedWindow.solarKw.toLocaleString()} kW</strong>
-                  <span className="text-[11px] text-slate-700 font-mono block">{t("Grid", "Lưới")}: {selectedWindow.netGridKw.toLocaleString()} kW</span>
+                  <span className="text-slate-400 block text-[10px] uppercase font-bold">{t("Solar / Net Grid", "Điện Mặt Trời / Lưới Thuần")}</span>
+                  <strong className="text-emerald-700 text-sm font-black font-mono">−{kw(selectedWindow.pvKw)}</strong>
+                  <span className="text-[11px] text-slate-700 font-mono block">{t("Grid", "Lưới")}: {kw(selectedWindow.netGridKw)}</span>
                 </div>
                 <div>
                   <span className="text-slate-400 block text-[10px] uppercase font-bold">{t("Substation Status", "Trạng Thái Trạm")}</span>
-                  <strong className={`text-sm font-black font-mono ${selectedWindow.status === "OVERLOAD_WARNING" ? "text-amber-700" : "text-emerald-700"}`}>
-                    {selectedWindow.status === "OVERLOAD_WARNING" ? t("OVERLOAD ALERT", "CẢNH BÁO QUÁ TẢI") : t("NORMAL", "BÌNH THƯỜNG")}
-                  </strong>
-                  <span className="text-[11px] text-slate-500 block">{t("Limit: 8,000 kW", "Giới hạn: 8,000 kW")}</span>
+                  <div className="mt-0.5"><StatusBadge status={selectedWindow.status} /></div>
+                  <span className="text-[11px] text-slate-500 block mt-0.5">
+                    {pct((selectedWindow.netGridKw / SUBSTATION_LIMIT_KW) * 100)} {t(`of ${limitKw}`, `so với ${limitKw}`)}
+                  </span>
                 </div>
               </div>
 
               {/* Full 24-Hour Table */}
               <div className="space-y-2">
                 <div className="font-extrabold text-slate-900 text-xs uppercase tracking-wider">
-                  {t("Complete 24-Hour Schedule & Power Forecast", "Bảng Tổng Hợp Lịch Tàu & Dự Báo Phụ Tải 24 Giờ")}
+                  {t("Complete 24-Hour Schedule & Power Forecast (peak interval per window)", "Bảng Tổng Hợp Lịch Tàu & Dự Báo Phụ Tải 24 Giờ (chu kỳ đỉnh mỗi khung)")}
                 </div>
                 <div className="overflow-x-auto border border-slate-200 rounded-xl">
                   <table className="w-full text-left text-xs">
                     <thead className="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
                       <tr>
-                        <th className="py-2 px-2.5">{t("Time", "Giờ")}</th>
-                        <th className="py-2 px-2.5 text-right font-mono">{t("Expected (kW)", "Dự Báo (kW)")}</th>
-                        <th className="py-2 px-2.5 text-right font-mono">{t("High Range (kW)", "Biên Trên (kW)")}</th>
-                        <th className="py-2 px-2.5 text-right font-mono">{t("Solar (kW)", "Solar (kW)")}</th>
-                        <th className="py-2 px-2.5 text-right font-mono">{t("Net Grid (kW)", "Nhận Lưới (kW)")}</th>
+                        <th className="py-2 px-2.5">{t("Window", "Khung")}</th>
+                        <th className="py-2 px-2.5 font-mono">{t("Peak at", "Lúc đỉnh")}</th>
+                        <th className="py-2 px-2.5 text-right font-mono">P50 (kW)</th>
+                        <th className="py-2 px-2.5 text-right font-mono">P90 (kW)</th>
+                        <th className="py-2 px-2.5 text-right font-mono">PV (kW)</th>
+                        <th className="py-2 px-2.5 text-right font-mono">{t("Net Grid (kW)", "Lưới thuần (kW)")}</th>
+                        <th className="py-2 px-2.5 text-center">TOU</th>
                         <th className="py-2 px-2.5 text-center">{t("Status", "Trạng Thái")}</th>
                         <th className="py-2 px-2.5">{t("Port Activity", "Hoạt Động Cảng")}</th>
                       </tr>
@@ -1078,7 +758,7 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
                     <tbody className="divide-y divide-slate-100">
                       {FORECAST_WINDOWS.map((row) => {
                         const isSelected = row.id === selectedWindow.id;
-                        const isWarn = row.status === "OVERLOAD_WARNING";
+                        const isWarn = row.status === "OVERLOAD" || row.status === "WARNING";
                         return (
                           <tr
                             key={row.id}
@@ -1087,19 +767,17 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
                               isSelected ? "bg-blue-50/90 font-semibold" : isWarn ? "bg-amber-50/50 hover:bg-amber-50" : "hover:bg-slate-50"
                             }`}
                           >
-                            <td className="py-2 px-2.5 font-mono font-bold text-slate-900">{row.id}</td>
-                            <td className="py-2 px-2.5 text-right font-mono font-bold text-[#004B91] tabular-nums">{row.expectedKw.toLocaleString()}</td>
-                            <td className="py-2 px-2.5 text-right font-mono text-slate-600 tabular-nums">{row.highBoundKw.toLocaleString()}</td>
-                            <td className="py-2 px-2.5 text-right font-mono text-emerald-700 tabular-nums">{row.solarKw.toLocaleString()}</td>
-                            <td className="py-2 px-2.5 text-right font-mono font-bold tabular-nums">{row.netGridKw.toLocaleString()}</td>
-                            <td className="py-2 px-2.5 text-center">
-                              <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                                isWarn ? "bg-amber-500 text-white" : "bg-emerald-100 text-emerald-800"
-                              }`}>
-                                {isWarn ? t("OVER 8,000 kW", "VƯỢT 8,000 kW") : t("NORMAL", "BÌNH THƯỜNG")}
-                              </span>
+                            <td className="py-2 px-2.5 font-mono font-bold text-slate-900 whitespace-nowrap">{row.timeWindow}</td>
+                            <td className="py-2 px-2.5 font-mono text-slate-600">{row.peakTime}</td>
+                            <td className="py-2 px-2.5 text-right font-mono font-bold text-[#004B91] tabular-nums">{num(row.p50Kw)}</td>
+                            <td className="py-2 px-2.5 text-right font-mono text-slate-600 tabular-nums">{num(row.p90Kw)}</td>
+                            <td className="py-2 px-2.5 text-right font-mono text-emerald-700 tabular-nums">{num(row.pvKw)}</td>
+                            <td className="py-2 px-2.5 text-right font-mono font-bold tabular-nums">{num(row.netGridKw)}</td>
+                            <td className="py-2 px-2.5 text-center"><TouBadge band={row.touBand} /></td>
+                            <td className="py-2 px-2.5 text-center"><StatusBadge status={row.status} /></td>
+                            <td className="py-2 px-2.5 text-slate-600 truncate max-w-[210px]" title={t(row.summary.en, row.summary.vn)}>
+                              {t(row.summary.en, row.summary.vn)}
                             </td>
-                            <td className="py-2 px-2.5 text-slate-600 truncate max-w-[210px]">{row.operationSummary}</td>
                           </tr>
                         );
                       })}
@@ -1168,7 +846,7 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
                   </div>
                   <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
                     <div className="font-bold text-slate-900">{t("3. Regular 15-Minute Updates", "3. Chu kỳ cập nhật 15 phút")}</div>
-                    <div className="text-slate-600 mt-0.5">{t("Refreshes every 15 minutes and locks the next-day schedule at 22:00 each night.", "Làm mới mỗi 15 phút và chốt kế hoạch phụ tải ngày hôm sau lúc 22:00 mỗi tối.")}</div>
+                    <div className="text-slate-600 mt-0.5">{t("Day-ahead forecast is issued at 22:00; it then rolls forward every 15 minutes and past intervals are locked for audit.", "Dự báo ngày tới lập lúc 22:00; sau đó cập nhật cuốn chiếu mỗi 15 phút, phần quá khứ được khóa để phục vụ kiểm toán.")}</div>
                   </div>
                   <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
                     <div className="font-bold text-slate-900">{t("4. Crane Maintenance or Stoppage", "4. Bảo trì hoặc dừng cẩu STS")}</div>
@@ -1179,26 +857,26 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
 
               <div className="space-y-2">
                 <div className="font-bold text-slate-900 uppercase tracking-wider text-[11px]">
-                  {t("30-Day Forecast Accuracy History", "Lịch Sử Độ Chính Xác Dự Báo 30 Ngày")}
+                  {t("Accuracy by Training Window (5 → 30 days)", "Độ Chính Xác Theo Cửa Sổ Huấn Luyện (5 → 30 ngày)")}
                 </div>
                 <table className="w-full text-left border border-slate-200 rounded-xl overflow-hidden font-mono">
                   <thead className="bg-slate-100 text-slate-700 font-bold border-b border-slate-200 font-sans">
                     <tr>
-                      <th className="py-2 px-3">{t("History Window", "Chu Kỳ Đánh Giá")}</th>
-                      <th className="py-2 px-3 text-right">{t("15-Min Readings", "Số Mẫu 15 Phút")}</th>
-                      <th className="py-2 px-3 text-right">{t("Accuracy", "Độ Chính Xác")}</th>
-                      <th className="py-2 px-3 text-right">{t("Avg Error (kW)", "Sai Số TB (kW)")}</th>
-                      <th className="py-2 px-3 text-right">{t("Within Range", "Trong Biên Dự Báo")}</th>
+                      <th className="py-2 px-3">{t("Training Window", "Cửa Sổ Huấn Luyện")}</th>
+                      <th className="py-2 px-3 text-right">{t("15-Min Samples", "Số Mẫu 15 Phút")}</th>
+                      <th className="py-2 px-3 text-right">MAPE</th>
+                      <th className="py-2 px-3 text-right">RMSE (kW)</th>
+                      <th className="py-2 px-3 text-right">{t("P10–P90 Coverage", "Độ Phủ P10–P90")}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
                     {ACCURACY_HISTORY.map((row) => (
                       <tr key={row.windowDays} className={row.windowDays === 30 ? "bg-emerald-50/70 font-bold" : ""}>
-                        <td className="py-2 px-3">{row.windowDays} {t("Days", "Ngày")}</td>
-                        <td className="py-2 px-3 text-right tabular-nums">{row.samples.toLocaleString()}</td>
-                        <td className="py-2 px-3 text-right text-[#004B91] tabular-nums">{row.accuracyPercent}</td>
-                        <td className="py-2 px-3 text-right tabular-nums">±{row.avgErrorKw} kW</td>
-                        <td className="py-2 px-3 text-right text-emerald-700 tabular-nums">{row.rangeCoverage}</td>
+                        <td className="py-2 px-3">{row.windowDays} {t("days", "ngày")}</td>
+                        <td className="py-2 px-3 text-right tabular-nums">{num(row.samples)}</td>
+                        <td className="py-2 px-3 text-right text-[#004B91] tabular-nums">{pct(row.mapePct, 2)}</td>
+                        <td className="py-2 px-3 text-right tabular-nums">{num(row.rmseKw, 1)}</td>
+                        <td className="py-2 px-3 text-right text-emerald-700 tabular-nums">{pct(row.coveragePct)}</td>
                       </tr>
                     ))}
                   </tbody>
