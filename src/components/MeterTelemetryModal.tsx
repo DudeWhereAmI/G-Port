@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useLanguage } from "../context/LanguageContext";
+import { CALL_RECORDS, ENERGY_BALANCE, stamp } from "../data/module2Carbon";
+import { activeFactor } from "../data/emissionFactors";
 import {
   X,
   Zap,
@@ -95,7 +97,7 @@ export interface PortCallMeterGroup {
   meters: PortMeterDevice[];
 }
 
-export const PORT_CALL_METERS: PortCallMeterGroup[] = [
+const RAW_PORT_CALL_METERS: PortCallMeterGroup[] = [
   // ============================================================================
   // UC-01: MV SPIRIT OF MUMBAI (Voyage 056N) — Berth B2 (Container Mainline)
   // ============================================================================
@@ -273,7 +275,7 @@ export const PORT_CALL_METERS: PortCallMeterGroup[] = [
         name: "Harbor Assist Tugs (TC-01 & TC-02) Coriolis Mass Flow",
         category: "TUGBOAT_FUEL",
         medium: "FUEL",
-        location: "Cat Lai / Cai Mep Basin",
+        location: "Cat Lai Basin",
         protocol: "Endress+Hauser Promass F300 · NMEA 2000",
         serialNumber: "EH-CORIOLIS-2026-12",
         nominalRating: "2 × 4,200 BHP ASD Tugs",
@@ -760,6 +762,85 @@ export const PORT_CALL_METERS: PortCallMeterGroup[] = [
   },
 ];
 
+/**
+ * Align the illustrative meter data with the Module 2 ledger (single source):
+ * call totals, window, berth, TEU, record number and SHA-256 come from the
+ * ledger; meter readings are scaled so electricity and fuel meters add up to
+ * the ledger quantities; factors come from the versioned library.
+ */
+function alignWithLedger(group: PortCallMeterGroup): PortCallMeterGroup {
+  const name = group.vesselName.replace(/^MV\s+/i, "").toUpperCase();
+  const rec = CALL_RECORDS.find((r) => r.vessel.toUpperCase() === name);
+  if (!rec) {
+    // not one of the 12 ledger calls: keep its readings, but apply the library factors
+    const g = activeFactor("GRID");
+    const dsl = activeFactor("DIESEL");
+    const eff = ENERGY_BALANCE.effectiveGridEf;
+    const meters = group.meters.map((m) => {
+      if (m.scopeType === "ZERO_CARBON_OFFSET") return m;
+      const isFuel = m.medium === "FUEL";
+      return {
+        ...m,
+        emissionFactorLabel: isFuel ? `${dsl.value} ${dsl.unit} (${dsl.id})` : `${g.value} ${g.unit} (${g.id})`,
+        co2eMetricTons: Math.round(((m.totalPeriodRecorded * (isFuel ? dsl.value : eff)) / 1000) * 100) / 100,
+      };
+    });
+    return {
+      ...group,
+      totalScope1Tons: Math.round(((group.totalFuelLiters * dsl.value) / 1000) * 100) / 100,
+      totalScope2Tons: Math.round(((group.totalElectricityKwh * eff) / 1000) * 100) / 100,
+      meters,
+    };
+  }
+  const elecMeters = group.meters.filter((m) => m.medium !== "FUEL" && m.scopeType !== "ZERO_CARBON_OFFSET");
+  const fuelMeters = group.meters.filter((m) => m.medium === "FUEL");
+  const elecSum = elecMeters.reduce((a, m) => a + m.totalPeriodRecorded, 0) || 1;
+  const fuelSum = fuelMeters.reduce((a, m) => a + m.totalPeriodRecorded, 0) || 1;
+  const grid = activeFactor("GRID");
+  const diesel = activeFactor("DIESEL");
+  const effEf = ENERGY_BALANCE.effectiveGridEf;
+  const window = `${stamp(rec.etaMin)} → ${stamp(rec.etdMin)} (${rec.berthHours.toFixed(1)}h)`;
+  const meters = group.meters.map((m) => {
+    if (m.scopeType === "ZERO_CARBON_OFFSET") return { ...m, recordingWindow: window };
+    const isFuel = m.medium === "FUEL";
+    const k = isFuel ? rec.fuelL / fuelSum : rec.electricityKwh / elecSum;
+    const total = Math.round(m.totalPeriodRecorded * k);
+    return {
+      ...m,
+      totalPeriodRecorded: total,
+      closingReading: m.openingReading + total,
+      recordingWindow: window,
+      emissionFactorLabel: isFuel
+        ? `${diesel.value} ${diesel.unit} (${diesel.id})`
+        : `${grid.value} ${grid.unit} (${grid.id}) × ${(ENERGY_BALANCE.gridShare * 100).toFixed(1)}% ${"grid"}`,
+      co2eMetricTons: Math.round(((total * (isFuel ? diesel.value : effEf)) / 1000) * 100) / 100,
+      telemetry: m.telemetry.map((p) => ({ ...p, primaryVal: Math.round(p.primaryVal * k * 10) / 10, cumulativeTotal: Math.round(p.cumulativeTotal * k) })),
+    };
+  });
+  return {
+    ...group,
+    vesselName: rec.vessel,
+    voyageNumber: rec.voyage,
+    imoNumber: rec.imo,
+    carrier: rec.carrier,
+    berth: `Berth ${rec.berth} · Cat Lai`,
+    arrivalWindow: stamp(rec.etaMin),
+    departureWindow: stamp(rec.etdMin),
+    hotelingHours: Math.round(rec.berthHours * 10) / 10,
+    teuHandled: rec.teu,
+    invoiceNumber: rec.recordNo,
+    portCallState: rec.complete ? "COMPLETED_INVOICE" : "LIVE_MONITORING",
+    dcsaHash: rec.hash,
+    totalElectricityKwh: Math.round(rec.electricityKwh),
+    totalFuelLiters: Math.round(rec.fuelL),
+    totalScope1Tons: Math.round(rec.scope1Kg / 10) / 100,
+    totalScope2Tons: Math.round(rec.scope2Kg / 10) / 100,
+    meters,
+  };
+}
+
+export const PORT_CALL_METERS: PortCallMeterGroup[] = RAW_PORT_CALL_METERS.map(alignWithLedger);
+
 // Helper to resolve which PortCallMeterGroup & specific meter match a given assetId / invoiceId / entityId
 export function resolvePortCallFromIdentifier(identifier?: string | null): {
   portCallId: string;
@@ -1241,7 +1322,7 @@ export const MeterTelemetryModal: React.FC<MeterTelemetryModalProps> = ({
                             </span>
                             <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700">
                               <CheckCircle2 className="w-3 h-3" />
-                              DCSA Sealed
+                              {t("SHA-256 locked", "Đã khóa SHA-256")}
                             </span>
                           </div>
                         </div>
@@ -1783,11 +1864,11 @@ export const MeterTelemetryModal: React.FC<MeterTelemetryModalProps> = ({
           <div className="flex items-center gap-2 text-slate-600">
             <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
             <span>
-              DCSA Hash:{" "}
+              SHA-256:{" "}
               <code className="font-mono text-[11px] text-slate-800">
                 {currentPortCall.dcsaHash.slice(0, 22)}...
               </code>{" "}
-              · ISO 14083 Verified
+              · {t("GLEC · ISO 14083 method", "Phương pháp GLEC · ISO 14083")}
             </span>
           </div>
 
