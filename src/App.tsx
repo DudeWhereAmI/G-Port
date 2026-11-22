@@ -41,7 +41,7 @@ import { InputLayerPage } from "./pages/InputLayerPage";
 import { ForecastPage } from "./pages/ForecastPage";
 import { MeasurementPage } from "./pages/MeasurementPage";
 import { OptimizationPage } from "./pages/OptimizationPage";
-import { VesselCarbonInvoicePage } from "./pages/VesselCarbonInvoicePage";
+import { VesselCarbonInvoicePage, CarbonTab } from "./pages/VesselCarbonInvoicePage";
 import { VesselSchedulePage } from "./pages/VesselSchedulePage";
 import { PartnersPage } from "./pages/PartnersPage";
 import { MeterTelemetryModal, MeterModalMode } from "./components/MeterTelemetryModal";
@@ -133,6 +133,9 @@ export default function App() {
     setFocusedForecastOpenReport(openReport);
     setActiveSubPage("MODULE_1_FORECAST");
   };
+
+  // Module 3 → Module 2 link (open the IPMVP verification)
+  const [carbonInitialTab, setCarbonInitialTab] = useState<CarbonTab | null>(null);
 
   // Module 1 → Module 3 hand-off (overload window sent to Peak Shaving)
   const [forecastHandoff, setForecastHandoff] = useState<ForecastHandoff | null>(null);
@@ -306,7 +309,10 @@ export default function App() {
                 onDismissForecastHandoff={() => setForecastHandoff(null)}
                 onBackToForecast={() => setActiveSubPage("MODULE_1_FORECAST")}
                 onNavigate={setActiveSubPage}
-                onVerifyInModule2={() => setActiveSubPage("VESSEL_CARBON_INVOICE")}
+                onVerifyInModule2={() => {
+                  setCarbonInitialTab("METHOD");
+                  setActiveSubPage("VESSEL_CARBON_INVOICE");
+                }}
               />
             )}
 
@@ -326,6 +332,8 @@ export default function App() {
                 focusedInvoiceId={focusedInvoiceId}
                 onClearFocusedInvoice={() => setFocusedInvoiceId(null)}
                 onTraceVoyageInTelemetry={handleTraceVoyageInTelemetry}
+                initialTab={carbonInitialTab}
+                onClearInitialTab={() => setCarbonInitialTab(null)}
               />
             )}
 

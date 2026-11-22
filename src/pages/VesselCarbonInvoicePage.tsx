@@ -12,6 +12,7 @@ import { BalanceTab } from "../components/carbon/BalanceTab";
 import { CallsTab } from "../components/carbon/CallsTab";
 import { ReportingTab } from "../components/carbon/ReportingTab";
 import { MethodTab } from "../components/carbon/MethodTab";
+import { FactorLibrary, IpmvpPanel, ReductionWhatIf, UncertaintyPanel } from "../components/carbon/CarbonDeepDive";
 
 export type CarbonTab = "OVERVIEW" | "BALANCE" | "CALLS" | "REPORTING" | "METHOD";
 
@@ -38,7 +39,7 @@ export function findCall(identifier: string): CallRecord | undefined {
   );
 }
 
-export const VesselCarbonInvoicePage: React.FC<VesselCarbonInvoicePageProps> = ({ focusedInvoiceId, onClearFocusedInvoice, initialTab, onClearInitialTab }) => {
+export const VesselCarbonInvoicePage: React.FC<VesselCarbonInvoicePageProps> = ({ focusedInvoiceId, onClearFocusedInvoice, initialTab, onClearInitialTab, onNavigate }) => {
   const { t } = useLanguage();
   const { num } = useFormat();
   const [tab, setTab] = useState<CarbonTab>("OVERVIEW");
@@ -59,6 +60,7 @@ export const VesselCarbonInvoicePage: React.FC<VesselCarbonInvoicePageProps> = (
   useEffect(() => {
     if (!initialTab) return;
     setTab(initialTab);
+    if (initialTab === "METHOD") setTimeout(() => document.getElementById("ipmvp")?.scrollIntoView({ behavior: "smooth", block: "start" }), 50);
     onClearInitialTab?.();
   }, [initialTab, onClearInitialTab]);
 
@@ -104,11 +106,29 @@ export const VesselCarbonInvoicePage: React.FC<VesselCarbonInvoicePageProps> = (
         </div>
       </div>
 
-      {tab === "OVERVIEW" && <OverviewTab calls={calls} filtered={false} onOpenCall={setOpenCall} />}
+      {tab === "OVERVIEW" && (
+        <OverviewTab
+          calls={calls}
+          filtered={false}
+          onOpenCall={setOpenCall}
+          extra={
+            <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] gap-4 items-start">
+              <UncertaintyPanel calls={calls} />
+              <ReductionWhatIf />
+            </div>
+          }
+        />
+      )}
       {tab === "BALANCE" && <BalanceTab calls={calls} onOpenCall={setOpenCall} />}
       {tab === "CALLS" && <CallsTab calls={calls} onOpenCall={setOpenCall} />}
       {tab === "REPORTING" && <ReportingTab calls={calls} onOpenCall={setOpenCall} />}
-      {tab === "METHOD" && <MethodTab onOpenCall={setOpenCall} />}
+      {tab === "METHOD" && (
+        <MethodTab
+          onOpenCall={setOpenCall}
+          top={<IpmvpPanel onOpenM3={onNavigate ? () => onNavigate("MODULE_3_OPTIMIZATION") : undefined} />}
+          bottom={<FactorLibrary />}
+        />
+      )}
 
       {openCall && <CallDrawer record={openCall} onClose={() => setOpenCall(null)} />}
     </div>
