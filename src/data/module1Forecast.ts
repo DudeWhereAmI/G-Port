@@ -134,6 +134,8 @@ export interface ForecastPoint {
   feeders: FeederValues;
   /** load contributed by each vessel call (STS + e-RTG share + OPS) */
   byVessel: Record<string, number>;
+  /** sub-loads used by Module 3 dispatch */
+  detail: { itvKw: number; swapKw: number; hvacKw: number; lightingKw: number; reeferUnits: number };
   cranes: number;
   reefers: number;
   tempC: number;
@@ -337,7 +339,7 @@ export const BASE_VESSELS: VesselCall[] = [
     teu: 2600, loaM: 300, reefers: 140, opsKw: 750,
     cranes: [
       { fromMin: hm(6, 15), cranes: 4 },
-      { fromMin: hm(17), cranes: 2 },
+      { fromMin: hm(16, 30), cranes: 2 },
     ],
   },
   {
@@ -375,7 +377,7 @@ const WINDOW_SUMMARIES: BilingualText[] = [
   { en: "ONE APUS berths at B3, TC SYMPHONY at B1; clouds building from 13:00", vn: "ONE APUS cập B3, TC SYMPHONY cập B1; mây tăng dần từ 13:00" },
   { en: "3 vessels worked in parallel (8 STS) + shore power; overcast sky cuts PV", vn: "3 tàu làm hàng song song (8 cẩu STS) + điện bờ; trời nhiều mây làm giảm điện mặt trời" },
   { en: "Parallel crane work continues, reefer yard near capacity, PV almost gone", vn: "Tiếp tục làm hàng song song, bãi lạnh gần đầy, điện mặt trời gần như bằng 0" },
-  { en: "Evening shift change; SPIRIT OF MUMBAI down to 2 STS, TC SYMPHONY departs", vn: "Giao ca chiều; SPIRIT OF MUMBAI giảm còn 2 cẩu STS, TC SYMPHONY rời cảng" },
+  { en: "Evening shift change; SPIRIT OF MUMBAI on 2 STS, TC SYMPHONY departs", vn: "Giao ca chiều; SPIRIT OF MUMBAI còn 2 cẩu STS, TC SYMPHONY rời cảng" },
   { en: "Steady night discharge on 2 vessels", vn: "Dỡ hàng ổn định ban đêm trên 2 tàu" },
   { en: "SPIRIT OF MUMBAI departs B2; off-peak tariff begins", vn: "SPIRIT OF MUMBAI rời B2; bắt đầu giờ thấp điểm" },
 ];
@@ -384,12 +386,12 @@ const WINDOW_SUMMARIES: BilingualText[] = [
 // Physical / operational parameters of the approximation model
 // ---------------------------------------------------------------------------
 
-const PHYS = {
-  stsKwPerCrane: 470,
-  rtgKwPerCrane: 190,
+export const PHYS = {
+  stsKwPerCrane: 420,
+  rtgKwPerCrane: 170,
   rtgBaseKw: 150,
-  reeferBaseCount: 330,
-  reeferKwAt28C: 2.55,
+  reeferBaseCount: 300,
+  reeferKwAt28C: 2.4,
   reeferKwPerDeg: 0.06,
   auxBaseKw: 150,
   lightingKw: 270,
@@ -418,11 +420,29 @@ function shiftFactor(minute: number): number {
   return (minute >= hm(6) && minute < hm(6, 30)) || (minute >= hm(18) && minute < hm(18, 30)) ? 0.6 : 1;
 }
 
-function evChargingAt(minute: number): number {
-  if (minute >= hm(22) || minute < hm(5)) return 320;
-  if (minute < hm(6)) return 160;
-  if (minute >= hm(11) && minute < hm(13, 30)) return 180; // midday solar charging
-  return 60;
+/**
+ * Business-as-usual (unoptimised) charging on feeder F-05, as M-1 forecasts it
+ * before any Module 3 dispatch: e-ITV tractors top up opportunistically before
+ * the evening shift, the battery-swap station runs through the day shift.
+ */
+export const EV_FLEET = {
+  itvVehicles: 24,
+  itvKwPerVehicle: 68,
+  /** vehicles required by the TOS plan during the afternoon peak */
+  itvRequired: 14,
+  itvReserveDefault: 2,
+  itvInMaintenance: 2,
+};
+
+export function itvChargingAt(minute: number): number {
+  if (minute >= hm(22) || minute < hm(5)) return 200;
+  if (minute < hm(13, 30)) return 120;
+  if (minute < hm(17, 30)) return 410; // 6 tractors topping up before the evening shift
+  return 150;
+}
+
+export function swapStationAt(minute: number): number {
+  return minute >= hm(8) && minute < hm(20) ? 155 : 80;
 }
 
 function workWindow(v: VesselCall) {
@@ -506,17 +526,18 @@ function computePoint(i: number, s: ForecastScenario, preset: TouPreset): Foreca
   }
   reefers *= s.reeferFactor;
   const reeferKw = reefers * (PHYS.reeferKwAt28C + PHYS.reeferKwPerDeg * (tempC - 28));
-  const aux =
-    PHYS.auxBaseKw +
-    (mid < PV_SUNRISE || mid >= PV_SUNSET ? PHYS.lightingKw : 0) +
-    PHYS.hvacKwPerDeg * Math.max(0, tempC - 26);
+  const lightingKw = mid < PV_SUNRISE || mid >= PV_SUNSET ? PHYS.lightingKw : 0;
+  const hvacKw = PHYS.hvacKwPerDeg * Math.max(0, tempC - 26);
+  const aux = PHYS.auxBaseKw + lightingKw + hvacKw;
+  const itvKw = itvChargingAt(mid);
+  const swapKw = swapStationAt(mid);
 
   const feeders: FeederValues = {
     f01: Math.round(sts),
     f02: Math.max(0, Math.round(rtg + NOISE.load[i])), // e-RTG absorbs model noise
     f03: Math.round(reeferKw),
     f04: Math.round(ops),
-    f05: evChargingAt(mid),
+    f05: itvKw + swapKw,
     f06: Math.round(aux),
   };
   const p50 = feeders.f01 + feeders.f02 + feeders.f03 + feeders.f04 + feeders.f05 + feeders.f06;
@@ -554,6 +575,7 @@ function computePoint(i: number, s: ForecastScenario, preset: TouPreset): Foreca
     tou: touBandAt(minute, preset),
     feeders,
     byVessel,
+    detail: { itvKw, swapKw, hvacKw: Math.round(hvacKw), lightingKw, reeferUnits: Math.round(reefers) },
     cranes: Math.round(cranes * 10) / 10,
     reefers: Math.round(reefers),
     tempC: Math.round(tempC * 10) / 10,

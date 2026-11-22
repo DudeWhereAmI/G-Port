@@ -44,3 +44,22 @@ export function useFormat() {
     pct: (v: number, decimals = 1) => formatPercent(v, lang, decimals),
   };
 }
+
+/** Money, one style site-wide: VN "14,81 triệu đ" · EN "VND 14.81M". */
+export function formatVndMillion(vnd: number, lang: AppLanguage, decimals = 2): string {
+  const m = formatNumber(vnd / 1_000_000, lang, decimals);
+  return lang === "VN" ? `${m} triệu đ` : `VND ${m}M`;
+}
+
+/** Tonnes CO₂e from kg: VN "0,81 tCO₂e". */
+export function formatTco2(kg: number, lang: AppLanguage, decimals = 2): string {
+  return `${formatNumber(kg / 1000, lang, decimals)} tCO₂e`;
+}
+
+export function useMoneyFormat() {
+  const { lang } = useLanguage();
+  return {
+    vnd: (v: number, decimals = 2) => formatVndMillion(v, lang, decimals),
+    tco2: (kg: number, decimals = 2) => formatTco2(kg, lang, decimals),
+  };
+}
