@@ -305,6 +305,8 @@ export default function App() {
                 forecastHandoff={forecastHandoff}
                 onDismissForecastHandoff={() => setForecastHandoff(null)}
                 onBackToForecast={() => setActiveSubPage("MODULE_1_FORECAST")}
+                onNavigate={setActiveSubPage}
+                onVerifyInModule2={() => setActiveSubPage("VESSEL_CARBON_INVOICE")}
               />
             )}
 

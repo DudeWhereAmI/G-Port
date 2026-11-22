@@ -1,8 +1,8 @@
 import React, { useMemo, useState } from "react";
 import { useLanguage } from "../context/LanguageContext";
 import { ElectricityTariffTou, BessSystemStatus, PvSystemStatus, SubPageId } from "../types/gport";
-import { TrendingDown, Zap, Sliders, Leaf, Info, ImageDown } from "lucide-react";
-import { BASE_FORECAST, NOW_MINUTE, SUBSTATION_LIMIT_KW } from "../data/module1Forecast";
+import { TrendingDown, Zap, Sliders, Leaf, Info, ImageDown, Lock, ArrowRight, Cpu, ShieldCheck, ExternalLink } from "lucide-react";
+import { BASE_FORECAST, FORECAST_VERSION, NOW_MINUTE, SUBSTATION_LIMIT_KW, minuteLabel } from "../data/module1Forecast";
 import {
   ApprovalState,
   AssetGroup,
@@ -19,7 +19,8 @@ import {
   runDispatch,
 } from "../data/module3PeakShaving";
 import { useFormat, useMoneyFormat } from "../utils/format";
-import { BeforeAfterChart, M3_COLORS, PowerBalanceChart, WaterfallChart } from "../components/peak/PeakCharts";
+import { BeforeAfterChart, M3_COLORS, ObjectiveChart, PowerBalanceChart, WaterfallChart } from "../components/peak/PeakCharts";
+import { M3WhatIfPanel } from "../components/peak/M3WhatIfPanel";
 import { DecisionMatrix } from "../components/peak/DecisionMatrix";
 import { ConstraintPanel } from "../components/peak/ConstraintPanel";
 import { downloadSvgAsPng } from "../utils/pngExport";
@@ -61,7 +62,13 @@ const Card: React.FC<{ title?: string; note?: string; right?: React.ReactNode; c
   </section>
 );
 
-export const OptimizationPage: React.FC<OptimizationPageProps> = ({ forecastHandoff, onDismissForecastHandoff, onBackToForecast }) => {
+export const OptimizationPage: React.FC<OptimizationPageProps> = ({
+  forecastHandoff,
+  onDismissForecastHandoff,
+  onBackToForecast,
+  onNavigate,
+  onVerifyInModule2,
+}) => {
   const { t } = useLanguage();
   const { num, kw, pct } = useFormat();
   const { vnd, tco2 } = useMoneyFormat();
@@ -70,7 +77,9 @@ export const OptimizationPage: React.FC<OptimizationPageProps> = ({ forecastHand
   const [decisionLog, setDecisionLog] = useState<ApprovalLogEntry[]>([]);
   const waterfallRef = React.useRef<HTMLDivElement>(null);
   const [pngNotice, setPngNotice] = useState<string | null>(null);
-  const [settings] = useState<DispatchSettings>(DEFAULT_DISPATCH_SETTINGS);
+  const [settings, setSettings] = useState<DispatchSettings>(DEFAULT_DISPATCH_SETTINGS);
+  const [mode, setMode] = useState<"RECOMMEND" | "CONTROL">("RECOMMEND");
+  const baseResult = useMemo(() => runDispatch(BASE_FORECAST, { ...DEFAULT_DISPATCH_SETTINGS, approvals }), [approvals]);
   const [basis, setBasis] = useState<"GRID" | "LOAD">("GRID");
   const [openGroup, setOpenGroup] = useState<AssetGroup | null>(null);
 
@@ -121,17 +130,91 @@ export const OptimizationPage: React.FC<OptimizationPageProps> = ({ forecastHand
       )}
 
       {/* HEADER */}
-      <div className="bg-white p-6 rounded-2xl border border-slate-200/90 shadow-2xs">
-        <div className="text-xs font-bold text-[#004B91] mb-1">
-          {t("Peak Shaving & Dispatch (M-3)", "Cắt Đỉnh & Điều Độ Phụ Tải (M-3)")}
+      <div className="bg-white p-6 rounded-2xl border border-slate-200/90 shadow-2xs space-y-3">
+        <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-3">
+          <div>
+            <div className="text-xs font-bold text-[#004B91] mb-1">
+              {t("Peak Shaving & Dispatch (M-3)", "Cắt Đỉnh & Điều Độ Phụ Tải (M-3)")}
+            </div>
+            <h1 className="text-2xl font-black text-slate-900 tracking-tight">{t("Dispatch Decision Center", "Trung Tâm Ra Quyết Định Điều Độ")}</h1>
+            <div className="text-[11px] text-slate-600 mt-1">
+              {t(
+                `MILP · 96 × 15-min intervals · 12 asset groups · flexible ${num(FLEX_CAPACITY_KW)} kW`,
+                `MILP · 96 chu kỳ 15 phút · 12 nhóm tài sản · linh hoạt ${num(FLEX_CAPACITY_KW)} kW`
+              )}
+            </div>
+          </div>
+          <div className="flex flex-col items-start lg:items-end gap-2">
+            {/* C4 deployment mode */}
+            <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl text-xs" role="group" aria-label={t("Deployment mode", "Chế độ triển khai")}>
+              <button
+                type="button"
+                onClick={() => setMode("RECOMMEND")}
+                className={`px-3 py-1.5 rounded-lg font-bold cursor-pointer ${mode === "RECOMMEND" ? "bg-white text-slate-900 shadow-2xs" : "text-slate-600"}`}
+              >
+                {t("Recommendation", "Khuyến nghị")}
+              </button>
+              <button
+                type="button"
+                disabled
+                title={t("Unlocked after acceptance Gate 2", "Mở sau Cổng 2 nghiệm thu")}
+                className="px-3 py-1.5 rounded-lg font-bold text-slate-400 flex items-center gap-1 cursor-not-allowed"
+              >
+                <Lock className="w-3 h-3" />
+                {t("Control", "Điều khiển")}
+              </button>
+            </div>
+            {/* C5 links */}
+            <div className="flex flex-wrap gap-1.5">
+              <button
+                type="button"
+                onClick={() => (onBackToForecast ? onBackToForecast() : onNavigate?.("MODULE_1_FORECAST"))}
+                className="px-2.5 py-1 rounded-full border border-blue-200 bg-blue-50 text-[#004B91] text-[11px] font-bold flex items-center gap-1 hover:bg-blue-100 cursor-pointer"
+              >
+                {t(`Input from M-1: P90 forecast · version #${FORECAST_VERSION}`, `Đầu vào từ M-1: dự báo P90 · phiên bản #${FORECAST_VERSION}`)}
+                <ExternalLink className="w-3 h-3" />
+              </button>
+              <button
+                type="button"
+                onClick={() => (onVerifyInModule2 ? onVerifyInModule2() : onNavigate?.("VESSEL_CARBON_INVOICE"))}
+                className="px-2.5 py-1 rounded-full border border-emerald-200 bg-emerald-50 text-emerald-800 text-[11px] font-bold flex items-center gap-1 hover:bg-emerald-100 cursor-pointer"
+              >
+                <ShieldCheck className="w-3 h-3" />
+                {t("Verify savings in Module 2 (IPMVP)", "Xác minh tiết kiệm ở Module 2 (IPMVP)")}
+              </button>
+            </div>
+          </div>
         </div>
-        <h1 className="text-2xl font-black text-slate-900 tracking-tight">{t("Dispatch Decision Center", "Trung Tâm Ra Quyết Định Điều Độ")}</h1>
-        <div className="text-[11px] text-slate-600 mt-1">
-          {t(
-            `MILP · 96 × 15-min intervals · 12 asset groups · flexible ${num(FLEX_CAPACITY_KW)} kW`,
-            `MILP · 96 chu kỳ 15 phút · 12 nhóm tài sản · linh hoạt ${num(FLEX_CAPACITY_KW)} kW`
-          )}
+        {/* C3 rhythms + solver */}
+        <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-2 pt-3 border-t border-slate-100">
+          <div className="flex flex-wrap items-center gap-1.5 text-[11px] font-semibold text-slate-700">
+            {[
+              t("22:00 day-ahead plan", "22:00 Lập kế hoạch ngày"),
+              t("Every 15 min rolling re-plan", "Mỗi 15 phút điều chỉnh cuốn chiếu"),
+              t("Edge protection per second", "Bảo vệ tại edge theo giây"),
+            ].map((x, i) => (
+              <React.Fragment key={x}>
+                {i > 0 && <ArrowRight className="w-3 h-3 text-slate-400" />}
+                <span className={`px-2 py-0.5 rounded-full border ${i === 1 ? "border-[#004B91] bg-blue-50 text-[#004B91]" : "border-slate-200 bg-slate-50"}`}>{x}</span>
+              </React.Fragment>
+            ))}
+          </div>
+          <div className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-600">
+            <Cpu className="w-3.5 h-3.5 text-[#004B91]" />
+            {t(
+              `Last solve ${minuteLabel(MILP_STATS.lastSolveMinute)} · ${num(MILP_STATS.solveSec, 2)} s · full pipeline ${MILP_STATS.pipelineSec} s · budget ${num(MILP_STATS.budgetMin, 2)} min`,
+              `Lần giải gần nhất ${minuteLabel(MILP_STATS.lastSolveMinute)} · ${num(MILP_STATS.solveSec, 2)} s · toàn luồng ${MILP_STATS.pipelineSec} s · ngân sách ${num(MILP_STATS.budgetMin, 2)} phút`
+            )}
+          </div>
         </div>
+        {mode === "RECOMMEND" && (
+          <div className="text-[11px] text-slate-500">
+            {t(
+              "Recommendation mode: the plan runs alongside existing procedures; no command is sent to equipment.",
+              "Chế độ Khuyến nghị: kế hoạch chạy song song với quy trình hiện hữu; không gửi lệnh tới thiết bị."
+            )}
+          </div>
+        )}
       </div>
 
       {/* KPIs */}
@@ -197,7 +280,8 @@ export const OptimizationPage: React.FC<OptimizationPageProps> = ({ forecastHand
         </span>
       </div>
 
-      {/* B1 / A4 – before vs after */}
+      {/* B1 / A4 – before vs after + C2 what-if */}
+      <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_300px] gap-4 items-start">
       <Card
         title={t("Before vs. after dispatch", "Trước và sau điều độ")}
         note={t("Before = M-1 net-grid forecast · after = M-3 plan", "Trước = dự báo điện lưới thuần M-1 · sau = kế hoạch M-3")}
@@ -229,6 +313,16 @@ export const OptimizationPage: React.FC<OptimizationPageProps> = ({ forecastHand
           <LegendItem color={M3_COLORS.limit} kind="dashed" label={t(`Limit ${num(SUBSTATION_LIMIT_KW)} kW`, `Giới hạn ${num(SUBSTATION_LIMIT_KW)} kW`)} />
         </div>
       </Card>
+      <div className="xl:sticky xl:top-4">
+        <M3WhatIfPanel
+          settings={settings}
+          defaults={DEFAULT_DISPATCH_SETTINGS}
+          onChange={setSettings}
+          result={result}
+          base={baseResult}
+        />
+      </div>
+      </div>
 
       {/* B3 waterfall + B2 power balance */}
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
@@ -285,6 +379,40 @@ export const OptimizationPage: React.FC<OptimizationPageProps> = ({ forecastHand
           <ApprovalQueue result={result} approvals={approvals} log={decisionLog} onDecide={decide} groupName={flexName} />
         </Card>
       </div>
+
+      {/* C1 objective J */}
+      <Card
+        title={t("Objective J – before vs. after", "Phân rã hàm mục tiêu J – trước và sau")}
+        note={t("Daily cost components of the MILP objective", "Các thành phần chi phí ngày của hàm mục tiêu MILP")}
+      >
+        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_260px] gap-4 items-start">
+          <ObjectiveChart before={result.cost.before} after={result.cost.after} />
+          <div className="space-y-2 text-xs">
+            <div className="rounded-xl bg-slate-50 border border-slate-200 p-3">
+              <div className="text-[10px] font-bold text-slate-500">{t("TOU energy (largest term)", "Tiền điện TOU (thành phần lớn nhất)")}</div>
+              <div className="font-bold text-slate-900 tabular-nums">
+                {vnd(result.cost.before.touEnergy)} → {vnd(result.cost.after.touEnergy)}
+              </div>
+            </div>
+            <div className="rounded-xl bg-slate-50 border border-slate-200 p-3">
+              <div className="text-[10px] font-bold text-slate-500">{t("Total J", "Tổng J")}</div>
+              <div className="font-bold text-slate-900 tabular-nums">
+                {vnd(result.cost.before.total)} → {vnd(result.cost.after.total)}
+              </div>
+              <div className="text-emerald-700 font-bold">−{vnd(result.savingVndPerDay)}/{t("day", "ngày")}</div>
+            </div>
+            <div className="rounded-xl bg-emerald-50 border border-emerald-200 p-3 font-bold text-emerald-900">
+              {t(
+                `−${num(result.energy.savedKwh)} kWh grid energy · ${num(result.co2SavedT, 2)} tCO₂e/day`,
+                `Giảm ${num(result.energy.savedKwh)} kWh điện lưới · ${num(result.co2SavedT, 2)} tCO₂e/ngày`
+              )}
+              <div className="text-[10px] font-semibold text-emerald-800 mt-0.5">
+                {t(`Plus ${num(result.energy.shiftedKwh)} kWh shifted in time`, `Thêm ${num(result.energy.shiftedKwh)} kWh được dời giờ`)}
+              </div>
+            </div>
+          </div>
+        </div>
+      </Card>
 
       {/* Dispatch groups + protected chips */}
       <Card
