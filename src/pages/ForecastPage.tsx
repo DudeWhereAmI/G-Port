@@ -125,7 +125,7 @@ export const TouBadge: React.FC<{ band: TouBand }> = ({ band }) => {
   const labels = useBadgeLabels();
   return (
     <span
-      className={`inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded border whitespace-nowrap ${TOU_BADGE_STYLE[band]}`}
+      className={`inline-flex items-center gap-1 text-xs font-bold px-1.5 py-0.5 rounded border whitespace-nowrap ${TOU_BADGE_STYLE[band]}`}
       title={t("Time-of-use tariff band", "Khung giá điện TOU")}
     >
       <span className="opacity-70">TOU</span>
@@ -139,7 +139,7 @@ export const StatusBadge: React.FC<{ status: WindowStatus }> = ({ status }) => {
   const labels = useBadgeLabels();
   return (
     <span
-      className={`inline-flex items-center text-[10px] font-bold uppercase px-1.5 py-0.5 rounded border whitespace-nowrap ${STATUS_BADGE_STYLE[status]}`}
+      className={`inline-flex items-center text-xs font-bold px-1.5 py-0.5 rounded border whitespace-nowrap ${STATUS_BADGE_STYLE[status]}`}
       title={t("Substation status (net grid import)", "Trạng thái trạm (theo điện lưới thuần)")}
     >
       {labels.status(status)}
@@ -152,7 +152,7 @@ const Toggle: React.FC<{ on: boolean; onClick: () => void; color: string; label:
     type="button"
     onClick={onClick}
     aria-pressed={on}
-    className={`px-2.5 py-1.5 rounded-lg border text-[11px] font-bold flex items-center gap-1.5 whitespace-nowrap cursor-pointer transition-colors ${
+    className={`px-2.5 py-1.5 rounded-lg border text-xs font-bold flex items-center gap-1.5 whitespace-nowrap cursor-pointer transition-colors ${
       on ? "bg-white border-slate-300 text-slate-900 shadow-2xs" : "bg-slate-50 border-slate-200 text-slate-500 hover:text-slate-800"
     }`}
   >
@@ -321,7 +321,7 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200/90 shadow-2xs">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs font-semibold text-slate-500 mb-1">
-            <span className="font-bold text-[#004B91]">
+            <span className="font-bold text-brand">
               {t("24-Hour Power Forecast", "Dự Báo Phụ Tải Điện 24 Giờ")} · {t(FORECAST_DATE.en, FORECAST_DATE.vn)}
             </span>
             <span aria-hidden="true">·</span>
@@ -332,7 +332,7 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
           <h1 className="text-2xl font-black text-slate-900 tracking-tight">
             {t("Port Power Demand & Overload Warnings", "Dự Báo Phụ Tải Điện Cảng & Cảnh Báo Quá Tải Trạm")}
           </h1>
-          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-slate-600 mt-1.5">
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-slate-600 mt-1.5">
             <span>{t(`Issued at ${minuteLabel(ISSUE_MINUTE)} the previous day`, `Lập lúc ${minuteLabel(ISSUE_MINUTE)} hôm trước`)}</span>
             <span aria-hidden="true">·</span>
             <span>
@@ -354,7 +354,7 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
           <button
             type="button"
             onClick={() => onNavigate?.("INPUT_LAYER")}
-            className="px-2.5 py-1 rounded-full border border-emerald-200 bg-emerald-50 text-emerald-800 text-[11px] font-bold flex items-center gap-1.5 hover:bg-emerald-100 cursor-pointer"
+            className="px-2.5 py-1 rounded-full border border-emerald-200 bg-emerald-50 text-emerald-800 text-xs font-bold flex items-center gap-1.5 hover:bg-emerald-100 cursor-pointer"
             title={t("Open Telemetry Feeds", "Mở trang Telemetry Feed")}
           >
             <Database className="w-3.5 h-3.5" />
@@ -386,21 +386,21 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
             onClick={() => setShowSettingsModal(true)}
             className="px-3.5 py-2 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-50 text-xs font-bold flex items-center gap-1.5 transition-colors whitespace-nowrap shrink-0 cursor-pointer"
           >
-            <Settings className="w-3.5 h-3.5 text-[#004B91]" />
+            <Settings className="w-3.5 h-3.5 text-brand" />
             <span>{t("Forecast Settings", "Cấu Hình Dự Báo")}</span>
           </button>
 
           <button
             type="button"
             onClick={() => handleOpenForecastReport(kpis.peakWindow)}
-            className="px-4 py-2 rounded-xl bg-[#004B91] hover:bg-[#00386E] text-white text-xs font-bold flex items-center gap-1.5 shadow-2xs transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+            className="px-4 py-2 rounded-xl bg-brand hover:bg-brand-hover text-white text-xs font-bold flex items-center gap-1.5 shadow-2xs transition-colors whitespace-nowrap shrink-0 cursor-pointer"
           >
             <FileText className="w-3.5 h-3.5" />
             <span>{t("24h Forecast Report", "Báo Cáo Dự Báo 24h")}</span>
           </button>
         </div>
         {exportNotice && (
-          <div className="text-[11px] text-slate-600 flex items-center gap-2">
+          <div className="text-xs text-slate-600 flex items-center gap-2">
             {exportNotice}
             <button type="button" onClick={() => setExportNotice(null)} className="text-slate-400 hover:text-slate-700 cursor-pointer" aria-label={t("Close", "Đóng")}>
               <X className="w-3 h-3" />
@@ -415,14 +415,14 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
       {/* ================================================================== */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <div className="bg-white p-4 rounded-xl border border-slate-200/90 shadow-2xs">
-          <div className="flex items-center justify-between text-slate-500 text-[11px] font-bold mb-1">
+          <div className="flex items-center justify-between text-slate-500 text-xs font-bold mb-1">
             <span>{t("Peak Net Grid Demand", "Đỉnh Điện Lưới Thuần Dự Kiến")}</span>
-            <TrendingUp className="w-4 h-4 text-[#004B91]" />
+            <TrendingUp className="w-4 h-4 text-brand" />
           </div>
-          <div className="text-xl sm:text-2xl font-black text-slate-900 font-mono tabular-nums">
+          <div className="text-xl sm:text-2xl font-black text-slate-900 tabular-nums">
             {num(kpis.peakNetGrid.netGrid)} <span className="text-xs text-slate-500 font-sans font-semibold">kW</span>
           </div>
-          <div className="text-[11px] text-slate-500 font-medium mt-0.5">
+          <div className="text-xs text-slate-500 font-medium mt-0.5">
             {t(
               `At ${kpis.peakNetGrid.label} · Load P50 ${kw(kpis.peakNetGrid.p50)} (P90 ${kw(kpis.peakNetGrid.p90)})`,
               `Lúc ${kpis.peakNetGrid.label} · Tải P50 ${kw(kpis.peakNetGrid.p50)} (P90 ${kw(kpis.peakNetGrid.p90)})`
@@ -433,7 +433,7 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
         {/* Warning card (B3 + B7) */}
         <div className="bg-amber-50/70 p-4 rounded-xl border-2 border-amber-300 shadow-2xs flex flex-col justify-between gap-2">
           <div>
-            <div className="flex items-center justify-between text-amber-900 text-[11px] font-bold mb-1">
+            <div className="flex items-center justify-between text-amber-900 text-xs font-bold mb-1">
               <span>{t(`Grid Overload Warnings (>${limitKw})`, `Cảnh Báo Vượt Ngưỡng Lưới (>${limitKw})`)}</span>
               <AlertTriangle className="w-4 h-4 text-amber-600" />
             </div>
@@ -455,7 +455,7 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
                       setActiveAlertId(w.id);
                       zoomToWindow(w);
                     }}
-                    className={`px-1.5 py-0.5 rounded text-[10px] font-bold font-mono border cursor-pointer ${
+                    className={`px-1.5 py-0.5 rounded text-xs font-bold border cursor-pointer ${
                       activeAlert?.id === w.id ? "bg-amber-600 text-white border-amber-600" : "bg-white text-amber-900 border-amber-300 hover:bg-amber-100"
                     }`}
                     title={t("Select & zoom", "Chọn & phóng to")}
@@ -470,7 +470,7 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
             <button
               type="button"
               onClick={() => handleSendToM3(activeAlert)}
-              className="w-full py-1.5 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-[11px] font-bold flex items-center justify-center gap-1.5 cursor-pointer"
+              className="w-full py-1.5 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer"
             >
               <Send className="w-3.5 h-3.5" />
               {t(`Send to Peak Shaving (M-3) · ${activeAlert.id}`, `Gửi sang Cắt Đỉnh (M-3) · ${activeAlert.id}`)}
@@ -479,14 +479,14 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
         </div>
 
         <div className="bg-white p-4 rounded-xl border border-slate-200/90 shadow-2xs">
-          <div className="flex items-center justify-between text-slate-500 text-[11px] font-bold mb-1">
+          <div className="flex items-center justify-between text-slate-500 text-xs font-bold mb-1">
             <span>{t("Peak Solar Generation", "Đỉnh Phát Điện Mặt Trời")}</span>
             <SunMedium className="w-4 h-4 text-emerald-600" />
           </div>
-          <div className="text-xl sm:text-2xl font-black text-emerald-700 font-mono tabular-nums">
+          <div className="text-xl sm:text-2xl font-black text-emerald-700 tabular-nums">
             {num(kpis.peakPv.pv)} <span className="text-xs text-slate-500 font-sans font-semibold">kW</span>
           </div>
-          <div className="text-[11px] text-slate-500 font-medium mt-0.5">
+          <div className="text-xs text-slate-500 font-medium mt-0.5">
             {t(
               `At ${kpis.peakPv.label} · Net grid drops to ${kw(kpis.peakPv.netGrid)}`,
               `Lúc ${kpis.peakPv.label} · Điện lưới giảm còn ${kw(kpis.peakPv.netGrid)}`
@@ -495,15 +495,15 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
         </div>
 
         <div className="bg-white p-4 rounded-xl border border-slate-200/90 shadow-2xs">
-          <div className="flex items-center justify-between text-slate-500 text-[11px] font-bold mb-1">
+          <div className="flex items-center justify-between text-slate-500 text-xs font-bold mb-1">
             <span>{t("Forecast Accuracy (30-Day)", "Độ Chính Xác Dự Báo (30 Ngày)")}</span>
             <ShieldCheck className="w-4 h-4 text-blue-600" />
           </div>
-          <div className="text-xl sm:text-2xl font-black text-blue-700 font-mono tabular-nums">
+          <div className="text-xl sm:text-2xl font-black text-blue-700 tabular-nums">
             {pct(kpis.accuracyPct)}{" "}
             <span className="text-xs text-slate-500 font-sans font-semibold">(1 − MAPE)</span>
           </div>
-          <div className="text-[11px] text-emerald-700 font-semibold mt-0.5">
+          <div className="text-xs text-emerald-700 font-semibold mt-0.5">
             RMSE {kw(MODEL_METRICS.rmseKw, 1)} · MAPE {pct(MODEL_METRICS.mapePct, 2)}
           </div>
         </div>
@@ -521,7 +521,7 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
                   `Nếu áp dụng điều độ M-3: đỉnh dự kiến giảm ~${pct(m3Estimate.reductionPct, 0)}`
                 )}
               </div>
-              <div className="text-emerald-800 font-mono tabular-nums">
+              <div className="text-emerald-800 tabular-nums">
                 {kw(m3Estimate.peakBeforeKw)} ({m3Estimate.peakBeforeTime}) → {kw(m3Estimate.peakAfterKw)} ({m3Estimate.peakAfterTime})
                 <span className="font-sans">
                   {" · "}
@@ -587,12 +587,12 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
               <Toggle on={showPv} onClick={() => setShowPv((v) => !v)} color="#059669" label={t("PV forecast", "PV dự báo")} />
               <Toggle on={showNetGrid} onClick={() => setShowNetGrid((v) => !v)} color="#7C3AED" label={t("Net grid", "Điện lưới thuần")} />
               <Toggle on={showTou} onClick={() => setShowTou((v) => !v)} color="#FCA5A5" label={t("TOU bands", "Khung giá TOU")} />
-              <label className="flex items-center gap-1.5 text-[11px] font-bold text-slate-600">
+              <label className="flex items-center gap-1.5 text-xs font-bold text-slate-600">
                 {t("TOU preset", "Preset TOU")}
                 <select
                   value={presetId}
                   onChange={(e) => setPresetId(e.target.value as TouPreset["id"])}
-                  className="px-2 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-[11px] font-semibold focus:outline-none focus:ring-1 focus:ring-[#004B91] cursor-pointer"
+                  className="px-2 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-brand cursor-pointer"
                   title={t(preset.note.en, preset.note.vn)}
                 >
                   {TOU_PRESETS.map((p) => (
@@ -609,14 +609,14 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
                     setDomain(FULL_DAY_DOMAIN);
                     setZoomedWindowId(null);
                   }}
-                  className="px-2.5 py-1.5 rounded-lg border border-[#004B91] text-[#004B91] text-[11px] font-bold flex items-center gap-1 hover:bg-blue-50 cursor-pointer"
+                  className="px-2.5 py-1.5 rounded-lg border border-brand text-brand text-xs font-bold flex items-center gap-1 hover:bg-blue-50 cursor-pointer"
                 >
                   <ZoomOut className="w-3.5 h-3.5" />
                   {t(`Show 24h (zoomed ${minuteLabel(domain[0])}–${minuteLabel(domain[1])})`, `Xem 24h (đang phóng ${minuteLabel(domain[0])}–${minuteLabel(domain[1])})`)}
                 </button>
               )}
             </div>
-            <div className="text-[10px] text-slate-500">{t(preset.note.en, preset.note.vn)}</div>
+            <div className="text-xs text-slate-500">{t(preset.note.en, preset.note.vn)}</div>
           </div>
 
           <ForecastDemandChart
@@ -641,7 +641,7 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
           </div>
 
           <div className="pt-2 border-t border-slate-100 space-y-1.5">
-            <div className="text-[11px] font-bold text-slate-700" style={{ paddingLeft: 48 }}>
+            <div className="text-xs font-bold text-slate-700" style={{ paddingLeft: 48 }}>
               {t("Berth schedule (vessel calls)", "Lịch cầu bến (lượt tàu)")}
             </div>
             <BerthGantt
@@ -653,7 +653,7 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
             />
           </div>
 
-          <div className="flex items-center gap-1.5 text-[10px] text-slate-500 pt-1">
+          <div className="flex items-center gap-1.5 text-xs text-slate-500 pt-1">
             <Lock className="w-3 h-3" />
             {t(
               `Intervals before ${minuteLabel(LOCK_MINUTE)} are locked with their metered values for audit · now ${minuteLabel(NOW_MINUTE)}`,
@@ -688,7 +688,7 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
             )}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-[#004B91] focus:bg-white"
+            className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-brand focus:bg-white"
           />
         </div>
 
@@ -703,7 +703,7 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
                 type="button"
                 onClick={() => setWindowView(v.id)}
                 aria-pressed={windowView === v.id}
-                className={`px-2.5 py-1 rounded-md text-[11px] font-bold flex items-center gap-1 cursor-pointer ${
+                className={`px-2.5 py-1 rounded-md text-xs font-bold flex items-center gap-1 cursor-pointer ${
                   windowView === v.id ? "bg-white text-slate-900 shadow-2xs" : "text-slate-500 hover:text-slate-900"
                 }`}
               >
@@ -712,7 +712,7 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
               </button>
             ))}
           </div>
-          <span className="text-slate-500 font-bold text-[11px] mr-1">{t("Filter:", "Bộ lọc:")}</span>
+          <span className="text-slate-500 font-bold text-xs mr-1">{t("Filter:", "Bộ lọc:")}</span>
           {([
             { id: "ALL", label: t(`All Time Windows (${windows.length})`, `Tất cả Khung giờ (${windows.length})`) },
             { id: "ALERTS", label: t(`Overload & Warnings (>${limitKw})`, `Quá tải & Cảnh báo (>${limitKw})`) },
@@ -724,7 +724,7 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
               type="button"
               onClick={() => setStatusFilter(tab.id)}
               className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
-                statusFilter === tab.id ? "bg-[#004B91] text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                statusFilter === tab.id ? "bg-brand text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
               }`}
             >
               {tab.label}
@@ -759,10 +759,10 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
               <div>
                 <div className="border-b border-slate-200/70 pb-3">
                   <div className="flex items-start justify-between gap-2">
-                    <div className="flex items-center gap-1.5 text-[11px] font-bold text-slate-500">
+                    <div className="flex items-center gap-1.5 text-xs font-bold text-slate-500">
                       <span>{berthLabel(win)}</span>
                       <span aria-hidden="true">·</span>
-                      <span className="text-[#004B91]">
+                      <span className="text-brand">
                         {win.stsCranes} {t("STS cranes", "cẩu STS")}
                       </span>
                     </div>
@@ -772,7 +772,7 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
                     <button
                       type="button"
                       onClick={() => zoomToWindow(win, true)}
-                      className="font-black text-slate-900 text-base font-mono hover:text-[#004B91] cursor-pointer"
+                      className="font-black text-slate-900 text-base hover:text-brand cursor-pointer"
                       title={t("Zoom chart to this window", "Phóng biểu đồ tới khung giờ này")}
                     >
                       {win.timeWindow}
@@ -785,18 +785,18 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
                 </div>
 
                 <div className={`my-3 p-3 rounded-xl border ${isAlert ? "bg-amber-100/70 border-amber-300" : "bg-slate-50 border-slate-200/80"}`}>
-                  <div className="text-[10px] font-bold text-slate-500 mb-1">
+                  <div className="text-xs font-bold text-slate-500 mb-1">
                     {t(`Peak interval ${win.peakTime}`, `Chu kỳ đỉnh ${win.peakTime}`)}
                   </div>
                   <div className="flex items-baseline justify-between">
-                    <span className="text-[11px] font-bold text-slate-600">{t("Load P50:", "Phụ tải P50:")}</span>
-                    <strong className={`text-lg font-black font-mono tabular-nums ${isAlert ? "text-amber-900" : "text-slate-900"}`}>
+                    <span className="text-xs font-bold text-slate-600">{t("Load P50:", "Phụ tải P50:")}</span>
+                    <strong className={`text-lg font-black tabular-nums ${isAlert ? "text-amber-900" : "text-slate-900"}`}>
                       {kw(win.p50Kw)}
                     </strong>
                   </div>
-                  <div className="flex items-center justify-between text-[11px] text-slate-500 mt-1">
+                  <div className="flex items-center justify-between text-xs text-slate-500 mt-1">
                     <span>{t("P10–P90 range:", "Dải P10–P90:")}</span>
-                    <span className="font-mono font-semibold text-slate-700 tabular-nums">
+                    <span className="font-semibold text-slate-700 tabular-nums">
                       {num(win.p10Kw)} – {kw(win.p90Kw)}
                     </span>
                   </div>
@@ -805,33 +805,33 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
                 <div className="space-y-1.5 text-xs">
                   <div className="flex justify-between text-slate-600">
                     <span className="text-slate-500">{t("Solar PV offset:", "Bù trừ điện mặt trời:")}</span>
-                    <strong className="text-emerald-700 font-mono tabular-nums">{win.pvKw > 0 ? `−${kw(win.pvKw)}` : kw(0)}</strong>
+                    <strong className="text-emerald-700 tabular-nums">{win.pvKw > 0 ? `−${kw(win.pvKw)}` : kw(0)}</strong>
                   </div>
                   <div className="flex justify-between text-slate-600">
                     <span className="text-slate-500">{t("Net grid import:", "Điện lưới thuần:")}</span>
-                    <strong className={`font-mono tabular-nums ${isOverload ? "text-red-700" : "text-[#004B91]"}`}>{kw(win.netGridKw)}</strong>
+                    <strong className={`tabular-nums ${isOverload ? "text-red-700" : "text-brand"}`}>{kw(win.netGridKw)}</strong>
                   </div>
                   <div className="flex justify-between text-slate-600">
                     <span className="text-slate-500">{t("Of substation limit:", "So với ngưỡng trạm:")}</span>
-                    <strong className={`font-mono tabular-nums ${isOverload ? "text-red-700" : "text-slate-800"}`}>
+                    <strong className={`tabular-nums ${isOverload ? "text-red-700" : "text-slate-800"}`}>
                       {pct((win.netGridKw / SUBSTATION_LIMIT_KW) * 100)}
                     </strong>
                   </div>
                   <div className="flex justify-between text-slate-600">
                     <span className="text-slate-500">{t("Max exceedance prob.:", "Xác suất vượt cao nhất:")}</span>
-                    <strong className={`font-mono tabular-nums ${isAlert ? "text-orange-700" : "text-slate-800"}`}>
+                    <strong className={`tabular-nums ${isAlert ? "text-orange-700" : "text-slate-800"}`}>
                       {pct(win.maxPPeak * 100, 0)}
                     </strong>
                   </div>
                   <div className="flex justify-between text-slate-600">
                     <span className="text-slate-500">{t("Reefer containers:", "Container lạnh:")}</span>
-                    <strong className="text-slate-800 font-mono tabular-nums">
+                    <strong className="text-slate-800 tabular-nums">
                       {num(win.reeferPlugs)} {t("plugs", "ổ cắm")}
                     </strong>
                   </div>
                 </div>
 
-                <p className="text-[11px] text-slate-600 mt-3 pt-2 border-t border-slate-100 line-clamp-2" title={t(win.summary.en, win.summary.vn)}>
+                <p className="text-xs text-slate-600 mt-3 pt-2 border-t border-slate-100 line-clamp-2" title={t(win.summary.en, win.summary.vn)}>
                   {t(win.summary.en, win.summary.vn)}
                 </p>
               </div>
@@ -843,13 +843,13 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
                     onClick={() => handleOpenFeederDrawer(win)}
                     className="py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer"
                   >
-                    <Gauge className="w-3.5 h-3.5 text-[#004B91]" />
+                    <Gauge className="w-3.5 h-3.5 text-brand" />
                     <span>{t("6-Line Detail", "Chi Tiết 6 Lộ")}</span>
                   </button>
                   <button
                     type="button"
                     onClick={() => handleOpenForecastReport(win)}
-                    className="py-2 bg-[#004B91] hover:bg-[#00386E] text-white rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-1.5 shadow-2xs whitespace-nowrap cursor-pointer"
+                    className="py-2 bg-brand hover:bg-brand-hover text-white rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-1.5 shadow-2xs whitespace-nowrap cursor-pointer"
                   >
                     <FileText className="w-3.5 h-3.5" />
                     <span>{t("24h Report", "Báo Cáo 24h")}</span>
@@ -920,7 +920,7 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
       {showForecastReportModal && liveSelected && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs overflow-y-auto">
           <div className="relative w-full max-w-4xl bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden my-8">
-            <div className="bg-[#004B91] text-white px-6 py-4 flex items-center justify-between">
+            <div className="bg-brand text-white px-6 py-4 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <FileText className="w-5 h-5 text-emerald-300" />
                 <span className="font-bold text-sm">
@@ -949,13 +949,13 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
             <div className="p-6 sm:p-8 space-y-6 text-slate-800 text-xs max-h-[80vh] overflow-y-auto">
               <div className="flex justify-between items-start border-b-2 border-slate-900 pb-5 gap-4">
                 <div>
-                  <div className="text-xl font-black text-[#004B91] tracking-tight">
+                  <div className="text-xl font-black text-brand tracking-tight">
                     {t("SAIGON NEWPORT CORPORATION (SNP)", "TỔNG CÔNG TY TÂN CẢNG SÀI GÒN (SNP)")}
                   </div>
-                  <div className="text-slate-600 text-[11px] font-semibold mt-0.5">
+                  <div className="text-slate-600 text-xs font-semibold mt-0.5">
                     {t("Cat Lai Terminal · 24-Hour Power Demand & Overload Warning Report", "Cảng Tân Cảng Cát Lái · Báo Cáo Dự Báo Phụ Tải 24 Giờ & Cảnh Báo Quá Tải")}
                   </div>
-                  <div className="text-slate-400 text-[10px] mt-0.5">
+                  <div className="text-slate-400 text-xs mt-0.5">
                     {t(
                       `Main 110/22kV Substation · Overload threshold (net grid import): ${limitKw}`,
                       `Trạm Biến Áp 110/22kV Cát Lái · Ngưỡng cảnh báo (điện lưới thuần): ${limitKw}`
@@ -963,14 +963,14 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
                   </div>
                 </div>
 
-                <div className="text-right font-mono shrink-0">
+                <div className="text-right shrink-0">
                   <div className="text-base font-black text-slate-900">
                     {t("VERSION", "PHIÊN BẢN")} #{FORECAST_VERSION}
                   </div>
                   <div className="text-slate-500 font-sans">
                     {t(FORECAST_DATE.en, FORECAST_DATE.vn)} · {t("Selected", "Khung chọn")}: {liveSelected.timeWindow}
                   </div>
-                  <div className="text-emerald-700 font-bold text-[11px] mt-0.5">
+                  <div className="text-emerald-700 font-bold text-xs mt-0.5">
                     RMSE {kw(MODEL_METRICS.rmseKw, 1)} · MAPE {pct(MODEL_METRICS.mapePct, 2)}
                   </div>
                 </div>
@@ -978,31 +978,31 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
 
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-200">
                 <div>
-                  <span className="text-slate-400 block text-[10px] uppercase font-bold">{t("Time Window", "Khung Giờ")}</span>
-                  <strong className="text-slate-900 text-sm font-black font-mono">{liveSelected.timeWindow}</strong>
+                  <span className="text-slate-400 block text-xs font-bold">{t("Time Window", "Khung Giờ")}</span>
+                  <strong className="text-slate-900 text-sm font-black">{liveSelected.timeWindow}</strong>
                   <div className="mt-0.5"><TouBadge band={liveSelected.touBand} /></div>
                 </div>
                 <div>
-                  <span className="text-slate-400 block text-[10px] uppercase font-bold">{t("Load P50", "Phụ Tải P50")}</span>
-                  <strong className="text-[#004B91] text-sm font-black font-mono">{kw(liveSelected.p50Kw)}</strong>
-                  <span className="text-[11px] text-slate-500 font-mono block">P10–P90: {num(liveSelected.p10Kw)} – {kw(liveSelected.p90Kw)}</span>
+                  <span className="text-slate-400 block text-xs font-bold">{t("Load P50", "Phụ Tải P50")}</span>
+                  <strong className="text-brand text-sm font-black">{kw(liveSelected.p50Kw)}</strong>
+                  <span className="text-xs text-slate-500 block">P10–P90: {num(liveSelected.p10Kw)} – {kw(liveSelected.p90Kw)}</span>
                 </div>
                 <div>
-                  <span className="text-slate-400 block text-[10px] uppercase font-bold">{t("Solar / Net Grid", "Điện Mặt Trời / Lưới Thuần")}</span>
-                  <strong className="text-emerald-700 text-sm font-black font-mono">−{kw(liveSelected.pvKw)}</strong>
-                  <span className="text-[11px] text-slate-700 font-mono block">{t("Grid", "Lưới")}: {kw(liveSelected.netGridKw)}</span>
+                  <span className="text-slate-400 block text-xs font-bold">{t("Solar / Net Grid", "Điện Mặt Trời / Lưới Thuần")}</span>
+                  <strong className="text-emerald-700 text-sm font-black">−{kw(liveSelected.pvKw)}</strong>
+                  <span className="text-xs text-slate-700 block">{t("Grid", "Lưới")}: {kw(liveSelected.netGridKw)}</span>
                 </div>
                 <div>
-                  <span className="text-slate-400 block text-[10px] uppercase font-bold">{t("Substation Status", "Trạng Thái Trạm")}</span>
+                  <span className="text-slate-400 block text-xs font-bold">{t("Substation Status", "Trạng Thái Trạm")}</span>
                   <div className="mt-0.5"><StatusBadge status={liveSelected.status} /></div>
-                  <span className="text-[11px] text-slate-500 block mt-0.5">
+                  <span className="text-xs text-slate-500 block mt-0.5">
                     {pct((liveSelected.netGridKw / SUBSTATION_LIMIT_KW) * 100)} {t(`of ${limitKw}`, `so với ${limitKw}`)}
                   </span>
                 </div>
               </div>
 
               <div className="space-y-2">
-                <div className="font-extrabold text-slate-900 text-xs uppercase tracking-wider">
+                <div className="font-extrabold text-slate-900 text-xs">
                   {t("Complete 24-Hour Schedule & Power Forecast (peak interval per window)", "Bảng Tổng Hợp Lịch Tàu & Dự Báo Phụ Tải 24 Giờ (chu kỳ đỉnh mỗi khung)")}
                 </div>
                 <div className="overflow-x-auto border border-slate-200 rounded-xl">
@@ -1010,11 +1010,11 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
                     <thead className="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
                       <tr>
                         <th className="py-2 px-2.5">{t("Window", "Khung")}</th>
-                        <th className="py-2 px-2.5 font-mono">{t("Peak at", "Lúc đỉnh")}</th>
-                        <th className="py-2 px-2.5 text-right font-mono">P50 (kW)</th>
-                        <th className="py-2 px-2.5 text-right font-mono">P90 (kW)</th>
-                        <th className="py-2 px-2.5 text-right font-mono">PV (kW)</th>
-                        <th className="py-2 px-2.5 text-right font-mono">{t("Net Grid (kW)", "Lưới thuần (kW)")}</th>
+                        <th className="py-2 px-2.5">{t("Peak at", "Lúc đỉnh")}</th>
+                        <th className="py-2 px-2.5 text-right">P50 (kW)</th>
+                        <th className="py-2 px-2.5 text-right">P90 (kW)</th>
+                        <th className="py-2 px-2.5 text-right">PV (kW)</th>
+                        <th className="py-2 px-2.5 text-right">{t("Net Grid (kW)", "Lưới thuần (kW)")}</th>
                         <th className="py-2 px-2.5 text-center">TOU</th>
                         <th className="py-2 px-2.5 text-center">{t("Status", "Trạng Thái")}</th>
                         <th className="py-2 px-2.5">{t("Port Activity", "Hoạt Động Cảng")}</th>
@@ -1032,12 +1032,12 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
                               isSelected ? "bg-blue-50/90 font-semibold" : isWarn ? "bg-amber-50/50 hover:bg-amber-50" : "hover:bg-slate-50"
                             }`}
                           >
-                            <td className="py-2 px-2.5 font-mono font-bold text-slate-900 whitespace-nowrap">{row.timeWindow}</td>
-                            <td className="py-2 px-2.5 font-mono text-slate-600">{row.peakTime}</td>
-                            <td className="py-2 px-2.5 text-right font-mono font-bold text-[#004B91] tabular-nums">{num(row.p50Kw)}</td>
-                            <td className="py-2 px-2.5 text-right font-mono text-slate-600 tabular-nums">{num(row.p90Kw)}</td>
-                            <td className="py-2 px-2.5 text-right font-mono text-emerald-700 tabular-nums">{num(row.pvKw)}</td>
-                            <td className="py-2 px-2.5 text-right font-mono font-bold tabular-nums">{num(row.netGridKw)}</td>
+                            <td className="py-2 px-2.5 font-bold text-slate-900 whitespace-nowrap">{row.timeWindow}</td>
+                            <td className="py-2 px-2.5 text-slate-600">{row.peakTime}</td>
+                            <td className="py-2 px-2.5 text-right font-bold text-brand tabular-nums">{num(row.p50Kw)}</td>
+                            <td className="py-2 px-2.5 text-right text-slate-600 tabular-nums">{num(row.p90Kw)}</td>
+                            <td className="py-2 px-2.5 text-right text-emerald-700 tabular-nums">{num(row.pvKw)}</td>
+                            <td className="py-2 px-2.5 text-right font-bold tabular-nums">{num(row.netGridKw)}</td>
                             <td className="py-2 px-2.5 text-center"><TouBadge band={row.touBand} /></td>
                             <td className="py-2 px-2.5 text-center"><StatusBadge status={row.status} /></td>
                             <td className="py-2 px-2.5 text-slate-600 truncate max-w-[210px]" title={t(row.summary.en, row.summary.vn)}>
@@ -1071,7 +1071,7 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
               <button
                 type="button"
                 onClick={handleExportPdf}
-                className="px-5 py-2 bg-[#004B91] text-white rounded-lg text-xs font-bold hover:bg-[#00386E] transition-colors flex items-center gap-2 shadow-2xs cursor-pointer"
+                className="px-5 py-2 bg-brand text-white rounded-lg text-xs font-bold hover:bg-brand-hover transition-colors flex items-center gap-2 shadow-2xs cursor-pointer"
               >
                 <Download className="w-3.5 h-3.5" />
                 <span>{t("Export PDF (96 intervals)", "Xuất PDF (96 chu kỳ)")}</span>
@@ -1105,7 +1105,7 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
 
             <div className="p-6 space-y-5 text-xs text-slate-800">
               <div className="space-y-2">
-                <div className="font-bold text-slate-900 uppercase tracking-wider text-[11px]">
+                <div className="font-bold text-slate-900 text-xs">
                   {t("When Does the Forecast Automatically Update?", "Khi Nào Hệ Thống Tự Động Cập Nhật Dự Báo?")}
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -1142,7 +1142,7 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
               </div>
 
               <div className="space-y-2">
-                <div className="font-bold text-slate-900 uppercase tracking-wider text-[11px]">{t("TOU presets", "Preset khung giá TOU")}</div>
+                <div className="font-bold text-slate-900 text-xs">{t("TOU presets", "Preset khung giá TOU")}</div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {TOU_PRESETS.map((p) => (
                     <button
@@ -1150,11 +1150,11 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
                       type="button"
                       onClick={() => setPresetId(p.id)}
                       className={`text-left p-3 rounded-xl border cursor-pointer ${
-                        p.id === presetId ? "border-[#004B91] bg-blue-50/60" : "border-slate-200 bg-slate-50 hover:bg-slate-100"
+                        p.id === presetId ? "border-brand bg-blue-50/60" : "border-slate-200 bg-slate-50 hover:bg-slate-100"
                       }`}
                     >
                       <div className="font-bold text-slate-900">
-                        {t(p.name.en, p.name.vn)} {p.id === "CURRENT" && <span className="text-[10px] text-slate-500">({t("default", "mặc định")})</span>}
+                        {t(p.name.en, p.name.vn)} {p.id === "CURRENT" && <span className="text-xs text-slate-500">({t("default", "mặc định")})</span>}
                       </div>
                       <div className="text-slate-600 mt-0.5">{t(p.note.en, p.note.vn)}</div>
                     </button>
@@ -1163,10 +1163,10 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
               </div>
 
               <div className="space-y-2">
-                <div className="font-bold text-slate-900 uppercase tracking-wider text-[11px]">
+                <div className="font-bold text-slate-900 text-xs">
                   {t("Accuracy by Training Window (5 → 30 days)", "Độ Chính Xác Theo Cửa Sổ Huấn Luyện (5 → 30 ngày)")}
                 </div>
-                <table className="w-full text-left border border-slate-200 rounded-xl overflow-hidden font-mono">
+                <table className="w-full text-left border border-slate-200 rounded-xl overflow-hidden">
                   <thead className="bg-slate-100 text-slate-700 font-bold border-b border-slate-200 font-sans">
                     <tr>
                       <th className="py-2 px-3">{t("Training Window", "Cửa Sổ Huấn Luyện")}</th>
@@ -1181,7 +1181,7 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
                       <tr key={row.windowDays} className={row.windowDays === 30 ? "bg-emerald-50/70 font-bold" : ""}>
                         <td className="py-2 px-3">{row.windowDays} {t("days", "ngày")}</td>
                         <td className="py-2 px-3 text-right tabular-nums">{num(row.samples)}</td>
-                        <td className="py-2 px-3 text-right text-[#004B91] tabular-nums">{pct(row.mapePct, 2)}</td>
+                        <td className="py-2 px-3 text-right text-brand tabular-nums">{pct(row.mapePct, 2)}</td>
                         <td className="py-2 px-3 text-right tabular-nums">{num(row.rmseKw, 1)}</td>
                         <td className="py-2 px-3 text-right text-emerald-700 tabular-nums">{pct(row.coveragePct)}</td>
                       </tr>

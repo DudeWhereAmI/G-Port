@@ -41,7 +41,7 @@ export const WindowTable: React.FC<WindowTableProps> = ({ windows, selectedId, o
         <button
           type="button"
           onClick={() => setSort((s) => ({ key: k, dir: s.key === k ? ((s.dir * -1) as 1 | -1) : k === "time" ? 1 : -1 }))}
-          className={`inline-flex items-center gap-1 font-bold cursor-pointer hover:text-[#004B91] ${active ? "text-[#004B91]" : ""}`}
+          className={`inline-flex items-center gap-1 font-bold cursor-pointer hover:text-brand ${active ? "text-brand" : ""}`}
         >
           {label}
           {active ? sort.dir === 1 ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" /> : <ArrowUpDown className="w-3 h-3 opacity-40" />}
@@ -78,19 +78,19 @@ export const WindowTable: React.FC<WindowTableProps> = ({ windows, selectedId, o
                   selectedId === w.id ? "bg-blue-50 font-semibold" : alert ? "bg-amber-50/50 hover:bg-amber-50" : "hover:bg-slate-50"
                 }`}
               >
-                <td className="py-2 px-2.5 font-mono font-bold text-slate-900 whitespace-nowrap">
+                <td className="py-2 px-2.5 font-bold text-slate-900 whitespace-nowrap">
                   {w.timeWindow} <span className="text-slate-400 font-normal">@{w.peakTime}</span>
                 </td>
                 <td className="py-2 px-2.5 text-slate-600 max-w-[220px]" title={w.vessels.join(" & ")}>
                   <span className="line-clamp-1">{w.vessels.join(" & ") || "—"}</span>
                 </td>
-                <td className="py-2 px-2.5 text-right font-mono tabular-nums">{num(w.p50Kw)}</td>
-                <td className="py-2 px-2.5 text-right font-mono tabular-nums text-emerald-700">{num(w.pvKw)}</td>
-                <td className={`py-2 px-2.5 text-right font-mono tabular-nums font-bold ${w.status === "OVERLOAD" ? "text-red-700" : "text-[#004B91]"}`}>
+                <td className="py-2 px-2.5 text-right tabular-nums">{num(w.p50Kw)}</td>
+                <td className="py-2 px-2.5 text-right tabular-nums text-emerald-700">{num(w.pvKw)}</td>
+                <td className={`py-2 px-2.5 text-right tabular-nums font-bold ${w.status === "OVERLOAD" ? "text-red-700" : "text-brand"}`}>
                   {num(w.netGridKw)}
                 </td>
-                <td className="py-2 px-2.5 text-right font-mono tabular-nums">{num(w.reeferPlugs)}</td>
-                <td className={`py-2 px-2.5 text-right font-mono tabular-nums ${alert ? "text-orange-700 font-bold" : "text-slate-600"}`}>
+                <td className="py-2 px-2.5 text-right tabular-nums">{num(w.reeferPlugs)}</td>
+                <td className={`py-2 px-2.5 text-right tabular-nums ${alert ? "text-orange-700 font-bold" : "text-slate-600"}`}>
                   {pct(w.maxPPeak * 100, 0)}
                 </td>
                 <td className="py-2 px-2.5 text-center">{renderTou(w)}</td>
@@ -100,7 +100,7 @@ export const WindowTable: React.FC<WindowTableProps> = ({ windows, selectedId, o
           })}
         </tbody>
       </table>
-      <div className="px-3 py-1.5 text-[10px] text-slate-500 border-t border-slate-100">
+      <div className="px-3 py-1.5 text-xs text-slate-500 border-t border-slate-100">
         {t("All values in kW at each window's peak interval.", "Đơn vị kW, lấy tại chu kỳ đỉnh của mỗi khung giờ.")}
       </div>
     </div>

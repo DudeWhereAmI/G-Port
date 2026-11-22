@@ -38,7 +38,7 @@ export const PartnersPage: React.FC = () => {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200/90 shadow-2xs">
         <div>
           <div className="flex items-center gap-2 text-xs font-semibold text-slate-500 mb-1">
-            <span className="font-bold text-[#004B91]">Technology Ecosystem</span>
+            <span className="font-bold text-brand">Technology Ecosystem</span>
             <span aria-hidden="true">·</span>
             <span>Decarbonization Partners & Integrations</span>
             <span aria-hidden="true">·</span>
@@ -79,11 +79,11 @@ export const PartnersPage: React.FC = () => {
             <div>
               <div className="flex items-start justify-between gap-2 border-b border-slate-100 pb-3 mb-3">
                 <div>
-                  <span className="text-[10px] font-mono text-slate-400 font-bold uppercase tracking-wider">{partner.category}</span>
+                  <span className="text-xs font-mono text-slate-400 font-bold">{partner.category}</span>
                   <h3 className="font-black text-slate-900 text-base mt-0.5">{partner.name}</h3>
-                  <div className="text-xs text-[#004B91] font-semibold">{partner.tagline}</div>
+                  <div className="text-xs text-brand font-semibold">{partner.tagline}</div>
                 </div>
-                <div className="px-2.5 py-1 rounded-md bg-slate-900 text-white font-mono font-bold text-[11px]">
+                <div className="px-2.5 py-1 rounded-md bg-slate-900 text-white font-mono font-bold text-xs">
                   {partner.logoText}
                 </div>
               </div>
@@ -111,7 +111,7 @@ export const PartnersPage: React.FC = () => {
             <div className="pt-2">
               <button
                 onClick={() => setContactPartner(partner)}
-                className="w-full py-2 bg-[#004B91] hover:bg-[#00386E] text-white rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-1.5 shadow-2xs"
+                className="w-full py-2 bg-brand hover:bg-brand-hover text-white rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-1.5 shadow-2xs"
               >
                 <Mail className="w-3.5 h-3.5" />
                 <span>Technical Inquiry & Datasheet</span>
@@ -127,7 +127,7 @@ export const PartnersPage: React.FC = () => {
           <div className="bg-white rounded-2xl p-6 sm:p-7 max-w-lg w-full border border-slate-200 shadow-2xl space-y-4 animate-in fade-in zoom-in-95">
             <div className="flex justify-between items-start border-b border-slate-100 pb-3">
               <div>
-                <span className="text-xs font-bold text-[#004B91] uppercase tracking-wider">Vendor Inquiry</span>
+                <span className="text-xs font-bold text-brand">Vendor Inquiry</span>
                 <h3 className="text-lg font-black text-slate-900 mt-0.5">{contactPartner.name}</h3>
                 <p className="text-xs text-slate-500">{contactPartner.featuredTech}</p>
               </div>
@@ -135,7 +135,7 @@ export const PartnersPage: React.FC = () => {
                 onClick={() => setContactPartner(null)}
                 className="text-slate-400 hover:text-slate-700 text-sm font-bold p-1"
               >
-                ✕
+                ×
               </button>
             </div>
 
@@ -197,7 +197,7 @@ export const PartnersPage: React.FC = () => {
                   </button>
                   <button
                     type="submit"
-                    className="px-5 py-2 bg-[#004B91] hover:bg-[#00386E] text-white rounded-lg font-bold shadow-2xs"
+                    className="px-5 py-2 bg-brand hover:bg-brand-hover text-white rounded-lg font-bold shadow-2xs"
                   >
                     Submit Technical Inquiry
                   </button>

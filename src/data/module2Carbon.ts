@@ -32,6 +32,7 @@ import {
 import { DIESEL_EF_KG_PER_L, EMISSION_FACTORS, GRID_EF_KG_PER_KWH, activeFactor } from "./emissionFactors";
 import { BASE_DISPATCH } from "./module3PeakShaving";
 import { sha256Hex } from "../utils/sha256";
+import { SERIES } from "../theme/tokens";
 
 // ---------------------------------------------------------------------------
 // Report constants
@@ -67,12 +68,12 @@ export type SourceKey = "STS" | "RTG" | "REEFER" | "OPS" | "TUG" | "TRACTOR";
 export const SOURCE_KEYS: SourceKey[] = ["STS", "RTG", "REEFER", "OPS", "TUG", "TRACTOR"];
 
 export const SOURCE_META: Record<SourceKey, { name: BilingualText; scope: 1 | 2; unit: "kWh" | "L"; feeder: FeederKey | null; color: string }> = {
-  STS: { name: { en: "STS cranes", vn: "Cẩu STS" }, scope: 2, unit: "kWh", feeder: "f01", color: "#004B91" },
-  RTG: { name: { en: "e-RTG cranes", vn: "Cẩu e-RTG" }, scope: 2, unit: "kWh", feeder: "f02", color: "#4A81C9" },
-  REEFER: { name: { en: "Reefers", vn: "Container lạnh" }, scope: 2, unit: "kWh", feeder: "f03", color: "#0EA5E9" },
-  OPS: { name: { en: "Shore power (OPS)", vn: "Điện bờ (OPS)" }, scope: 2, unit: "kWh", feeder: "f04", color: "#7C3AED" },
-  TUG: { name: { en: "Tugs (diesel)", vn: "Tàu lai (dầu DO)" }, scope: 1, unit: "L", feeder: null, color: "#B45309" },
-  TRACTOR: { name: { en: "Diesel tractors", vn: "Xe đầu kéo diesel" }, scope: 1, unit: "L", feeder: null, color: "#F59E0B" },
+  STS: { name: { en: "STS cranes", vn: "Cẩu STS" }, scope: 2, unit: "kWh", feeder: "f01", color: SERIES.f01 },
+  RTG: { name: { en: "e-RTG cranes", vn: "Cẩu e-RTG" }, scope: 2, unit: "kWh", feeder: "f02", color: SERIES.f02 },
+  REEFER: { name: { en: "Reefers", vn: "Container lạnh" }, scope: 2, unit: "kWh", feeder: "f03", color: SERIES.f03 },
+  OPS: { name: { en: "Shore power (OPS)", vn: "Điện bờ (OPS)" }, scope: 2, unit: "kWh", feeder: "f04", color: SERIES.f04 },
+  TUG: { name: { en: "Tugs (diesel)", vn: "Tàu lai (dầu DO)" }, scope: 1, unit: "L", feeder: null, color: SERIES.diesel },
+  TRACTOR: { name: { en: "Diesel tractors", vn: "Xe đầu kéo diesel" }, scope: 1, unit: "L", feeder: null, color: SERIES.pv },
 };
 
 export interface CallSpec {
@@ -467,8 +468,8 @@ export const FACILITY_SOURCES: Record<FacilitySource, { kg: number; name: Biling
   RTG: { kg: sum(CALL_RECORDS.map((r) => r.lines.find((l) => l.source === "RTG")?.kg ?? 0)) + SOLVED.feeders.f02.unallocated * ef2, name: SOURCE_META.RTG.name, color: SOURCE_META.RTG.color },
   REEFER: { kg: sum(CALL_RECORDS.map((r) => r.lines.find((l) => l.source === "REEFER")?.kg ?? 0)) + SOLVED.feeders.f03.unallocated * ef2, name: SOURCE_META.REEFER.name, color: SOURCE_META.REEFER.color },
   OPS: { kg: sum(CALL_RECORDS.map((r) => r.lines.find((l) => l.source === "OPS")?.kg ?? 0)), name: SOURCE_META.OPS.name, color: SOURCE_META.OPS.color },
-  CHARGING: { kg: SOLVED.feeders.f05.unallocated * ef2, name: { en: "EV charging", vn: "Trạm sạc" }, color: "#10B981" },
-  AUX: { kg: SOLVED.feeders.f06.unallocated * ef2, name: { en: "Auxiliary", vn: "Phụ trợ" }, color: "#94A3B8" },
+  CHARGING: { kg: SOLVED.feeders.f05.unallocated * ef2, name: { en: "EV charging", vn: "Trạm sạc" }, color: SERIES.f05 },
+  AUX: { kg: SOLVED.feeders.f06.unallocated * ef2, name: { en: "Auxiliary", vn: "Phụ trợ" }, color: SERIES.f06 },
   TUG: { kg: sum(CALL_RECORDS.map((r) => r.lines.find((l) => l.source === "TUG")?.kg ?? 0)), name: SOURCE_META.TUG.name, color: SOURCE_META.TUG.color },
   TRACTOR: { kg: sum(CALL_RECORDS.map((r) => r.lines.find((l) => l.source === "TRACTOR")?.kg ?? 0)), name: SOURCE_META.TRACTOR.name, color: SOURCE_META.TRACTOR.color },
 };

@@ -39,10 +39,10 @@ export const VesselCallDetailModal: React.FC<VesselCallDetailModalProps> = ({
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-xs font-mono font-bold text-sky-400 uppercase tracking-wider">
+                <span className="text-xs font-mono font-bold text-sky-400">
                   VESSEL PORT CALL & SHORE POWER TELEMETRY
                 </span>
-                <span className="text-[10px] px-2 py-0.2 rounded-full bg-emerald-500/20 text-emerald-300 font-mono font-bold border border-emerald-500/30">
+                <span className="text-xs px-2 py-0.2 rounded-full bg-emerald-500/20 text-emerald-300 font-mono font-bold border border-emerald-500/30">
                   ● BERTHED & WORKING
                 </span>
               </div>
@@ -64,27 +64,27 @@ export const VesselCallDetailModal: React.FC<VesselCallDetailModalProps> = ({
         {/* SUMMARY STATS */}
         <div className="px-6 py-3 bg-slate-50 border-b border-slate-200/90 grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs font-mono">
           <div className="bg-white p-2.5 rounded-xl border border-slate-200">
-            <span className="text-[10px] text-slate-400 block uppercase font-bold">Planned Moves</span>
+            <span className="text-xs text-slate-400 block font-bold">Planned Moves</span>
             <strong className="text-sm font-black text-slate-900">2,227 TEU</strong>
-            <span className="text-[10px] text-slate-500 block">1,420 Disch / 807 Load</span>
+            <span className="text-xs text-slate-500 block">1,420 Disch / 807 Load</span>
           </div>
 
           <div className="bg-white p-2.5 rounded-xl border border-slate-200">
-            <span className="text-[10px] text-slate-400 block uppercase font-bold">Berth Window</span>
-            <strong className="text-sm font-black text-[#004B91]">13 Hours</strong>
-            <span className="text-[10px] text-slate-500 block">11/02 20:00 - 12/02 09:00</span>
+            <span className="text-xs text-slate-400 block font-bold">Berth Window</span>
+            <strong className="text-sm font-black text-brand">13 Hours</strong>
+            <span className="text-xs text-slate-500 block">11/02 20:00 - 12/02 09:00</span>
           </div>
 
           <div className="bg-white p-2.5 rounded-xl border border-slate-200">
-            <span className="text-[10px] text-slate-400 block uppercase font-bold">Shore Power (OPS)</span>
+            <span className="text-xs text-slate-400 block font-bold">Shore Power (OPS)</span>
             <strong className="text-sm font-black text-emerald-600">CONNECTED</strong>
-            <span className="text-[10px] text-emerald-700 block">Feeder F03 · 920 kW</span>
+            <span className="text-xs text-emerald-700 block">Feeder F03 · 920 kW</span>
           </div>
 
           <div className="bg-white p-2.5 rounded-xl border border-slate-200">
-            <span className="text-[10px] text-slate-400 block uppercase font-bold">Assigned Cranes</span>
+            <span className="text-xs text-slate-400 block font-bold">Assigned Cranes</span>
             <strong className="text-sm font-black text-slate-900">5 STS (S01 - S05)</strong>
-            <span className="text-[10px] text-slate-500 block">29.4 Gross Moves/hr</span>
+            <span className="text-xs text-slate-500 block">29.4 Gross Moves/hr</span>
           </div>
         </div>
 
@@ -97,7 +97,7 @@ export const VesselCallDetailModal: React.FC<VesselCallDetailModalProps> = ({
                 <Zap className="w-4 h-4 text-amber-400" />
                 <span>HIGH-VOLTAGE SHORE POWER CONNECTION (IEC/IEEE 80005-1)</span>
               </div>
-              <span className="text-[10px] font-mono bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded border border-emerald-400/30">
+              <span className="text-xs font-mono bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded border border-emerald-400/30">
                 Zero Auxiliary Engine Emissions
               </span>
             </div>
@@ -108,15 +108,15 @@ export const VesselCallDetailModal: React.FC<VesselCallDetailModalProps> = ({
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 font-mono">
               <div className="bg-white/10 rounded-xl p-3 border border-white/15">
-                <span className="text-[10px] text-emerald-300 block">Aux Engine Fuel Saved</span>
+                <span className="text-xs text-emerald-300 block">Aux Engine Fuel Saved</span>
                 <strong className="text-sm font-black text-white">4.8 Tonnes MGO</strong>
               </div>
               <div className="bg-white/10 rounded-xl p-3 border border-white/15">
-                <span className="text-[10px] text-emerald-300 block">GHG Emissions Prevented</span>
+                <span className="text-xs text-emerald-300 block">GHG Emissions Prevented</span>
                 <strong className="text-sm font-black text-white">15.2 Tonnes CO2e</strong>
               </div>
               <div className="bg-white/10 rounded-xl p-3 border border-white/15">
-                <span className="text-[10px] text-emerald-300 block">Shore Energy Metered</span>
+                <span className="text-xs text-emerald-300 block">Shore Energy Metered</span>
                 <strong className="text-sm font-black text-white">11,960 kWh</strong>
               </div>
             </div>
@@ -124,34 +124,34 @@ export const VesselCallDetailModal: React.FC<VesselCallDetailModalProps> = ({
 
           {/* CRANE ALLOCATION TABLE */}
           <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200 space-y-2">
-            <span className="text-xs font-bold text-slate-800 uppercase block">
+            <span className="text-xs font-bold text-slate-800 block">
               Quayside Crane Allocation Matrix for CALF-250901:
             </span>
             <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-center font-mono">
               <div className="bg-white p-2.5 rounded-xl border border-slate-200">
-                <span className="text-[10px] text-amber-600 font-bold block">Crane S01</span>
+                <span className="text-xs text-amber-600 font-bold block">Crane S01</span>
                 <strong className="text-xs font-black text-slate-900">402 Moves</strong>
-                <span className="text-[9px] text-slate-500 block">Bays 03-23</span>
+                <span className="text-xs text-slate-500 block">Bays 03-23</span>
               </div>
               <div className="bg-white p-2.5 rounded-xl border border-slate-200">
-                <span className="text-[10px] text-orange-600 font-bold block">Crane S02</span>
+                <span className="text-xs text-orange-600 font-bold block">Crane S02</span>
                 <strong className="text-xs font-black text-slate-900">341 Moves</strong>
-                <span className="text-[9px] text-slate-500 block">Bays 31-35</span>
+                <span className="text-xs text-slate-500 block">Bays 31-35</span>
               </div>
               <div className="bg-white p-2.5 rounded-xl border border-slate-200">
-                <span className="text-[10px] text-emerald-600 font-bold block">Crane S03</span>
+                <span className="text-xs text-emerald-600 font-bold block">Crane S03</span>
                 <strong className="text-xs font-black text-slate-900">358 Moves</strong>
-                <span className="text-[9px] text-slate-500 block">Bays 43-67</span>
+                <span className="text-xs text-slate-500 block">Bays 43-67</span>
               </div>
               <div className="bg-white p-2.5 rounded-xl border border-slate-200">
-                <span className="text-[10px] text-cyan-600 font-bold block">Crane S04</span>
+                <span className="text-xs text-cyan-600 font-bold block">Crane S04</span>
                 <strong className="text-xs font-black text-slate-900">443 Moves</strong>
-                <span className="text-[9px] text-slate-500 block">Bays 75-87</span>
+                <span className="text-xs text-slate-500 block">Bays 75-87</span>
               </div>
               <div className="bg-white p-2.5 rounded-xl border border-slate-200 col-span-2 sm:col-span-1">
-                <span className="text-[10px] text-purple-600 font-bold block">Crane S05</span>
+                <span className="text-xs text-purple-600 font-bold block">Crane S05</span>
                 <strong className="text-xs font-black text-slate-900">411 Moves</strong>
-                <span className="text-[9px] text-slate-500 block">Bays 23, 31, 55</span>
+                <span className="text-xs text-slate-500 block">Bays 23, 31, 55</span>
               </div>
             </div>
           </div>

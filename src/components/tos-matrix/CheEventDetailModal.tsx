@@ -90,7 +90,7 @@ export const CheEventDetailModal: React.FC<CheEventDetailModalProps> = ({
               <Truck className="w-5 h-5" />
             </span>
             <div>
-              <div className="text-xs font-bold uppercase tracking-wider" style={{ color: evInfo.color }}>
+              <div className="text-xs font-bold" style={{ color: evInfo.color }}>
                 Yard Vehicles &amp; Cranes Activity Log
               </div>
               <h2 className="text-base sm:text-lg font-black tracking-tight text-white flex items-center gap-2">
@@ -111,7 +111,7 @@ export const CheEventDetailModal: React.FC<CheEventDetailModalProps> = ({
         {/* LOGS LIST */}
         <div className="flex-1 overflow-y-auto p-6 space-y-4 text-xs">
           <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200 space-y-1">
-            <span className="text-[10px] font-bold text-slate-500 uppercase block">
+            <span className="text-xs font-bold text-slate-500 block">
               Status Summary ({hour}):
             </span>
             <p className="text-slate-700">
@@ -120,7 +120,7 @@ export const CheEventDetailModal: React.FC<CheEventDetailModalProps> = ({
           </div>
 
           <div className="space-y-2.5">
-            <span className="text-xs font-bold text-slate-900 uppercase tracking-wide block">
+            <span className="text-xs font-bold text-slate-900 block">
               Machine Telemetry Records:
             </span>
             {machineLogs.map((log, idx) => (
@@ -132,12 +132,12 @@ export const CheEventDetailModal: React.FC<CheEventDetailModalProps> = ({
                     <span className="text-slate-400">·</span>
                     <span className="text-slate-600">{log.driver}</span>
                   </div>
-                  <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-slate-100 text-slate-700">
+                  <span className="px-2 py-0.5 rounded text-xs font-mono font-bold bg-slate-100 text-slate-700">
                     {log.duration}
                   </span>
                 </div>
 
-                <div className="flex flex-wrap items-center justify-between gap-2 text-slate-500 text-[11px] pt-1 border-t border-slate-100">
+                <div className="flex flex-wrap items-center justify-between gap-2 text-slate-500 text-xs pt-1 border-t border-slate-100">
                   <span className="flex items-center gap-1 font-mono">
                     <MapPin className="w-3 h-3 text-rose-500" />
                     <span>{log.location}</span>
@@ -152,7 +152,7 @@ export const CheEventDetailModal: React.FC<CheEventDetailModalProps> = ({
                   </span>
                 </div>
 
-                <p className="text-[11px] text-slate-600 bg-slate-50 p-2 rounded-lg font-mono">
+                <p className="text-xs text-slate-600 bg-slate-50 p-2 rounded-lg font-mono">
                   &gt; {log.note}
                 </p>
               </div>

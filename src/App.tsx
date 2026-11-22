@@ -440,7 +440,7 @@ export default function App() {
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 bg-[#004B91] hover:bg-[#00386E] text-white rounded-xl font-bold shadow-xs"
+                  className="px-5 py-2 bg-brand hover:bg-brand-hover text-white rounded-xl font-bold shadow-xs"
                 >
                   Save Asset
                 </button>

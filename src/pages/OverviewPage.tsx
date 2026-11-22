@@ -180,7 +180,7 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
       <div className="bg-white p-6 rounded-2xl border border-slate-200/90 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 text-xs text-slate-500 font-semibold mb-1">
-            <span className="font-bold text-[#004B91]">
+            <span className="font-bold text-brand">
               {t("Terminal Operations", "Điều Hành Khai Thác Cảng")}
             </span>
             <span aria-hidden="true">·</span>
@@ -213,7 +213,7 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
       {/* Top 4 Terminal-Wide KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs">
-          <div className="flex items-center justify-between text-slate-500 text-xs font-bold uppercase tracking-wider mb-2">
+          <div className="flex items-center justify-between text-slate-500 text-xs font-bold mb-2">
             <span>{t("Total Terminal Power", "Tổng Công Suất Phụ Tải")}</span>
             <div className="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
               <Zap className="w-4 h-4" />
@@ -237,7 +237,7 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
         </div>
 
         <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs">
-          <div className="flex items-center justify-between text-slate-500 text-xs font-bold uppercase tracking-wider mb-2">
+          <div className="flex items-center justify-between text-slate-500 text-xs font-bold mb-2">
             <span>{t("Grid Contract Limit", "Giới Hạn Công Suất Trạm")}</span>
             <div className="w-7 h-7 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center">
               <ShieldCheck className="w-4 h-4" />
@@ -259,7 +259,7 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
               }}
             />
           </div>
-          <div className="flex justify-between items-center text-[11px] text-slate-500 mt-1">
+          <div className="flex justify-between items-center text-xs text-slate-500 mt-1">
             <span>
               {t(
                 `${safetyMarginPercent}% headroom`,
@@ -273,7 +273,7 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
         </div>
 
         <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs">
-          <div className="flex items-center justify-between text-slate-500 text-xs font-bold uppercase tracking-wider mb-2">
+          <div className="flex items-center justify-between text-slate-500 text-xs font-bold mb-2">
             <span>{t("Port Carbon Intensity", "Cường Độ Phát Thải Cảng")}</span>
             <div className="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
               <Leaf className="w-4 h-4" />
@@ -297,7 +297,7 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
         </div>
 
         <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs">
-          <div className="flex items-center justify-between text-slate-500 text-xs font-bold uppercase tracking-wider mb-2">
+          <div className="flex items-center justify-between text-slate-500 text-xs font-bold mb-2">
             <span>{t("Calling Vessels at Berth", "Tàu Đang Cập Cầu Cảng")}</span>
             <div className="w-7 h-7 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center">
               <Ship className="w-4 h-4" />
@@ -345,27 +345,27 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
           {/* 3 Power Supply Sources */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200/70">
-              <div className="text-[11px] font-bold text-blue-700 flex items-center gap-1.5">
+              <div className="text-xs font-bold text-blue-700 flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-blue-600" />
                 {t("National Grid (110kV)", "Điện Lưới Quốc Gia (110kV)")}
               </div>
               <div className="text-lg font-black text-slate-900 mt-1">
                 {tariff.currentDemandKw.toLocaleString()} kW
               </div>
-              <div className="text-[11px] text-slate-500 mt-0.5">
+              <div className="text-xs text-slate-500 mt-0.5">
                 {t("67.5% of total port demand", "Chiếm 67.5% tổng phụ tải cảng")}
               </div>
             </div>
 
             <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200/70">
-              <div className="text-[11px] font-bold text-emerald-700 flex items-center gap-1.5">
+              <div className="text-xs font-bold text-emerald-700 flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-emerald-500" />
                 {t("Rooftop Solar PV", "Điện Mặt Trời Mái Kho CFS")}
               </div>
               <div className="text-lg font-black text-emerald-700 mt-1">
                 +{pvStatus.currentPowerKw.toLocaleString()} kW
               </div>
-              <div className="text-[11px] text-slate-500 mt-0.5">
+              <div className="text-xs text-slate-500 mt-0.5">
                 {t(
                   "23.9% share · Irradiance 845 W/m²",
                   "Tỷ trọng 23.9% · Bức xạ 845 W/m²"
@@ -374,14 +374,14 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
             </div>
 
             <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200/70">
-              <div className="text-[11px] font-bold text-amber-700 flex items-center gap-1.5">
+              <div className="text-xs font-bold text-amber-700 flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-amber-500" />
                 {t("Crane Regen & SVC Grid", "Thu Hồi Động Năng Cẩu & Bù SVC")}
               </div>
               <div className="text-lg font-black text-amber-700 mt-1">
                 +{bessStatus.currentPowerKw.toLocaleString()} kW
               </div>
-              <div className="text-[11px] text-slate-500 mt-0.5">
+              <div className="text-xs text-slate-500 mt-0.5">
                 {t(
                   `Efficiency ${bessStatus.socPercent}% · Regen Recovery`,
                   `Hiệu suất ${bessStatus.socPercent}% · Hoàn trả động năng`
@@ -392,7 +392,7 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
 
           {/* 6 Substation Feeders Breakdown */}
           <div>
-            <div className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">
+            <div className="text-xs font-bold text-slate-400 mb-3">
               {t(
                 `Substation Feeder Distribution (${totalLoadKw.toLocaleString()} kW Total)`,
                 `Phân Bổ Công Suất Các Lộ Trạm Biến Áp (Tổng ${totalLoadKw.toLocaleString()} kW)`
@@ -410,7 +410,7 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
                   >
                     <div className="flex items-center justify-between text-xs">
                       <div className="flex items-center gap-2 min-w-0">
-                        <span className="px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 font-mono font-bold text-[10px]">
+                        <span className="px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 font-mono font-bold text-xs">
                           {feeder.code}
                         </span>
                         <span className="font-bold text-slate-900 truncate">
@@ -430,7 +430,7 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
                         }}
                       />
                     </div>
-                    <div className="flex items-center justify-between text-[11px] text-slate-400">
+                    <div className="flex items-center justify-between text-xs text-slate-400">
                       <span>{feeder.zone}</span>
                       <span>
                         {t(
@@ -486,10 +486,10 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
                         {item.rate}
                       </span>
                     </div>
-                    <div className="text-[11px] text-slate-500 mt-0.5">
+                    <div className="text-xs text-slate-500 mt-0.5">
                       {item.hours}
                     </div>
-                    <div className="text-[11px] font-semibold text-slate-600 mt-1">
+                    <div className="text-xs font-semibold text-slate-600 mt-1">
                       {item.action}
                     </div>
                   </div>
@@ -497,7 +497,7 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
               </div>
             </div>
 
-            <div className="pt-3 border-t border-slate-100 text-[11px] text-slate-500 flex items-center justify-between">
+            <div className="pt-3 border-t border-slate-100 text-xs text-slate-500 flex items-center justify-between">
               <span>
                 {t(
                   "Substation Contract Limit:",
@@ -560,7 +560,7 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
                 >
                   <div>
                     <div className="flex items-center justify-between gap-2 mb-1">
-                      <span className="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-mono font-bold text-[10px]">
+                      <span className="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-mono font-bold text-xs">
                         {z.zoneId}
                       </span>
                       <span className="text-xs font-mono font-bold text-slate-500">
@@ -572,7 +572,7 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
                     </h4>
                   </div>
 
-                  <div className="space-y-1.5 pt-2 border-t border-slate-200/60 text-[11px]">
+                  <div className="space-y-1.5 pt-2 border-t border-slate-200/60 text-xs">
                     <div className="flex justify-between text-slate-600">
                       <span>{t("Electricity (Scope 2):", "Điện năng (Scope 2):")}</span>
                       <strong className="font-mono text-slate-900">
@@ -592,7 +592,7 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
                       />
                     </div>
                     <div className="flex justify-between items-center pt-1">
-                      <span className="text-[10px] font-bold uppercase text-slate-400">
+                      <span className="text-xs font-bold text-slate-400">
                         {t("Zone Total CO₂e", "Tổng Phát Thải Khu Vực")}
                       </span>
                       <span className="text-sm font-black font-mono text-emerald-700">

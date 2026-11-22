@@ -66,7 +66,7 @@ export const GroupTable: React.FC<GroupTableProps> = ({ result, approvals, onOpe
                 <td className="py-2 px-3 font-semibold text-slate-900">{t(g.name.en, g.name.vn)}</td>
                 <td className="py-2 px-3 text-slate-600">{FEEDERS.find((f) => f.key === g.feeder)?.id}</td>
                 <td className="py-2 px-3">
-                  <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${g.mode === "AUTO" ? "bg-blue-50 text-blue-800" : "bg-amber-50 text-amber-800"}`}>{modeLabel(g)}</span>
+                  <span className={`px-1.5 py-0.5 rounded text-xs font-bold ${g.mode === "AUTO" ? "bg-blue-50 text-blue-800" : "bg-amber-50 text-amber-800"}`}>{modeLabel(g)}</span>
                 </td>
                 <td className="py-2 px-3 text-right font-bold tabular-nums text-emerald-700">{atPeak(id) > 0 ? `−${kw(atPeak(id))}` : kw(0)}</td>
                 <td className="py-2 px-3">
@@ -75,7 +75,7 @@ export const GroupTable: React.FC<GroupTableProps> = ({ result, approvals, onOpe
                 <td className="py-2 px-3 text-right tabular-nums">{g.maxPct}%</td>
                 <td className="py-2 px-3">
                   <span
-                    className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
+                    className={`px-1.5 py-0.5 rounded text-xs font-bold ${
                       g.mode === "AUTO" ? "bg-slate-100 text-slate-700" : state === "APPROVED" ? "bg-emerald-100 text-emerald-800" : state === "REJECTED" ? "bg-red-100 text-red-800" : "bg-amber-100 text-amber-900"
                     }`}
                   >
@@ -123,26 +123,26 @@ export const GroupDrawer: React.FC<{ group: AssetGroup; result: DispatchResult; 
               { l: t("Benefit", "Lợi ích"), v: `${vnd(st.benefitVnd)}/${t("day", "ngày")}` },
             ].map((x) => (
               <div key={x.l} className="bg-slate-50 border border-slate-200 rounded-lg p-2">
-                <div className="text-[10px] font-bold text-slate-500">{x.l}</div>
+                <div className="text-xs font-bold text-slate-500">{x.l}</div>
                 <div className="font-bold text-slate-900">{x.v}</div>
               </div>
             ))}
           </div>
           <div>
-            <div className="text-[11px] font-bold text-slate-700">{t("Current recommendation", "Khuyến nghị hiện tại")}</div>
+            <div className="text-xs font-bold text-slate-700">{t("Current recommendation", "Khuyến nghị hiện tại")}</div>
             <div>{r.action}</div>
             <div className="text-slate-500">{r.safety}</div>
           </div>
           <div>
-            <div className="text-[11px] font-bold text-slate-700">{t("Control rule", "Quy tắc điều khiển")}</div>
+            <div className="text-xs font-bold text-slate-700">{t("Control rule", "Quy tắc điều khiển")}</div>
             <div>{t(group.rule.en, group.rule.vn)}</div>
           </div>
           <div>
-            <div className="text-[11px] font-bold text-slate-700">{t("Safety constraint", "Ràng buộc an toàn")}</div>
+            <div className="text-xs font-bold text-slate-700">{t("Safety constraint", "Ràng buộc an toàn")}</div>
             <div>{t(group.safety.en, group.safety.vn)}</div>
           </div>
           <div>
-            <div className="text-[11px] font-bold text-slate-700">{t("Fallback", "Cơ chế dự phòng")}</div>
+            <div className="text-xs font-bold text-slate-700">{t("Fallback", "Cơ chế dự phòng")}</div>
             <div>{t(group.fallback.en, group.fallback.vn)}</div>
           </div>
         </div>

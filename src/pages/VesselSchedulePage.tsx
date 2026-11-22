@@ -66,7 +66,7 @@ export const VesselSchedulePage: React.FC<VesselSchedulePageProps> = ({
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200/90 shadow-2xs">
         <div>
           <div className="flex items-center gap-2 text-xs font-semibold text-slate-500 mb-1">
-            <span className="font-bold text-[#004B91]">TOS INTEGRATION</span>
+            <span className="font-bold text-brand">TOS INTEGRATION</span>
             <span aria-hidden="true">·</span>
             <span>Navis / CATOS Live Berth Telemetry</span>
             <span aria-hidden="true">·</span>
@@ -83,7 +83,7 @@ export const VesselSchedulePage: React.FC<VesselSchedulePageProps> = ({
         <div className="flex items-center gap-2.5 shrink-0">
           <button
             onClick={() => onNavigate("VESSEL_CARBON_INVOICE")}
-            className="px-3.5 py-2 rounded-xl bg-[#004B91] hover:bg-[#00386E] text-white text-xs font-bold flex items-center gap-1.5 shadow-2xs transition-colors"
+            className="px-3.5 py-2 rounded-xl bg-brand hover:bg-brand-hover text-white text-xs font-bold flex items-center gap-1.5 shadow-2xs transition-colors"
           >
             <FileText className="w-3.5 h-3.5" />
             <span>Carbon Invoices</span>
@@ -101,53 +101,53 @@ export const VesselSchedulePage: React.FC<VesselSchedulePageProps> = ({
       {/* 2. Top Stats Strip */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
         <div className="bg-white p-4 rounded-xl border border-slate-200/90 shadow-2xs">
-          <div className="flex items-center justify-between text-slate-500 text-[11px] font-bold uppercase tracking-wider mb-1">
+          <div className="flex items-center justify-between text-slate-500 text-xs font-bold mb-1">
             <span>Vessels Berthed</span>
-            <Ship className="w-4 h-4 text-[#004B91]" />
+            <Ship className="w-4 h-4 text-brand" />
           </div>
           <div className="text-xl sm:text-2xl font-black text-slate-900">
             {berthedCount} <span className="text-xs text-slate-500 font-semibold">Active Berths</span>
           </div>
-          <div className="text-[11px] text-emerald-700 font-medium mt-0.5">
+          <div className="text-xs text-emerald-700 font-medium mt-0.5">
             Quay B1, B2 & TCIT at 100% capacity
           </div>
         </div>
 
         <div className="bg-white p-4 rounded-xl border border-slate-200/90 shadow-2xs">
-          <div className="flex items-center justify-between text-slate-500 text-[11px] font-bold uppercase tracking-wider mb-1">
+          <div className="flex items-center justify-between text-slate-500 text-xs font-bold mb-1">
             <span>OPS Cold Ironing</span>
             <PlugZap className="w-4 h-4 text-emerald-600" />
           </div>
           <div className="text-xl sm:text-2xl font-black text-emerald-700">
             {opsConnectedCount}/{berthedCount} <span className="text-xs text-slate-500 font-semibold">Electrified</span>
           </div>
-          <div className="text-[11px] text-emerald-700 font-bold mt-0.5">
+          <div className="text-xs text-emerald-700 font-bold mt-0.5">
             Zero auxiliary smoke at berth
           </div>
         </div>
 
         <div className="bg-white p-4 rounded-xl border border-slate-200/90 shadow-2xs">
-          <div className="flex items-center justify-between text-slate-500 text-[11px] font-bold uppercase tracking-wider mb-1">
+          <div className="flex items-center justify-between text-slate-500 text-xs font-bold mb-1">
             <span>Shift Throughput</span>
-            <Layers className="w-4 h-4 text-[#004B91]" />
+            <Layers className="w-4 h-4 text-brand" />
           </div>
           <div className="text-xl sm:text-2xl font-black text-slate-900">
             {totalOperatingTeu.toLocaleString()} <span className="text-xs text-slate-500 font-semibold">TEU</span>
           </div>
-          <div className="text-[11px] text-slate-500 font-medium mt-0.5">
+          <div className="text-xs text-slate-500 font-medium mt-0.5">
             Container crane moves in current shift
           </div>
         </div>
 
         <div className="bg-white p-4 rounded-xl border border-slate-200/90 shadow-2xs">
-          <div className="flex items-center justify-between text-slate-500 text-[11px] font-bold uppercase tracking-wider mb-1">
+          <div className="flex items-center justify-between text-slate-500 text-xs font-bold mb-1">
             <span>Standard Compliance</span>
             <ShieldCheck className="w-4 h-4 text-emerald-600" />
           </div>
-          <div className="text-xl sm:text-2xl font-black text-[#004B91]">
+          <div className="text-xl sm:text-2xl font-black text-brand">
             DCSA & IMO
           </div>
-          <div className="text-[11px] text-slate-500 font-medium mt-0.5">
+          <div className="text-xs text-slate-500 font-medium mt-0.5">
             Automated event digest emission ready
           </div>
         </div>
@@ -159,7 +159,7 @@ export const VesselSchedulePage: React.FC<VesselSchedulePageProps> = ({
           onClick={() => setActiveTab("VESSEL_CALLS")}
           className={`px-4 py-2.5 text-xs font-bold border-b-2 transition-colors flex items-center gap-2 ${
             activeTab === "VESSEL_CALLS"
-              ? "border-[#004B91] text-[#004B91]"
+              ? "border-brand text-brand"
               : "border-transparent text-slate-500 hover:text-slate-800"
           }`}
         >
@@ -171,7 +171,7 @@ export const VesselSchedulePage: React.FC<VesselSchedulePageProps> = ({
           onClick={() => setActiveTab("SCHEDULES_P2P")}
           className={`px-4 py-2.5 text-xs font-bold border-b-2 transition-colors flex items-center gap-2 ${
             activeTab === "SCHEDULES_P2P"
-              ? "border-[#004B91] text-[#004B91]"
+              ? "border-brand text-brand"
               : "border-transparent text-slate-500 hover:text-slate-800"
           }`}
         >
@@ -192,19 +192,19 @@ export const VesselSchedulePage: React.FC<VesselSchedulePageProps> = ({
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search by vessel, carrier, berth, voyage..."
-                className="w-full pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium focus:outline-none focus:ring-1 focus:ring-[#004B91] focus:bg-white"
+                className="w-full pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium focus:outline-none focus:ring-1 focus:ring-brand focus:bg-white"
               />
             </div>
 
             <div className="flex items-center gap-1.5 flex-wrap">
-              <span className="text-slate-500 font-bold text-[11px] uppercase mr-1">Status:</span>
+              <span className="text-slate-500 font-bold text-xs mr-1">Status:</span>
               {(["ALL", "OPERATING", "BERTHED", "ARRIVING", "SCHEDULED"] as const).map((st) => (
                 <button
                   key={st}
                   onClick={() => setStatusFilter(st)}
-                  className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-colors ${
+                  className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-colors ${
                     statusFilter === st
-                      ? "bg-[#004B91] text-white"
+                      ? "bg-brand text-white"
                       : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                   }`}
                 >
@@ -232,12 +232,12 @@ export const VesselSchedulePage: React.FC<VesselSchedulePageProps> = ({
                     <div>
                       <div className="flex items-center gap-2">
                         {ucCode && (
-                          <span className="text-[10px] font-mono font-bold text-[#004B91]">
+                          <span className="text-xs font-mono font-bold text-brand">
                             {ucCode}
                           </span>
                         )}
                         <h3 className="text-base font-black text-slate-900">{v.vesselName}</h3>
-                        <span className="text-[10px] font-mono text-slate-500">
+                        <span className="text-xs font-mono text-slate-500">
                           {v.imoNumber}
                         </span>
                       </div>
@@ -246,7 +246,7 @@ export const VesselSchedulePage: React.FC<VesselSchedulePageProps> = ({
                       </div>
                     </div>
 
-                    <span className={`text-[10px] font-mono font-bold uppercase ${
+                    <span className={`text-xs font-mono font-bold ${
                       v.status === "OPERATING" ? "text-emerald-700" :
                       v.status === "BERTHED" ? "text-blue-700" :
                       v.status === "ARRIVING" ? "text-amber-700" : "text-slate-500"
@@ -258,19 +258,19 @@ export const VesselSchedulePage: React.FC<VesselSchedulePageProps> = ({
                   {/* Operation details 4-grid */}
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs bg-slate-50/70 p-3 rounded-xl border border-slate-100">
                     <div>
-                      <span className="text-slate-400 block text-[10px] uppercase font-bold">Berth:</span>
+                      <span className="text-slate-400 block text-xs font-bold">Berth:</span>
                       <strong className="text-slate-900 font-bold">{v.berth}</strong>
                     </div>
                     <div>
-                      <span className="text-slate-400 block text-[10px] uppercase font-bold">Assigned Cranes:</span>
-                      <strong className="text-[#004B91] font-bold">{v.assignedCranes} STS</strong>
+                      <span className="text-slate-400 block text-xs font-bold">Assigned Cranes:</span>
+                      <strong className="text-brand font-bold">{v.assignedCranes} STS</strong>
                     </div>
                     <div>
-                      <span className="text-slate-400 block text-[10px] uppercase font-bold">Reefer Load:</span>
+                      <span className="text-slate-400 block text-xs font-bold">Reefer Load:</span>
                       <strong className="text-blue-700 font-bold font-mono">{v.reeferContainers} units</strong>
                     </div>
                     <div>
-                      <span className="text-slate-400 block text-[10px] uppercase font-bold">OPS Cold Ironing:</span>
+                      <span className="text-slate-400 block text-xs font-bold">OPS Cold Ironing:</span>
                       <strong className={v.opsConnected ? "text-emerald-700 font-bold" : "text-slate-400"}>
                         {v.opsConnected ? "Connected" : "Disconnected"}
                       </strong>
@@ -299,7 +299,7 @@ export const VesselSchedulePage: React.FC<VesselSchedulePageProps> = ({
                     </div>
                     <div className="w-full bg-slate-100 rounded-xs h-1.5 overflow-hidden">
                       <div 
-                        className="bg-[#004B91] h-1.5 rounded-xs transition-all duration-300"
+                        className="bg-brand h-1.5 rounded-xs transition-all duration-300"
                         style={{ width: `${Math.min(100, progressPct)}%` }}
                       />
                     </div>
@@ -307,7 +307,7 @@ export const VesselSchedulePage: React.FC<VesselSchedulePageProps> = ({
 
                   {/* Action Link to Carbon Invoice & Eco Quote */}
                   <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
-                    <span className="text-[11px] text-slate-500">
+                    <span className="text-xs text-slate-500">
                       Auxiliary status: <strong className="text-emerald-700 font-semibold">{v.opsConnected ? "Zero Engine Emissions" : "Diesel Aux In Use"}</strong>
                     </span>
 
@@ -321,7 +321,7 @@ export const VesselSchedulePage: React.FC<VesselSchedulePageProps> = ({
 
                       <button
                         onClick={() => onNavigate("VESSEL_CARBON_INVOICE")}
-                        className="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-[#004B91] rounded-lg font-bold text-xs flex items-center gap-1.5 transition-colors"
+                        className="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-brand rounded-lg font-bold text-xs flex items-center gap-1.5 transition-colors"
                       >
                         <FileText className="w-3.5 h-3.5" />
                         <span>Carbon Invoice</span>
@@ -341,8 +341,8 @@ export const VesselSchedulePage: React.FC<VesselSchedulePageProps> = ({
         <div className="space-y-4">
           {/* P2P Search Controls */}
           <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-2xs space-y-3">
-            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-500">
-              <Compass className="w-4 h-4 text-[#004B91]" />
+            <div className="flex items-center gap-2 text-xs font-bold text-slate-500">
+              <Compass className="w-4 h-4 text-brand" />
               <span>Point-to-Point Maritime Route Inquiries</span>
             </div>
 
@@ -399,7 +399,7 @@ export const VesselSchedulePage: React.FC<VesselSchedulePageProps> = ({
               >
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-2.5">
                   <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-lg bg-[#004B91] text-white flex items-center justify-center font-bold text-xs shadow-2xs">
+                    <div className="w-9 h-9 rounded-lg bg-brand text-white flex items-center justify-center font-bold text-xs shadow-2xs">
                       {route.carrier}
                     </div>
                     <div>
@@ -421,27 +421,27 @@ export const VesselSchedulePage: React.FC<VesselSchedulePageProps> = ({
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
                   <div>
-                    <div className="text-[10px] font-bold uppercase text-slate-400">Departure (ETD)</div>
+                    <div className="text-xs font-bold text-slate-400">Departure (ETD)</div>
                     <div className="text-base font-black text-slate-900 font-mono">{route.etd}</div>
                     <div className="text-xs text-slate-600 font-medium">{route.originPort}</div>
                   </div>
 
                   <div className="flex flex-col items-center justify-center text-center">
-                    <span className="text-[11px] font-bold text-[#004B91] font-mono">
+                    <span className="text-xs font-bold text-brand font-mono">
                       {route.transitDays}d {route.transitHours}h
                     </span>
                     <div className="w-full flex items-center gap-2 my-1">
-                      <div className="w-1.5 h-1.5 rounded-full bg-[#004B91]" />
+                      <div className="w-1.5 h-1.5 rounded-full bg-brand" />
                       <div className="flex-1 border-t border-dashed border-slate-300" />
-                      <Ship className="w-3.5 h-3.5 text-[#004B91]" />
+                      <Ship className="w-3.5 h-3.5 text-brand" />
                       <div className="flex-1 border-t border-dashed border-slate-300" />
-                      <div className="w-1.5 h-1.5 rounded-full bg-[#004B91]" />
+                      <div className="w-1.5 h-1.5 rounded-full bg-brand" />
                     </div>
-                    <span className="text-[10px] text-slate-400 font-mono">DCSA AIS Telemetry</span>
+                    <span className="text-xs text-slate-400 font-mono">DCSA AIS Telemetry</span>
                   </div>
 
                   <div>
-                    <div className="text-[10px] font-bold uppercase text-slate-400">Arrival (ETA)</div>
+                    <div className="text-xs font-bold text-slate-400">Arrival (ETA)</div>
                     <div className="text-base font-black text-slate-900 font-mono">{route.eta}</div>
                     <div className="text-xs text-slate-600 font-medium">{route.destinationPort}</div>
                   </div>
@@ -455,7 +455,7 @@ export const VesselSchedulePage: React.FC<VesselSchedulePageProps> = ({
 
                   <button
                     onClick={() => onNavigate("VESSEL_CARBON_INVOICE")}
-                    className="px-3.5 py-1.5 bg-[#004B91] hover:bg-[#00386E] text-white rounded-lg font-bold transition-colors flex items-center gap-1.5 shadow-2xs"
+                    className="px-3.5 py-1.5 bg-brand hover:bg-brand-hover text-white rounded-lg font-bold transition-colors flex items-center gap-1.5 shadow-2xs"
                   >
                     <span>Inspect Carbon Invoice</span>
                     <ArrowRight className="w-3.5 h-3.5" />

@@ -399,7 +399,7 @@ export const EcoCalculatorPage: React.FC<EcoCalculatorPageProps> = ({
                   onClick={() => setActiveMainTab(tab)}
                   className={`pb-3 px-3 sm:px-4 text-xs font-bold transition-all relative whitespace-nowrap ${
                     activeMainTab === tab
-                      ? "text-[#004B91] border-b-2 border-[#004B91]"
+                      ? "text-brand border-b-2 border-brand"
                       : "text-slate-600 hover:text-slate-900 border-b-2 border-transparent"
                   }`}
                 >
@@ -413,7 +413,7 @@ export const EcoCalculatorPage: React.FC<EcoCalculatorPageProps> = ({
             <button
               onClick={() => setShowUserGuideModal(true)}
               title="User Guide"
-              className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:text-[#004B91] hover:bg-slate-50 transition-colors"
+              className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:text-brand hover:bg-slate-50 transition-colors"
             >
               <BookOpen className="w-4 h-4" />
             </button>
@@ -421,7 +421,7 @@ export const EcoCalculatorPage: React.FC<EcoCalculatorPageProps> = ({
             <button
               onClick={() => setShowFaqModal(true)}
               title="GLEC / DCSA Standards FAQ"
-              className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:text-[#004B91] hover:bg-slate-50 transition-colors"
+              className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:text-brand hover:bg-slate-50 transition-colors"
             >
               <HelpCircle className="w-4 h-4" />
             </button>
@@ -455,9 +455,9 @@ export const EcoCalculatorPage: React.FC<EcoCalculatorPageProps> = ({
                     labelColorClass = "text-emerald-700 font-bold";
                     bgPillClass = "bg-white border-emerald-500 shadow-2xs";
                   } else if (isCurrent) {
-                    iconColorClass = "text-[#004B91]";
-                    labelColorClass = "text-[#004B91] font-bold";
-                    bgPillClass = "bg-white border-[#004B91] ring-2 ring-[#004B91]/15 shadow-2xs";
+                    iconColorClass = "text-brand";
+                    labelColorClass = "text-brand font-bold";
+                    bgPillClass = "bg-white border-brand ring-2 ring-brand/15 shadow-2xs";
                   }
 
                   return (
@@ -474,7 +474,7 @@ export const EcoCalculatorPage: React.FC<EcoCalculatorPageProps> = ({
                       <div className={`w-9 h-9 rounded-full border flex items-center justify-center transition-all bg-white ${bgPillClass}`}>
                         <s.Icon className={`w-4 h-4 ${iconColorClass}`} />
                       </div>
-                      <div className={`text-[11px] mt-1.5 whitespace-nowrap transition-colors ${labelColorClass}`}>
+                      <div className={`text-xs mt-1.5 whitespace-nowrap transition-colors ${labelColorClass}`}>
                         {s.label}
                       </div>
                     </button>
@@ -495,7 +495,7 @@ export const EcoCalculatorPage: React.FC<EcoCalculatorPageProps> = ({
               <div className="bg-white rounded-2xl p-6 sm:p-8 border border-slate-200/90 shadow-2xs space-y-6">
                 <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                   <div className="flex items-center gap-2">
-                    <span className="w-6 h-6 rounded-full bg-[#004B91] text-white flex items-center justify-center text-xs font-bold">1</span>
+                    <span className="w-6 h-6 rounded-full bg-brand text-white flex items-center justify-center text-xs font-bold">1</span>
                     <h2 className="text-base font-black text-slate-900">
                       Route & Port Call Parameters
                     </h2>
@@ -505,7 +505,7 @@ export const EcoCalculatorPage: React.FC<EcoCalculatorPageProps> = ({
                     <span>POL/POD Selection:</span>
                     <button
                       onClick={() => setPolPodToggle(!polPodToggle)}
-                      className={`w-10 h-5 rounded-full transition-colors relative p-0.5 ${polPodToggle ? "bg-[#004B91]" : "bg-slate-300"}`}
+                      className={`w-10 h-5 rounded-full transition-colors relative p-0.5 ${polPodToggle ? "bg-brand" : "bg-slate-300"}`}
                     >
                       <div className={`w-4 h-4 rounded-full bg-white transition-transform ${polPodToggle ? "translate-x-5" : "translate-x-0"}`} />
                     </button>
@@ -515,11 +515,11 @@ export const EcoCalculatorPage: React.FC<EcoCalculatorPageProps> = ({
                 {/* 4 Master Operational Scenarios Strip */}
                 <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2.5">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
-                    <span className="text-[11px] font-bold uppercase tracking-wider text-[#004B91] flex items-center gap-1.5">
-                      <Sparkles className="w-3.5 h-3.5 text-[#004B91]" />
+                    <span className="text-xs font-bold text-brand flex items-center gap-1.5">
+                      <Sparkles className="w-3.5 h-3.5 text-brand" />
                       <span>Operational Scenario Presets:</span>
                     </span>
-                    <span className="text-[10px] text-slate-500 font-mono">
+                    <span className="text-xs text-slate-500 font-mono">
                       Synchronized across TOS, SCADA, AI Forecast & DCSA Invoices
                     </span>
                   </div>
@@ -528,73 +528,73 @@ export const EcoCalculatorPage: React.FC<EcoCalculatorPageProps> = ({
                     <button
                       type="button"
                       onClick={() => applyUseCasePreset("UC-01")}
-                      className="p-3 rounded-xl bg-white border border-slate-200 text-left hover:border-[#004B91] hover:ring-1 hover:ring-[#004B91] transition-all"
+                      className="p-3 rounded-xl bg-white border border-slate-200 text-left hover:border-brand hover:ring-1 hover:ring-brand transition-all"
                     >
                       <div className="flex items-center justify-between mb-1">
-                        <span className="font-mono font-bold text-[10px] text-[#004B91]">
+                        <span className="font-mono font-bold text-xs text-brand">
                           UC-01
                         </span>
-                        <span className="text-[9px] font-mono font-bold text-cyan-700">
+                        <span className="text-xs font-mono font-bold text-cyan-700">
                           Reefer -22°C
                         </span>
                       </div>
                       <div className="font-bold text-slate-900 text-xs truncate">SPIRIT OF MUMBAI</div>
-                      <div className="text-[10px] text-slate-600 mt-0.5 truncate">Cat Lai B2 ➔ Singapore</div>
-                      <div className="text-[9px] text-slate-400 font-mono mt-1">2,850 TEU · OPS 6.6kV</div>
+                      <div className="text-xs text-slate-600 mt-0.5 truncate">Cat Lai B2 → Singapore</div>
+                      <div className="text-xs text-slate-400 font-mono mt-1">2,850 TEU · OPS 6.6kV</div>
                     </button>
 
                     <button
                       type="button"
                       onClick={() => applyUseCasePreset("UC-02")}
-                      className="p-3 rounded-xl bg-white border border-slate-200 text-left hover:border-[#004B91] hover:ring-1 hover:ring-[#004B91] transition-all"
+                      className="p-3 rounded-xl bg-white border border-slate-200 text-left hover:border-brand hover:ring-1 hover:ring-brand transition-all"
                     >
                       <div className="flex items-center justify-between mb-1">
-                        <span className="font-mono font-bold text-[10px] text-[#004B91]">
+                        <span className="font-mono font-bold text-xs text-brand">
                           UC-02
                         </span>
-                        <span className="text-[9px] font-mono font-bold text-indigo-700">
+                        <span className="text-xs font-mono font-bold text-indigo-700">
                           EU ETS
                         </span>
                       </div>
                       <div className="font-bold text-slate-900 text-xs truncate">ONE APUS (ULCV)</div>
-                      <div className="text-[10px] text-slate-600 mt-0.5 truncate">Cai Mep TCIT ➔ Rotterdam</div>
-                      <div className="text-[9px] text-slate-400 font-mono mt-1">14k TEU · Crane Regen 1.5MW Peak Shave</div>
+                      <div className="text-xs text-slate-600 mt-0.5 truncate">Cai Mep TCIT → Rotterdam</div>
+                      <div className="text-xs text-slate-400 font-mono mt-1">14k TEU · Crane Regen 1.5MW Peak Shave</div>
                     </button>
 
                     <button
                       type="button"
                       onClick={() => applyUseCasePreset("UC-03")}
-                      className="p-3 rounded-xl bg-white border border-slate-200 text-left hover:border-[#004B91] hover:ring-1 hover:ring-[#004B91] transition-all"
+                      className="p-3 rounded-xl bg-white border border-slate-200 text-left hover:border-brand hover:ring-1 hover:ring-brand transition-all"
                     >
                       <div className="flex items-center justify-between mb-1">
-                        <span className="font-mono font-bold text-[10px] text-[#004B91]">
+                        <span className="font-mono font-bold text-xs text-brand">
                           UC-03
                         </span>
-                        <span className="text-[9px] font-mono font-bold text-amber-700">
+                        <span className="text-xs font-mono font-bold text-amber-700">
                           Heavy Machinery
                         </span>
                       </div>
                       <div className="font-bold text-slate-900 text-xs truncate">GSL KITHIRA</div>
-                      <div className="text-[10px] text-slate-600 mt-0.5 truncate">Akita ➔ Cat Lai ➔ Auckland</div>
-                      <div className="text-[9px] text-slate-400 font-mono mt-1">1 Transit · Rooftop Solar PV</div>
+                      <div className="text-xs text-slate-600 mt-0.5 truncate">Akita → Cat Lai → Auckland</div>
+                      <div className="text-xs text-slate-400 font-mono mt-1">1 Transit · Rooftop Solar PV</div>
                     </button>
 
                     <button
                       type="button"
                       onClick={() => applyUseCasePreset("UC-04")}
-                      className="p-3 rounded-xl bg-white border border-slate-200 text-left hover:border-[#004B91] hover:ring-1 hover:ring-[#004B91] transition-all"
+                      className="p-3 rounded-xl bg-white border border-slate-200 text-left hover:border-brand hover:ring-1 hover:ring-brand transition-all"
                     >
                       <div className="flex items-center justify-between mb-1">
-                        <span className="font-mono font-bold text-[10px] text-[#004B91]">
+                        <span className="font-mono font-bold text-xs text-brand">
                           UC-04
                         </span>
-                        <span className="text-[9px] font-mono font-bold text-emerald-700">
+                        <span className="text-xs font-mono font-bold text-emerald-700">
                           Biofuel B24
                         </span>
                       </div>
                       <div className="font-bold text-slate-900 text-xs truncate">TAN CANG GLORY</div>
-                      <div className="text-[10px] text-slate-600 mt-0.5 truncate">Hai Phong ➔ Cat Lai ➔ Jurong</div>
-                      <div className="text-[9px] text-slate-400 font-mono mt-1">Perishables · Off-Peak EV &amp; Pre-Cool</div>
+                      <div className="text-xs text-slate-600 mt-0.5 truncate">Hai Phong → Cat Lai → Jurong</div>
+                      <div className="text-xs text-slate-400 font-mono mt-1">Perishables · Off-Peak EV &amp; Pre-Cool</div>
                     </button>
                   </div>
                 </div>
@@ -603,7 +603,7 @@ export const EcoCalculatorPage: React.FC<EcoCalculatorPageProps> = ({
                 <div className="space-y-3">
                   <div className="flex flex-col md:flex-row items-center gap-3">
                     <div className="flex-1 w-full relative">
-                      <label className="block text-[11px] font-bold text-slate-700 uppercase mb-1">
+                      <label className="block text-xs font-bold text-slate-700 mb-1">
                         Origin *
                       </label>
                       <div className="relative">
@@ -612,7 +612,7 @@ export const EcoCalculatorPage: React.FC<EcoCalculatorPageProps> = ({
                           value={origin}
                           onChange={(e) => setOrigin(e.target.value)}
                           placeholder="Port code or name (VNSGN, CAT LAI, JPAKT...)"
-                          className="w-full pl-3.5 pr-8 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium focus:ring-1 focus:ring-[#004B91] focus:bg-white"
+                          className="w-full pl-3.5 pr-8 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium focus:ring-1 focus:ring-brand focus:bg-white"
                         />
                         {origin && (
                           <button onClick={() => setOrigin("")} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
@@ -624,14 +624,14 @@ export const EcoCalculatorPage: React.FC<EcoCalculatorPageProps> = ({
 
                     <button
                       onClick={handleSwapPorts}
-                      className="p-2.5 rounded-lg border border-slate-200 text-slate-600 hover:text-[#004B91] hover:bg-slate-50 mt-5 shrink-0 transition-colors"
+                      className="p-2.5 rounded-lg border border-slate-200 text-slate-600 hover:text-brand hover:bg-slate-50 mt-5 shrink-0 transition-colors"
                       title="Swap Origin and Destination"
                     >
                       <ArrowUpDown className="w-4 h-4" />
                     </button>
 
                     <div className="flex-1 w-full relative">
-                      <label className="block text-[11px] font-bold text-slate-700 uppercase mb-1">
+                      <label className="block text-xs font-bold text-slate-700 mb-1">
                         Destination *
                       </label>
                       <div className="relative">
@@ -640,7 +640,7 @@ export const EcoCalculatorPage: React.FC<EcoCalculatorPageProps> = ({
                           value={destination}
                           onChange={(e) => setDestination(e.target.value)}
                           placeholder="Port code or name (SGSIN, NZAKL, ROTTERDAM...)"
-                          className="w-full pl-3.5 pr-8 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium focus:ring-1 focus:ring-[#004B91] focus:bg-white"
+                          className="w-full pl-3.5 pr-8 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium focus:ring-1 focus:ring-brand focus:bg-white"
                         />
                         {destination && (
                           <button onClick={() => setDestination("")} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
@@ -654,7 +654,7 @@ export const EcoCalculatorPage: React.FC<EcoCalculatorPageProps> = ({
                   {polPodToggle && (
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-xl bg-slate-50 border border-slate-200 text-xs">
                       <div>
-                        <label className="block text-[11px] font-bold text-slate-600 mb-1">
+                        <label className="block text-xs font-bold text-slate-600 mb-1">
                           Port of Loading (POL):
                         </label>
                         <select
@@ -670,7 +670,7 @@ export const EcoCalculatorPage: React.FC<EcoCalculatorPageProps> = ({
                       </div>
 
                       <div>
-                        <label className="block text-[11px] font-bold text-slate-600 mb-1">
+                        <label className="block text-xs font-bold text-slate-600 mb-1">
                           Port of Discharge (POD):
                         </label>
                         <select
@@ -690,7 +690,7 @@ export const EcoCalculatorPage: React.FC<EcoCalculatorPageProps> = ({
                 {/* Customer Declaration */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
                   <div className="space-y-1.5">
-                    <label className="block text-[11px] font-bold text-slate-600 uppercase">
+                    <label className="block text-xs font-bold text-slate-600">
                       Customer Status *
                     </label>
                     <div className="grid grid-cols-2 gap-2">
@@ -701,7 +701,7 @@ export const EcoCalculatorPage: React.FC<EcoCalculatorPageProps> = ({
                           onClick={() => setCustomerDeclaration(decl)}
                           className={`py-2 px-3 rounded-lg text-xs font-bold border transition-colors ${
                             customerDeclaration === decl
-                              ? "bg-[#004B91] text-white border-[#004B91]"
+                              ? "bg-brand text-white border-brand"
                               : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100"
                           }`}
                         >
@@ -712,7 +712,7 @@ export const EcoCalculatorPage: React.FC<EcoCalculatorPageProps> = ({
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="block text-[11px] font-bold text-slate-600 uppercase">
+                    <label className="block text-xs font-bold text-slate-600">
                       Haulage Terms *
                     </label>
                     <div className="grid grid-cols-2 gap-2">
@@ -723,7 +723,7 @@ export const EcoCalculatorPage: React.FC<EcoCalculatorPageProps> = ({
                           onClick={() => setHaulageOption(h)}
                           className={`py-2 px-3 rounded-lg text-xs font-bold border transition-colors ${
                             haulageOption === h
-                              ? "bg-[#004B91] text-white border-[#004B91]"
+                              ? "bg-brand text-white border-brand"
                               : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100"
                           }`}
                         >
@@ -736,7 +736,7 @@ export const EcoCalculatorPage: React.FC<EcoCalculatorPageProps> = ({
 
                 {/* Equipment & Container Specs */}
                 <div className="space-y-3 pt-2">
-                  <label className="block text-[11px] font-bold text-slate-600 uppercase">
+                  <label className="block text-xs font-bold text-slate-600">
                     Container Type & Specifications *
                   </label>
                   <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
@@ -747,7 +747,7 @@ export const EcoCalculatorPage: React.FC<EcoCalculatorPageProps> = ({
                         onClick={() => setContainerType(t)}
                         className={`py-2.5 px-2 rounded-xl text-xs font-bold border text-center transition-all ${
                           containerType === t
-                            ? "bg-blue-50 text-[#004B91] border-[#004B91] shadow-2xs"
+                            ? "bg-blue-50 text-brand border-brand shadow-2xs"
                             : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100"
                         }`}
                       >
@@ -758,7 +758,7 @@ export const EcoCalculatorPage: React.FC<EcoCalculatorPageProps> = ({
 
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-1">
                     <div>
-                      <label className="block text-[11px] font-bold text-slate-600 mb-1">Container Count (Units):</label>
+                      <label className="block text-xs font-bold text-slate-600 mb-1">Container Count (Units):</label>
                       <input
                         type="number"
                         min={1}
@@ -770,7 +770,7 @@ export const EcoCalculatorPage: React.FC<EcoCalculatorPageProps> = ({
                     </div>
 
                     <div>
-                      <label className="block text-[11px] font-bold text-slate-600 mb-1">Cargo Weight per Unit (kg):</label>
+                      <label className="block text-xs font-bold text-slate-600 mb-1">Cargo Weight per Unit (kg):</label>
                       <input
                         type="number"
                         step={100}
@@ -781,13 +781,13 @@ export const EcoCalculatorPage: React.FC<EcoCalculatorPageProps> = ({
                     </div>
 
                     <div>
-                      <label className="block text-[11px] font-bold text-slate-600 mb-1">Emission Accounting Scope:</label>
+                      <label className="block text-xs font-bold text-slate-600 mb-1">Emission Accounting Scope:</label>
                       <div className="grid grid-cols-2 gap-2">
                         <button
                           type="button"
                           onClick={() => setEmissionType("TTW")}
                           className={`py-2 rounded-lg text-xs font-bold border transition-colors ${
-                            emissionType === "TTW" ? "bg-[#004B91] text-white border-[#004B91]" : "bg-slate-50 text-slate-700 border-slate-200"
+                            emissionType === "TTW" ? "bg-brand text-white border-brand" : "bg-slate-50 text-slate-700 border-slate-200"
                           }`}
                         >
                           TTW (Direct)
@@ -796,7 +796,7 @@ export const EcoCalculatorPage: React.FC<EcoCalculatorPageProps> = ({
                           type="button"
                           onClick={() => setEmissionType("WTW")}
                           className={`py-2 rounded-lg text-xs font-bold border transition-colors ${
-                            emissionType === "WTW" ? "bg-[#004B91] text-white border-[#004B91]" : "bg-slate-50 text-slate-700 border-slate-200"
+                            emissionType === "WTW" ? "bg-brand text-white border-brand" : "bg-slate-50 text-slate-700 border-slate-200"
                           }`}
                         >
                           WTW (Lifecycle)
@@ -808,7 +808,7 @@ export const EcoCalculatorPage: React.FC<EcoCalculatorPageProps> = ({
 
                 {/* Commodity */}
                 <div className="space-y-1.5">
-                  <label className="block text-[11px] font-bold text-slate-600 uppercase">
+                  <label className="block text-xs font-bold text-slate-600">
                     Commodity & HS Code *
                   </label>
                   <input
@@ -822,7 +822,7 @@ export const EcoCalculatorPage: React.FC<EcoCalculatorPageProps> = ({
                 {/* Select Date */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-[11px] font-bold text-slate-600 uppercase mb-1">
+                    <label className="block text-xs font-bold text-slate-600 mb-1">
                       Target Vessel Departure Date *
                     </label>
                     <input
@@ -834,7 +834,7 @@ export const EcoCalculatorPage: React.FC<EcoCalculatorPageProps> = ({
                   </div>
 
                   <div>
-                    <label className="block text-[11px] font-bold text-slate-600 uppercase mb-1">
+                    <label className="block text-xs font-bold text-slate-600 mb-1">
                       Schedule Window Range
                     </label>
                     <select
@@ -864,7 +864,7 @@ export const EcoCalculatorPage: React.FC<EcoCalculatorPageProps> = ({
 
                   <button
                     onClick={() => setCurrentStep(2)}
-                    className="px-7 py-2.5 rounded-xl bg-[#004B91] hover:bg-[#00386E] text-white text-xs font-black shadow-md flex items-center gap-2 transition-all"
+                    className="px-7 py-2.5 rounded-xl bg-brand hover:bg-brand-hover text-white text-xs font-black shadow-md flex items-center gap-2 transition-all"
                   >
                     <span>GetQuote</span>
                     <ArrowRight className="w-3.5 h-3.5" />
@@ -874,7 +874,7 @@ export const EcoCalculatorPage: React.FC<EcoCalculatorPageProps> = ({
 
               {/* Recent Search List */}
               <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-2xs space-y-3">
-                <div className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
+                <div className="text-xs font-bold text-slate-400 flex items-center gap-2">
                   <Clock className="w-3.5 h-3.5" />
                   <span>Recent Inquiries</span>
                 </div>
@@ -888,16 +888,16 @@ export const EcoCalculatorPage: React.FC<EcoCalculatorPageProps> = ({
                         setDestination(rec.destination);
                         setCommodity(rec.commodity);
                       }}
-                      className="p-3 rounded-xl border border-slate-200 bg-slate-50 hover:bg-blue-50/50 hover:border-[#004B91] cursor-pointer transition-all space-y-1"
+                      className="p-3 rounded-xl border border-slate-200 bg-slate-50 hover:bg-blue-50/50 hover:border-brand cursor-pointer transition-all space-y-1"
                     >
                       <div className="font-bold text-slate-800 text-xs truncate flex items-center gap-1">
                         <span>{rec.origin.split(",")[0]}</span>
                         <ArrowRight className="w-3 h-3 text-slate-400 shrink-0" />
                         <span>{rec.destination.split(",")[0]}</span>
                       </div>
-                      <div className="text-[10px] text-slate-500 flex items-center justify-between">
+                      <div className="text-xs text-slate-500 flex items-center justify-between">
                         <span>{rec.type}</span>
-                        <span className="font-mono text-[#004B91] font-bold">Apply</span>
+                        <span className="font-mono text-brand font-bold">Apply</span>
                       </div>
                     </div>
                   ))}
@@ -923,7 +923,7 @@ export const EcoCalculatorPage: React.FC<EcoCalculatorPageProps> = ({
                     onClick={() => setSortBy("ETD")}
                     className={`px-3 py-1.5 rounded-lg font-bold flex items-center gap-1 border transition-colors ${
                       sortBy === "ETD"
-                        ? "border-[#004B91] text-[#004B91] bg-blue-50"
+                        ? "border-brand text-brand bg-blue-50"
                         : "border-slate-300 text-slate-700 hover:bg-slate-50"
                     }`}
                   >
@@ -935,7 +935,7 @@ export const EcoCalculatorPage: React.FC<EcoCalculatorPageProps> = ({
                     onClick={() => setSortBy("ETA")}
                     className={`px-3 py-1.5 rounded-lg font-bold flex items-center gap-1 border transition-colors ${
                       sortBy === "ETA"
-                        ? "border-[#004B91] text-[#004B91] bg-blue-50"
+                        ? "border-brand text-brand bg-blue-50"
                         : "border-slate-300 text-slate-700 hover:bg-slate-50"
                     }`}
                   >
@@ -947,7 +947,7 @@ export const EcoCalculatorPage: React.FC<EcoCalculatorPageProps> = ({
                     onClick={() => setSortBy("CHEAPEST")}
                     className={`px-3 py-1.5 rounded-lg font-bold border transition-colors ${
                       sortBy === "CHEAPEST"
-                        ? "border-[#004B91] text-[#004B91] bg-blue-50"
+                        ? "border-brand text-brand bg-blue-50"
                         : "border-slate-300 text-slate-700 hover:bg-slate-50"
                     }`}
                   >
@@ -958,7 +958,7 @@ export const EcoCalculatorPage: React.FC<EcoCalculatorPageProps> = ({
                     onClick={() => setSortBy("QUICKEST")}
                     className={`px-3 py-1.5 rounded-lg font-bold border transition-colors ${
                       sortBy === "QUICKEST"
-                        ? "border-[#004B91] text-[#004B91] bg-blue-50"
+                        ? "border-brand text-brand bg-blue-50"
                         : "border-slate-300 text-slate-700 hover:bg-slate-50"
                     }`}
                   >
@@ -996,7 +996,7 @@ export const EcoCalculatorPage: React.FC<EcoCalculatorPageProps> = ({
                               type="checkbox"
                               checked={tempFreightViewItems.basicOceanFreight}
                               onChange={(e) => setTempFreightViewItems({ ...tempFreightViewItems, basicOceanFreight: e.target.checked })}
-                              className="rounded text-[#004B91] focus:ring-[#004B91]"
+                              className="rounded text-brand focus:ring-brand"
                             />
                             <span>BASIC OCEAN FREIGHT</span>
                           </label>
@@ -1006,7 +1006,7 @@ export const EcoCalculatorPage: React.FC<EcoCalculatorPageProps> = ({
                               type="checkbox"
                               checked={tempFreightViewItems.originCharge}
                               onChange={(e) => setTempFreightViewItems({ ...tempFreightViewItems, originCharge: e.target.checked })}
-                              className="rounded text-[#004B91] focus:ring-[#004B91]"
+                              className="rounded text-brand focus:ring-brand"
                             />
                             <span>ORIGIN CHARGE</span>
                           </label>
@@ -1016,14 +1016,14 @@ export const EcoCalculatorPage: React.FC<EcoCalculatorPageProps> = ({
                               type="checkbox"
                               checked={tempFreightViewItems.destinationCharge}
                               onChange={(e) => setTempFreightViewItems({ ...tempFreightViewItems, destinationCharge: e.target.checked })}
-                              className="rounded text-[#004B91] focus:ring-[#004B91]"
+                              className="rounded text-brand focus:ring-brand"
                             />
                             <span>DESTINATION CHARGE</span>
                           </label>
                         </div>
 
                         {!tempFreightViewItems.basicOceanFreight && !tempFreightViewItems.originCharge && !tempFreightViewItems.destinationCharge && (
-                          <div className="p-2 rounded bg-amber-50 border border-amber-200 text-amber-900 text-[11px] font-bold">
+                          <div className="p-2 rounded bg-amber-50 border border-amber-200 text-amber-900 text-xs font-bold">
                             Select at least one charge tier
                           </div>
                         )}
@@ -1035,7 +1035,7 @@ export const EcoCalculatorPage: React.FC<EcoCalculatorPageProps> = ({
                               setTempFreightViewItems(reset);
                               setFreightViewItems(reset);
                             }}
-                            className="text-xs font-bold text-[#004B91] hover:underline"
+                            className="text-xs font-bold text-brand hover:underline"
                           >
                             Reset
                           </button>
@@ -1045,7 +1045,7 @@ export const EcoCalculatorPage: React.FC<EcoCalculatorPageProps> = ({
                               setFreightViewItems(tempFreightViewItems);
                               setShowFreightViewDropdown(false);
                             }}
-                            className="px-4 py-1.5 rounded-lg bg-[#004B91] disabled:opacity-50 text-white text-xs font-bold shadow-2xs hover:bg-[#00386E]"
+                            className="px-4 py-1.5 rounded-lg bg-brand disabled:opacity-50 text-white text-xs font-bold shadow-2xs hover:bg-brand-hover"
                           >
                             Apply
                           </button>
@@ -1068,14 +1068,14 @@ export const EcoCalculatorPage: React.FC<EcoCalculatorPageProps> = ({
                       <div className="absolute right-0 mt-2 w-36 bg-white rounded-xl shadow-xl border border-slate-200 py-1.5 z-50">
                         <button
                           onClick={() => { setSelectedCurrency("USD"); setShowTariffDropdown(false); }}
-                          className={`w-full text-left px-3 py-1.5 text-xs font-bold flex items-center justify-between ${selectedCurrency === "USD" ? "text-[#004B91] bg-blue-50" : "text-slate-700 hover:bg-slate-50"}`}
+                          className={`w-full text-left px-3 py-1.5 text-xs font-bold flex items-center justify-between ${selectedCurrency === "USD" ? "text-brand bg-blue-50" : "text-slate-700 hover:bg-slate-50"}`}
                         >
                           <span>USD ($)</span>
                           {selectedCurrency === "USD" && <Check className="w-3.5 h-3.5" />}
                         </button>
                         <button
                           onClick={() => { setSelectedCurrency("VND"); setShowTariffDropdown(false); }}
-                          className={`w-full text-left px-3 py-1.5 text-xs font-bold flex items-center justify-between ${selectedCurrency === "VND" ? "text-[#004B91] bg-blue-50" : "text-slate-700 hover:bg-slate-50"}`}
+                          className={`w-full text-left px-3 py-1.5 text-xs font-bold flex items-center justify-between ${selectedCurrency === "VND" ? "text-brand bg-blue-50" : "text-slate-700 hover:bg-slate-50"}`}
                         >
                           <span>VND (₫)</span>
                           {selectedCurrency === "VND" && <Check className="w-3.5 h-3.5" />}
@@ -1085,10 +1085,10 @@ export const EcoCalculatorPage: React.FC<EcoCalculatorPageProps> = ({
                   </div>
 
                   <div className="flex items-center gap-1.5 pl-2 border-l border-slate-200">
-                    <span className="text-slate-600 font-bold text-[11px] whitespace-nowrap">Price Alerts</span>
+                    <span className="text-slate-600 font-bold text-xs whitespace-nowrap">Price Alerts</span>
                     <button
                       onClick={() => setPriceAlertsEnabled(!priceAlertsEnabled)}
-                      className={`w-8 h-4 rounded-full transition-colors relative p-0.5 ${priceAlertsEnabled ? "bg-[#004B91]" : "bg-slate-300"}`}
+                      className={`w-8 h-4 rounded-full transition-colors relative p-0.5 ${priceAlertsEnabled ? "bg-brand" : "bg-slate-300"}`}
                     >
                       <div className={`w-3 h-3 rounded-full bg-white transition-transform ${priceAlertsEnabled ? "translate-x-4" : "translate-x-0"}`} />
                     </button>
@@ -1101,65 +1101,65 @@ export const EcoCalculatorPage: React.FC<EcoCalculatorPageProps> = ({
                 <div className="lg:col-span-1 space-y-4">
                   <div className="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-2xs space-y-3 text-xs">
                     <div className="flex items-center justify-between font-bold text-slate-900 border-b border-slate-100 pb-2">
-                      <span className="uppercase text-[11px] tracking-wide text-slate-700">Request Summary</span>
+                      <span className="text-xs text-slate-700">Request Summary</span>
                       <button
                         onClick={() => setIsBookmarked(!isBookmarked)}
                         title="Bookmark this search"
-                        className="text-slate-400 hover:text-[#004B91] transition-colors p-1"
+                        className="text-slate-400 hover:text-brand transition-colors p-1"
                       >
-                        <BookmarkIcon className={`w-4 h-4 ${isBookmarked ? "text-[#004B91] fill-[#004B91]" : ""}`} />
+                        <BookmarkIcon className={`w-4 h-4 ${isBookmarked ? "text-brand fill-brand" : ""}`} />
                       </button>
                     </div>
 
                     <div className="space-y-3 text-slate-600">
                       <div>
-                        <span className="font-bold text-slate-400 text-[10px] block uppercase">Origin</span>
+                        <span className="font-bold text-slate-400 text-xs block">Origin</span>
                         <span className="font-bold text-slate-900 leading-tight block">{origin}</span>
                       </div>
 
                       <div>
-                        <span className="font-bold text-slate-400 text-[10px] block uppercase">Destination</span>
+                        <span className="font-bold text-slate-400 text-xs block">Destination</span>
                         <span className="font-bold text-slate-900 leading-tight block">{destination}</span>
                       </div>
 
                       <div>
-                        <span className="font-bold text-slate-400 text-[10px] block uppercase">Container & Weight</span>
+                        <span className="font-bold text-slate-400 text-xs block">Container & Weight</span>
                         <span className="font-bold text-slate-800 block">
                           {containerQty} x {containerType} · {cargoWeightKg.toLocaleString()} kg/unit
                         </span>
                       </div>
 
                       <div>
-                        <span className="font-bold text-slate-400 text-[10px] block uppercase">Commodity</span>
+                        <span className="font-bold text-slate-400 text-xs block">Commodity</span>
                         <span className="font-medium text-slate-700 block truncate">{commodity}</span>
                       </div>
                     </div>
                   </div>
 
                   <div className="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-2xs space-y-3 text-xs">
-                    <div className="font-bold text-slate-900 border-b border-slate-100 pb-2 uppercase text-[11px] flex items-center justify-between">
+                    <div className="font-bold text-slate-900 border-b border-slate-100 pb-2 text-xs flex items-center justify-between">
                       <span>Filters</span>
                       <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
                     </div>
 
                     <div className="space-y-1.5">
-                      <span className="font-bold text-slate-700 text-[11px] block">Port of Loading (POL)</span>
+                      <span className="font-bold text-slate-700 text-xs block">Port of Loading (POL)</span>
                       <label className="flex items-center gap-2 cursor-pointer font-medium text-slate-600">
-                        <input type="checkbox" defaultChecked className="rounded text-[#004B91]" />
+                        <input type="checkbox" defaultChecked className="rounded text-brand" />
                         <span className="truncate">{selectedPol}</span>
                       </label>
                     </div>
 
                     <div className="space-y-1.5 pt-2 border-t border-slate-100">
-                      <span className="font-bold text-slate-700 text-[11px] block">Port of Discharge (POD)</span>
+                      <span className="font-bold text-slate-700 text-xs block">Port of Discharge (POD)</span>
                       <label className="flex items-center gap-2 cursor-pointer font-medium text-slate-600">
-                        <input type="checkbox" defaultChecked className="rounded text-[#004B91]" />
+                        <input type="checkbox" defaultChecked className="rounded text-brand" />
                         <span className="truncate">{selectedPod}</span>
                       </label>
                     </div>
 
                     <div className="space-y-1.5 pt-2 border-t border-slate-100">
-                      <span className="font-bold text-slate-700 text-[11px] block">Service Lane</span>
+                      <span className="font-bold text-slate-700 text-xs block">Service Lane</span>
                       <select
                         value={serviceLaneFilter}
                         onChange={(e) => setServiceLaneFilter(e.target.value)}
@@ -1187,24 +1187,24 @@ export const EcoCalculatorPage: React.FC<EcoCalculatorPageProps> = ({
                       <div
                         key={record.id}
                         className={`bg-white rounded-2xl border transition-all p-5 shadow-2xs space-y-3.5 ${
-                          isSelected ? "border-[#004B91] ring-2 ring-[#004B91]/15" : "border-slate-200/90 hover:border-slate-300"
+                          isSelected ? "border-brand ring-2 ring-brand/15" : "border-slate-200/90 hover:border-slate-300"
                         }`}
                       >
                         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                           <div className="flex items-center gap-4 text-xs">
                             <div>
-                              <span className="text-[10px] font-bold text-slate-400 block uppercase">Origin</span>
+                              <span className="text-xs font-bold text-slate-400 block">Origin</span>
                               <span className="font-bold text-slate-900 text-sm font-mono">{record.etd}</span>
                             </div>
 
                             <div className="flex flex-col items-center px-2">
-                              <span className="text-[10px] font-bold text-slate-500 whitespace-nowrap font-mono">
+                              <span className="text-xs font-bold text-slate-500 whitespace-nowrap font-mono">
                                 {record.durationDays > 0 ? `${record.durationDays} day(s)` : ""}
                               </span>
                               <div className="flex items-center w-28 sm:w-36 my-1">
                                 <div className="w-1.5 h-1.5 rounded-full bg-slate-400 shrink-0" />
                                 <div className="flex-1 h-0.5 border-t border-slate-300 mx-1" />
-                                <span className="text-[10px] text-slate-500 font-bold px-1 whitespace-nowrap">
+                                <span className="text-xs text-slate-500 font-bold px-1 whitespace-nowrap">
                                   {record.transits === 0 ? "Direct" : `${record.transits} Transit`}
                                 </span>
                                 <div className="flex-1 h-0.5 border-t border-slate-300 mx-1" />
@@ -1213,23 +1213,23 @@ export const EcoCalculatorPage: React.FC<EcoCalculatorPageProps> = ({
                             </div>
 
                             <div>
-                              <span className="text-[10px] font-bold text-slate-400 block uppercase">Destination</span>
+                              <span className="text-xs font-bold text-slate-400 block">Destination</span>
                               <span className="font-bold text-slate-900 text-sm font-mono">{record.eta}</span>
                             </div>
                           </div>
 
                           <div className="text-xs space-y-1">
-                            <div className="text-slate-500 text-[10px] font-bold">Service Lane / Vessel Voyage</div>
+                            <div className="text-slate-500 text-xs font-bold">Service Lane / Vessel Voyage</div>
                             <div className="font-bold text-slate-800">
-                              <span className="text-[#004B91]">{record.serviceLane.split(" ")[0]}</span>
+                              <span className="text-brand">{record.serviceLane.split(" ")[0]}</span>
                               <span className="mx-1">/</span>
                               <span>{record.vesselVoyage}</span>
                             </div>
                           </div>
 
                           <div className="text-xs">
-                            <span className="text-slate-500 text-[10px] font-bold block mb-1">Status</span>
-                            <span className="font-mono text-[10px] font-bold text-emerald-700">
+                            <span className="text-slate-500 text-xs font-bold block mb-1">Status</span>
+                            <span className="font-mono text-xs font-bold text-emerald-700">
                               {record.status}
                             </span>
                           </div>
@@ -1239,7 +1239,7 @@ export const EcoCalculatorPage: React.FC<EcoCalculatorPageProps> = ({
                               <div className="text-base font-black text-slate-900 font-mono">
                                 {formattedPrice}
                               </div>
-                              <div className="text-[10px] text-emerald-700 font-mono font-bold">
+                              <div className="text-xs text-emerald-700 font-mono font-bold">
                                 {recCo2Gross.toLocaleString()} kg CO2e
                               </div>
                             </div>
@@ -1249,7 +1249,7 @@ export const EcoCalculatorPage: React.FC<EcoCalculatorPageProps> = ({
                                 setSelectedRecordId(record.id);
                                 setCurrentStep(3);
                               }}
-                              className="px-6 py-2 rounded-xl bg-[#004B91] hover:bg-[#00386E] text-white text-xs font-black shadow-2xs transition-colors"
+                              className="px-6 py-2 rounded-xl bg-brand hover:bg-brand-hover text-white text-xs font-black shadow-2xs transition-colors"
                             >
                               Accept
                             </button>
@@ -1260,19 +1260,19 @@ export const EcoCalculatorPage: React.FC<EcoCalculatorPageProps> = ({
                           <div className="flex items-center gap-4">
                             <button
                               onClick={() => setExpandedDetailId(isExpanded ? null : record.id)}
-                              className="font-bold text-slate-700 hover:text-[#004B91] flex items-center gap-1"
+                              className="font-bold text-slate-700 hover:text-brand flex items-center gap-1"
                             >
                               <span>Route Segment Details</span>
                               {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
                             </button>
 
-                            <div className="flex items-center gap-1 text-[11px] text-slate-500">
+                            <div className="flex items-center gap-1 text-xs text-slate-500">
                               <Clock className="w-3 h-3 text-slate-400" />
                               <span>Standard Free Time Included</span>
                             </div>
                           </div>
 
-                          <div className="text-[11px] text-slate-500 flex items-center gap-3">
+                          <div className="text-xs text-slate-500 flex items-center gap-3">
                             <span>POL: <strong>{record.polName.split("-")[0]}</strong></span>
                             <span>·</span>
                             <span>POD: <strong>{record.podName.split("(")[0]}</strong></span>
@@ -1281,24 +1281,24 @@ export const EcoCalculatorPage: React.FC<EcoCalculatorPageProps> = ({
 
                         {isExpanded && (
                           <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 text-xs space-y-3 animate-in fade-in">
-                            <div className="font-bold text-slate-700 uppercase text-[10px]">
+                            <div className="font-bold text-slate-700 text-xs">
                               Operational Journey & Shore Power Status:
                             </div>
-                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-[11px]">
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
                               <div className="p-2.5 bg-white rounded-lg border border-slate-200">
                                 <span className="font-bold text-slate-500 block">1. Loading Terminal (POL):</span>
                                 <span className="font-bold text-slate-800">{record.polName}</span>
-                                <p className="text-slate-500 text-[10px] mt-1 font-mono">OPS Cold Ironing active at 6.6kV berth</p>
+                                <p className="text-slate-500 text-xs mt-1 font-mono">OPS Cold Ironing active at 6.6kV berth</p>
                               </div>
                               <div className="p-2.5 bg-white rounded-lg border border-slate-200">
                                 <span className="font-bold text-slate-500 block">2. Ocean Segment:</span>
                                 <span className="font-bold text-slate-800">{record.vesselVoyage}</span>
-                                <p className="text-slate-500 text-[10px] mt-1 font-mono">Distance: {record.totalDistanceKm} km · Lane: {record.serviceLane.split(" ")[0]}</p>
+                                <p className="text-slate-500 text-xs mt-1 font-mono">Distance: {record.totalDistanceKm} km · Lane: {record.serviceLane.split(" ")[0]}</p>
                               </div>
                               <div className="p-2.5 bg-white rounded-lg border border-slate-200">
                                 <span className="font-bold text-slate-500 block">3. Discharge Terminal (POD):</span>
                                 <span className="font-bold text-slate-800">{record.podName}</span>
-                                <p className="text-slate-500 text-[10px] mt-1 font-mono">DCSA e-Carbon audit manifest generated upon discharge</p>
+                                <p className="text-slate-500 text-xs mt-1 font-mono">DCSA e-Carbon audit manifest generated upon discharge</p>
                               </div>
                             </div>
                           </div>
@@ -1316,17 +1316,17 @@ export const EcoCalculatorPage: React.FC<EcoCalculatorPageProps> = ({
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
               <div className="lg:col-span-1 space-y-4">
                 <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-2xs space-y-3 text-xs">
-                  <div className="font-black text-slate-900 border-b border-slate-100 pb-2 uppercase text-[11px] text-[#004B91]">
+                  <div className="font-black text-slate-900 border-b border-slate-100 pb-2 text-xs text-brand">
                     Acceptance Summary
                   </div>
 
                   <div className="space-y-2.5 text-slate-600">
                     <div>
-                      <span className="font-bold text-slate-400 text-[10px] block uppercase">Vessel & Voyage:</span>
+                      <span className="font-bold text-slate-400 text-xs block">Vessel & Voyage:</span>
                       <span className="font-bold text-slate-900">{currentRecord.vesselVoyage}</span>
                     </div>
                     <div>
-                      <span className="font-bold text-slate-400 text-[10px] block uppercase">Route:</span>
+                      <span className="font-bold text-slate-400 text-xs block">Route:</span>
                       <span className="font-bold text-slate-800 flex items-center gap-1">
                         <span>{currentRecord.originName.split("(")[0]}</span>
                         <ArrowRight className="w-3 h-3 text-slate-400" />
@@ -1334,21 +1334,21 @@ export const EcoCalculatorPage: React.FC<EcoCalculatorPageProps> = ({
                       </span>
                     </div>
                     <div>
-                      <span className="font-bold text-slate-400 text-[10px] block uppercase">Containers:</span>
+                      <span className="font-bold text-slate-400 text-xs block">Containers:</span>
                       <span className="font-bold text-slate-900">{containerQty} x {containerType}</span>
                     </div>
                     <div>
-                      <span className="font-bold text-slate-400 text-[10px] block uppercase">Baseline Gross CO2:</span>
+                      <span className="font-bold text-slate-400 text-xs block">Baseline Gross CO2:</span>
                       <span className="font-bold text-slate-800 font-mono">{grossCo2Kg.toLocaleString()} kg CO2e</span>
                     </div>
                     <div className="pt-2 border-t border-slate-100">
-                      <span className="font-bold text-emerald-700 text-[10px] block uppercase">Green Service Abatement:</span>
+                      <span className="font-bold text-emerald-700 text-xs block">Green Service Abatement:</span>
                       <span className="font-bold font-mono text-emerald-600 text-sm">- {Math.round(totalCo2SavedKg / 100).toLocaleString()} kg CO2e</span>
                     </div>
                     <div className="pt-2 border-t border-slate-200">
-                      <span className="font-bold text-slate-500 text-[10px] block uppercase">Net Carbon Output:</span>
-                      <span className="font-black text-[#004B91] text-base font-mono">{netCo2Kg.toLocaleString()} kg CO2e</span>
-                      <div className="text-[10px] text-slate-500 font-mono font-bold">{co2PerTeu} kgCO2e / TEU</div>
+                      <span className="font-bold text-slate-500 text-xs block">Net Carbon Output:</span>
+                      <span className="font-black text-brand text-base font-mono">{netCo2Kg.toLocaleString()} kg CO2e</span>
+                      <div className="text-xs text-slate-500 font-mono font-bold">{co2PerTeu} kgCO2e / TEU</div>
                     </div>
                   </div>
                 </div>
@@ -1371,14 +1371,14 @@ export const EcoCalculatorPage: React.FC<EcoCalculatorPageProps> = ({
                         <span className="font-black text-slate-900 text-xs">
                           1. Quayside Cold Ironing (Onshore Power Supply - OPS)
                         </span>
-                        <span className="text-[10px] font-bold text-emerald-700 font-mono">
+                        <span className="text-xs font-bold text-emerald-700 font-mono">
                           Recommended
                         </span>
                       </div>
                       <p className="text-xs text-slate-600">
                         Connects vessel to the 6.6kV port electrical substation, allowing complete auxiliary diesel generator shutdown for the entire 18h port call duration.
                       </p>
-                      <div className="text-[11px] font-bold text-emerald-700 flex items-center gap-2 pt-1 font-mono">
+                      <div className="text-xs font-bold text-emerald-700 flex items-center gap-2 pt-1 font-mono">
                         <span>Abatement: -14.2 tCO2e / call</span>
                         <span>·</span>
                         <span>Service Fee: $45 USD / call</span>
@@ -1389,7 +1389,7 @@ export const EcoCalculatorPage: React.FC<EcoCalculatorPageProps> = ({
                       onClick={() => setVasOpsSubscribed(!vasOpsSubscribed)}
                       className={`px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 ${
                         vasOpsSubscribed
-                          ? "bg-[#004B91] text-white shadow-2xs"
+                          ? "bg-brand text-white shadow-2xs"
                           : "bg-white border border-slate-300 text-slate-700 hover:bg-slate-100"
                       }`}
                     >
@@ -1403,14 +1403,14 @@ export const EcoCalculatorPage: React.FC<EcoCalculatorPageProps> = ({
                         <span className="font-black text-slate-900 text-xs">
                           2. Solar &amp; Crane Regen-Powered Reefer Yard Slot
                         </span>
-                        <span className="text-[10px] font-bold text-blue-700 font-mono">
+                        <span className="text-xs font-bold text-blue-700 font-mono">
                           Clean Power
                         </span>
                       </div>
                       <p className="text-xs text-slate-600">
                         Prioritized plug-in to reefer racks powered by the port's 4.2 MWp rooftop solar array and 1.5 MW crane regenerative power busbar.
                       </p>
-                      <div className="text-[11px] font-bold text-emerald-700 flex items-center gap-2 pt-1 font-mono">
+                      <div className="text-xs font-bold text-emerald-700 flex items-center gap-2 pt-1 font-mono">
                         <span>Abatement: -420 kg CO2e / TEU</span>
                         <span>·</span>
                         <span>Fee: $25 USD / TEU</span>
@@ -1421,7 +1421,7 @@ export const EcoCalculatorPage: React.FC<EcoCalculatorPageProps> = ({
                       onClick={() => setVasSolarReeferSubscribed(!vasSolarReeferSubscribed)}
                       className={`px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 ${
                         vasSolarReeferSubscribed
-                          ? "bg-[#004B91] text-white shadow-2xs"
+                          ? "bg-brand text-white shadow-2xs"
                           : "bg-white border border-slate-300 text-slate-700 hover:bg-slate-100"
                       }`}
                     >
@@ -1439,7 +1439,7 @@ export const EcoCalculatorPage: React.FC<EcoCalculatorPageProps> = ({
                       <p className="text-xs text-slate-600">
                         Guaranteed physical bunkering of sustainable marine fuel blend (ISCC EU certified) at Cai Mep deep-sea berths.
                       </p>
-                      <div className="text-[11px] font-mono text-slate-500 pt-1">
+                      <div className="text-xs font-mono text-slate-500 pt-1">
                         Recommended for European and North American lanes subject to EU ETS compliance.
                       </div>
                     </div>
@@ -1448,7 +1448,7 @@ export const EcoCalculatorPage: React.FC<EcoCalculatorPageProps> = ({
                       onClick={() => setVasBiofuelSubscribed(!vasBiofuelSubscribed)}
                       className={`px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 ${
                         vasBiofuelSubscribed
-                          ? "bg-[#004B91] text-white shadow-2xs"
+                          ? "bg-brand text-white shadow-2xs"
                           : "bg-white border border-slate-300 text-slate-700 hover:bg-slate-100"
                       }`}
                     >
@@ -1459,7 +1459,7 @@ export const EcoCalculatorPage: React.FC<EcoCalculatorPageProps> = ({
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-4 border-t border-slate-100">
                     <div>
                       <div className="text-xs text-slate-500">Total Energy & Freight Value:</div>
-                      <div className="text-lg font-black text-[#004B91] font-mono">
+                      <div className="text-lg font-black text-brand font-mono">
                         ${totalServiceFeeUsd.toLocaleString()} USD
                         <span className="text-xs font-normal text-slate-400 ml-1">
                           (~{(totalServiceFeeUsd * 25400).toLocaleString()} VND)
@@ -1478,7 +1478,7 @@ export const EcoCalculatorPage: React.FC<EcoCalculatorPageProps> = ({
 
                       <button
                         onClick={() => setCurrentStep(4)}
-                        className="px-6 py-2.5 rounded-xl bg-[#004B91] hover:bg-[#00386E] text-white text-xs font-black shadow-md flex items-center gap-2"
+                        className="px-6 py-2.5 rounded-xl bg-brand hover:bg-brand-hover text-white text-xs font-black shadow-md flex items-center gap-2"
                       >
                         <span>Technical Details</span>
                         <ArrowRight className="w-3.5 h-3.5" />
@@ -1506,14 +1506,14 @@ export const EcoCalculatorPage: React.FC<EcoCalculatorPageProps> = ({
               </div>
 
               <div className="space-y-3">
-                <div className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
-                  <span className="w-5 h-5 rounded-full bg-blue-100 text-[#004B91] flex items-center justify-center text-[10px] font-black">4.1</span>
+                <div className="text-xs font-bold text-slate-800 flex items-center gap-2">
+                  <span className="w-5 h-5 rounded-full bg-blue-100 text-brand flex items-center justify-center text-xs font-black">4.1</span>
                   <span>Booking Stakeholders</span>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 text-xs">
                   <div>
-                    <label className="block text-[11px] font-bold text-slate-600 mb-1">Booking Party:</label>
+                    <label className="block text-xs font-bold text-slate-600 mb-1">Booking Party:</label>
                     <input
                       type="text"
                       value={bookingPartyCompany}
@@ -1522,7 +1522,7 @@ export const EcoCalculatorPage: React.FC<EcoCalculatorPageProps> = ({
                     />
                   </div>
                   <div>
-                    <label className="block text-[11px] font-bold text-slate-600 mb-1">Shipper of Record:</label>
+                    <label className="block text-xs font-bold text-slate-600 mb-1">Shipper of Record:</label>
                     <input
                       type="text"
                       value={shipperName}
@@ -1531,7 +1531,7 @@ export const EcoCalculatorPage: React.FC<EcoCalculatorPageProps> = ({
                     />
                   </div>
                   <div>
-                    <label className="block text-[11px] font-bold text-slate-600 mb-1">Ocean Carrier Partner:</label>
+                    <label className="block text-xs font-bold text-slate-600 mb-1">Ocean Carrier Partner:</label>
                     <input
                       type="text"
                       value={carrierName}
@@ -1543,23 +1543,23 @@ export const EcoCalculatorPage: React.FC<EcoCalculatorPageProps> = ({
               </div>
 
               <div className="space-y-3 pt-3 border-t border-slate-100">
-                <div className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
-                  <span className="w-5 h-5 rounded-full bg-blue-100 text-[#004B91] flex items-center justify-center text-[10px] font-black">4.2</span>
+                <div className="text-xs font-bold text-slate-800 flex items-center gap-2">
+                  <span className="w-5 h-5 rounded-full bg-blue-100 text-brand flex items-center justify-center text-xs font-black">4.2</span>
                   <span>Reefer Cargo Electrical & Environmental Parameters</span>
                 </div>
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 text-xs">
                   <div>
-                    <label className="block text-[11px] font-bold text-slate-600 mb-1">Set Point (°C) *</label>
+                    <label className="block text-xs font-bold text-slate-600 mb-1">Set Point (°C) *</label>
                     <input
                       type="text"
                       value={reeferTempDegC}
                       onChange={(e) => setReeferTempDegC(e.target.value)}
-                      className="w-full py-2 px-3 bg-slate-50 border border-slate-200 rounded-lg font-bold text-[#004B91] font-mono"
+                      className="w-full py-2 px-3 bg-slate-50 border border-slate-200 rounded-lg font-bold text-brand font-mono"
                     />
                   </div>
                   <div>
-                    <label className="block text-[11px] font-bold text-slate-600 mb-1">Ventilation (CMH)</label>
+                    <label className="block text-xs font-bold text-slate-600 mb-1">Ventilation (CMH)</label>
                     <input
                       type="text"
                       value={reeferVentCmH}
@@ -1568,7 +1568,7 @@ export const EcoCalculatorPage: React.FC<EcoCalculatorPageProps> = ({
                     />
                   </div>
                   <div>
-                    <label className="block text-[11px] font-bold text-slate-600 mb-1">Relative Humidity (%)</label>
+                    <label className="block text-xs font-bold text-slate-600 mb-1">Relative Humidity (%)</label>
                     <input
                       type="text"
                       value={reeferHumidityPct}
@@ -1577,7 +1577,7 @@ export const EcoCalculatorPage: React.FC<EcoCalculatorPageProps> = ({
                     />
                   </div>
                   <div>
-                    <label className="block text-[11px] font-bold text-slate-600 mb-1">Road Genset Required *</label>
+                    <label className="block text-xs font-bold text-slate-600 mb-1">Road Genset Required *</label>
                     <select
                       value={gensetRequired}
                       onChange={(e) => setGensetRequired(e.target.value as any)}
@@ -1588,7 +1588,7 @@ export const EcoCalculatorPage: React.FC<EcoCalculatorPageProps> = ({
                     </select>
                   </div>
                   <div>
-                    <label className="block text-[11px] font-bold text-slate-600 mb-1">Drain Valve State</label>
+                    <label className="block text-xs font-bold text-slate-600 mb-1">Drain Valve State</label>
                     <select
                       value={drainOption}
                       onChange={(e) => setDrainOption(e.target.value as any)}
@@ -1602,14 +1602,14 @@ export const EcoCalculatorPage: React.FC<EcoCalculatorPageProps> = ({
               </div>
 
               <div className="space-y-3 pt-3 border-t border-slate-100">
-                <div className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
-                  <span className="w-5 h-5 rounded-full bg-blue-100 text-[#004B91] flex items-center justify-center text-[10px] font-black">4.3</span>
+                <div className="text-xs font-bold text-slate-800 flex items-center gap-2">
+                  <span className="w-5 h-5 rounded-full bg-blue-100 text-brand flex items-center justify-center text-xs font-black">4.3</span>
                   <span>Statutory Compliance Identifiers</span>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
                   <div>
-                    <label className="block text-[11px] font-bold text-slate-600 mb-1">Vessel IMO Number *</label>
+                    <label className="block text-xs font-bold text-slate-600 mb-1">Vessel IMO Number *</label>
                     <input
                       type="text"
                       value={imoNumber}
@@ -1618,7 +1618,7 @@ export const EcoCalculatorPage: React.FC<EcoCalculatorPageProps> = ({
                     />
                   </div>
                   <div>
-                    <label className="block text-[11px] font-bold text-slate-600 mb-1">EU ETS Maritime MRN:</label>
+                    <label className="block text-xs font-bold text-slate-600 mb-1">EU ETS Maritime MRN:</label>
                     <input
                       type="text"
                       value={euEtsMrn}
@@ -1627,7 +1627,7 @@ export const EcoCalculatorPage: React.FC<EcoCalculatorPageProps> = ({
                     />
                   </div>
                   <div>
-                    <label className="block text-[11px] font-bold text-slate-600 mb-1">Corporate Tax ID:</label>
+                    <label className="block text-xs font-bold text-slate-600 mb-1">Corporate Tax ID:</label>
                     <input
                       type="text"
                       value={taxId}
@@ -1638,7 +1638,7 @@ export const EcoCalculatorPage: React.FC<EcoCalculatorPageProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-bold text-slate-600 mb-1">Terminal Operating Instructions:</label>
+                  <label className="block text-xs font-bold text-slate-600 mb-1">Terminal Operating Instructions:</label>
                   <textarea
                     rows={2}
                     value={specialInstruction}
@@ -1659,7 +1659,7 @@ export const EcoCalculatorPage: React.FC<EcoCalculatorPageProps> = ({
 
                 <button
                   onClick={() => setCurrentStep(5)}
-                  className="px-7 py-2.5 rounded-xl bg-[#004B91] hover:bg-[#00386E] text-white text-xs font-black shadow-md flex items-center gap-2"
+                  className="px-7 py-2.5 rounded-xl bg-brand hover:bg-brand-hover text-white text-xs font-black shadow-md flex items-center gap-2"
                 >
                   <span>Review Booking</span>
                   <ArrowRight className="w-3.5 h-3.5" />
@@ -1687,32 +1687,32 @@ export const EcoCalculatorPage: React.FC<EcoCalculatorPageProps> = ({
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-xs">
                 <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-1.5">
-                  <div className="font-bold text-[#004B91] uppercase text-[10px]">1. Route & Schedule</div>
+                  <div className="font-bold text-brand text-xs">1. Route & Schedule</div>
                   <div className="font-bold text-slate-900">{currentRecord.vesselVoyage}</div>
                   <div className="text-slate-600 flex items-center gap-1">
                     <span>{origin.split(",")[0]}</span>
                     <ArrowRight className="w-3 h-3 text-slate-400" />
                     <span>{destination.split(",")[0]}</span>
                   </div>
-                  <div className="text-[11px] text-slate-500 font-mono">ETD: {currentRecord.etd} · ETA: {currentRecord.eta}</div>
+                  <div className="text-xs text-slate-500 font-mono">ETD: {currentRecord.etd} · ETA: {currentRecord.eta}</div>
                 </div>
 
                 <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-1.5">
-                  <div className="font-bold text-[#004B91] uppercase text-[10px]">2. Commercial Stakeholders</div>
+                  <div className="font-bold text-brand text-xs">2. Commercial Stakeholders</div>
                   <div className="font-bold text-slate-900">{bookingPartyCompany}</div>
                   <div className="text-slate-600">Shipper: {shipperName}</div>
-                  <div className="text-[11px] text-slate-500">Carrier: {carrierName}</div>
+                  <div className="text-xs text-slate-500">Carrier: {carrierName}</div>
                 </div>
 
                 <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-1.5">
-                  <div className="font-bold text-[#004B91] uppercase text-[10px]">3. Equipment & Set Point</div>
+                  <div className="font-bold text-brand text-xs">3. Equipment & Set Point</div>
                   <div className="font-bold text-slate-900">{containerQty} x {containerType}</div>
                   <div className="text-slate-600 font-mono">Target Temp: {reeferTempDegC}°C (Genset: {gensetRequired})</div>
-                  <div className="text-[11px] text-slate-500 font-mono">Payload: {cargoWeightKg.toLocaleString()} kg/unit</div>
+                  <div className="text-xs text-slate-500 font-mono">Payload: {cargoWeightKg.toLocaleString()} kg/unit</div>
                 </div>
 
                 <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-1.5">
-                  <div className="font-bold text-[#004B91] uppercase text-[10px]">4. Decarbonization Services</div>
+                  <div className="font-bold text-brand text-xs">4. Decarbonization Services</div>
                   <div className="flex items-center gap-1.5 text-emerald-800 font-bold">
                     <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
                     <span>Onshore Power Supply (OPS)</span>
@@ -1721,21 +1721,21 @@ export const EcoCalculatorPage: React.FC<EcoCalculatorPageProps> = ({
                     <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
                     <span>Solar-Powered Reefer Rack</span>
                   </div>
-                  <div className="text-[10px] text-emerald-700 font-mono">Abatement: -{Math.round(totalCo2SavedKg / 100).toLocaleString()} kg CO2e</div>
+                  <div className="text-xs text-emerald-700 font-mono">Abatement: -{Math.round(totalCo2SavedKg / 100).toLocaleString()} kg CO2e</div>
                 </div>
 
                 <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-1.5">
-                  <div className="font-bold text-[#004B91] uppercase text-[10px]">5. Regulatory Identifiers</div>
-                  <div className="font-bold text-slate-900 font-mono">{imoNumber}</div>
+                  <div className="font-bold text-brand text-xs">5. Regulatory Identifiers</div>
+                  <div className="font-bold text-slate-900 font-code">{imoNumber}</div>
                   <div className="text-slate-600 font-mono">MRN: {euEtsMrn}</div>
-                  <div className="text-[11px] text-slate-500 font-mono">Tax ID: {taxId}</div>
+                  <div className="text-xs text-slate-500 font-mono">Tax ID: {taxId}</div>
                 </div>
 
                 <div className="p-3.5 rounded-xl bg-blue-50 border border-blue-200 space-y-1.5">
-                  <div className="font-bold text-[#004B91] uppercase text-[10px]">6. Net Rate & Emission Output</div>
-                  <div className="text-base font-black text-[#004B91] font-mono">${totalServiceFeeUsd.toLocaleString()} USD</div>
+                  <div className="font-bold text-brand text-xs">6. Net Rate & Emission Output</div>
+                  <div className="text-base font-black text-brand font-mono">${totalServiceFeeUsd.toLocaleString()} USD</div>
                   <div className="font-bold text-emerald-800 font-mono">{netCo2Kg.toLocaleString()} kg CO2e net</div>
-                  <div className="text-[10px] text-slate-600 font-mono">Intensity: {co2PerTeu} kgCO2e / TEU</div>
+                  <div className="text-xs text-slate-600 font-mono">Intensity: {co2PerTeu} kgCO2e / TEU</div>
                 </div>
               </div>
 
@@ -1745,7 +1745,7 @@ export const EcoCalculatorPage: React.FC<EcoCalculatorPageProps> = ({
                     type="checkbox"
                     checked={termsAccepted}
                     onChange={(e) => setTermsAccepted(e.target.checked)}
-                    className="mt-0.5 rounded text-[#004B91]"
+                    className="mt-0.5 rounded text-brand"
                   />
                   <span>
                     I hereby certify that all stated operational parameters are accurate. I accept the 
@@ -1766,7 +1766,7 @@ export const EcoCalculatorPage: React.FC<EcoCalculatorPageProps> = ({
                 <button
                   disabled={!termsAccepted}
                   onClick={() => setIsSubmittedSuccess(true)}
-                  className="px-8 py-3 rounded-xl bg-[#004B91] hover:bg-[#00386E] disabled:opacity-50 text-white text-xs font-black shadow-lg flex items-center gap-2 transition-all"
+                  className="px-8 py-3 rounded-xl bg-brand hover:bg-brand-hover disabled:opacity-50 text-white text-xs font-black shadow-lg flex items-center gap-2 transition-all"
                 >
                   <FileText className="w-4 h-4" />
                   <span>Confirm & Generate DCSA Certificate</span>
@@ -1794,7 +1794,7 @@ export const EcoCalculatorPage: React.FC<EcoCalculatorPageProps> = ({
               <div className="max-w-md mx-auto p-4 rounded-xl bg-slate-50 border border-slate-200 text-xs space-y-2 text-left">
                 <div className="flex items-center justify-between">
                   <span className="text-slate-500 font-medium">Contract Reference:</span>
-                  <span className="font-mono font-black text-[#004B91]">SNP-GPORT-2026-08819</span>
+                  <span className="font-mono font-black text-brand">SNP-GPORT-2026-08819</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-slate-500 font-medium">Booking Number:</span>
@@ -1813,36 +1813,36 @@ export const EcoCalculatorPage: React.FC<EcoCalculatorPageProps> = ({
               <div className="max-w-xl mx-auto p-6 rounded-2xl bg-slate-50 border border-slate-200 shadow-2xs space-y-4 text-left">
                 <div className="flex items-center justify-between border-b border-slate-200 pb-3">
                   <div className="flex items-center gap-2">
-                    <ShieldCheck className="w-5 h-5 text-[#004B91]" />
-                    <span className="font-black text-slate-900 text-xs uppercase tracking-wider">
+                    <ShieldCheck className="w-5 h-5 text-brand" />
+                    <span className="font-black text-slate-900 text-xs">
                       DCSA Certified e-Carbon Invoice & Audit Hash
                     </span>
                   </div>
-                  <span className="text-[10px] font-mono font-bold bg-[#004B91] text-white px-2 py-0.5 rounded">
+                  <span className="text-xs font-mono font-bold bg-brand text-white px-2 py-0.5 rounded">
                     VERIFIED
                   </span>
                 </div>
 
                 <div className="grid grid-cols-3 gap-3 text-xs">
                   <div>
-                    <span className="text-[10px] text-slate-500 block">Vessel:</span>
+                    <span className="text-xs text-slate-500 block">Vessel:</span>
                     <span className="font-bold text-slate-800">{currentRecord.vesselVoyage}</span>
                   </div>
                   <div>
-                    <span className="text-[10px] text-slate-500 block">Assigned Berth:</span>
+                    <span className="text-xs text-slate-500 block">Assigned Berth:</span>
                     <span className="font-bold text-slate-800">Cat Lai Berth B2</span>
                   </div>
                   <div>
-                    <span className="text-[10px] text-slate-500 block">Net Abatement:</span>
+                    <span className="text-xs text-slate-500 block">Net Abatement:</span>
                     <span className="font-bold font-mono text-emerald-600">-14.2 tCO2e</span>
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between pt-2 border-t border-slate-200 text-[10px] text-slate-500 font-mono">
+                <div className="flex items-center justify-between pt-2 border-t border-slate-200 text-xs text-slate-500 font-mono">
                   <div className="truncate max-w-[280px]">
                     SHA-256: 0x8f2a991bce4710aefc39d8...
                   </div>
-                  <div className="flex items-center gap-1 font-bold text-[#004B91]">
+                  <div className="flex items-center gap-1 font-bold text-brand">
                     <QrCode className="w-3.5 h-3.5" />
                     <span>DCSA Standard QR</span>
                   </div>
@@ -1852,7 +1852,7 @@ export const EcoCalculatorPage: React.FC<EcoCalculatorPageProps> = ({
               <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
                 <button
                   onClick={() => setActiveMainTab("MY_CONTRACT")}
-                  className="px-5 py-2.5 rounded-xl border border-[#004B91] text-[#004B91] hover:bg-blue-50 text-xs font-bold transition-colors"
+                  className="px-5 py-2.5 rounded-xl border border-brand text-brand hover:bg-blue-50 text-xs font-bold transition-colors"
                 >
                   View in My Contracts
                 </button>
@@ -1862,7 +1862,7 @@ export const EcoCalculatorPage: React.FC<EcoCalculatorPageProps> = ({
                     setIsSubmittedSuccess(false);
                     setCurrentStep(1);
                   }}
-                  className="px-6 py-2.5 rounded-xl bg-[#004B91] hover:bg-[#00386E] text-white text-xs font-black shadow-md transition-colors"
+                  className="px-6 py-2.5 rounded-xl bg-brand hover:bg-brand-hover text-white text-xs font-black shadow-md transition-colors"
                 >
                   Create New Inquiry
                 </button>
@@ -1888,7 +1888,7 @@ export const EcoCalculatorPage: React.FC<EcoCalculatorPageProps> = ({
 
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50 border-y border-slate-200 text-slate-600 font-bold uppercase text-[10px]">
+              <thead className="bg-slate-50 border-y border-slate-200 text-slate-600 font-bold text-xs">
                 <tr>
                   <th className="py-2.5 px-3">Service Trade</th>
                   <th className="py-2.5 px-3">Port of Origin (POL)</th>
@@ -1906,11 +1906,11 @@ export const EcoCalculatorPage: React.FC<EcoCalculatorPageProps> = ({
                   { trade: "Vietnam - Japan Trade", por: "HO CHI MINH (CAT LAI), VIETNAM", del: "TOKYO, JAPAN", ops: "Operational (Berth B1)", days: "6 Days" }
                 ].map((item, idx) => (
                   <tr key={idx} className="hover:bg-slate-50">
-                    <td className="py-3 px-3 font-bold text-[#004B91]">{item.trade}</td>
+                    <td className="py-3 px-3 font-bold text-brand">{item.trade}</td>
                     <td className="py-3 px-3">{item.por}</td>
                     <td className="py-3 px-3">{item.del}</td>
                     <td className="py-3 px-3">
-                      <span className="font-mono text-emerald-700 font-bold text-[10px]">
+                      <span className="font-mono text-emerald-700 font-bold text-xs">
                         {item.ops}
                       </span>
                     </td>
@@ -1923,7 +1923,7 @@ export const EcoCalculatorPage: React.FC<EcoCalculatorPageProps> = ({
                           setActiveMainTab("GET_QUOTE");
                           setCurrentStep(1);
                         }}
-                        className="px-3 py-1 bg-[#004B91] text-white rounded-lg text-[11px] font-bold hover:bg-[#00386E]"
+                        className="px-3 py-1 bg-brand text-white rounded-lg text-xs font-bold hover:bg-brand-hover"
                       >
                         Select
                       </button>
@@ -1956,14 +1956,14 @@ export const EcoCalculatorPage: React.FC<EcoCalculatorPageProps> = ({
               <div key={i} className="p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="font-bold text-slate-900 text-xs">{bm.title}</span>
-                  <BookmarkIcon className="w-4 h-4 text-[#004B91] fill-[#004B91]" />
+                  <BookmarkIcon className="w-4 h-4 text-brand fill-brand" />
                 </div>
                 <div className="text-xs text-slate-600 flex items-center gap-1.5">
                   <span>{bm.origin}</span>
                   <ArrowRight className="w-3 h-3 text-slate-400" />
                   <span>{bm.dest}</span>
                 </div>
-                <div className="text-[11px] text-slate-500 font-medium flex items-center gap-3 font-mono">
+                <div className="text-xs text-slate-500 font-medium flex items-center gap-3 font-mono">
                   <span>{bm.cont}</span>
                   <span>·</span>
                   <span>{bm.temp}</span>
@@ -1973,7 +1973,7 @@ export const EcoCalculatorPage: React.FC<EcoCalculatorPageProps> = ({
                     setActiveMainTab("GET_QUOTE");
                     setCurrentStep(1);
                   }}
-                  className="w-full mt-2 py-1.5 rounded-lg bg-white border border-slate-300 hover:border-[#004B91] text-[#004B91] font-bold text-xs"
+                  className="w-full mt-2 py-1.5 rounded-lg bg-white border border-slate-300 hover:border-brand text-brand font-bold text-xs"
                 >
                   Load Parameters
                 </button>
@@ -1997,7 +1997,7 @@ export const EcoCalculatorPage: React.FC<EcoCalculatorPageProps> = ({
 
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50 border-y border-slate-200 text-slate-600 font-bold uppercase text-[10px]">
+              <thead className="bg-slate-50 border-y border-slate-200 text-slate-600 font-bold text-xs">
                 <tr>
                   <th className="py-2.5 px-3">Contract Reference</th>
                   <th className="py-2.5 px-3">Booking ID</th>
@@ -2015,13 +2015,13 @@ export const EcoCalculatorPage: React.FC<EcoCalculatorPageProps> = ({
                   { contract: "SNP-GPORT-2026-08630", bkg: "BKG-TCL-97812", vessel: "ONE APUS 012W", date: "2026-09-12", co2: "27.10", status: "VERIFIED" }
                 ].map((c, idx) => (
                   <tr key={idx} className="hover:bg-slate-50">
-                    <td className="py-3 px-3 font-mono font-bold text-[#004B91]">{c.contract}</td>
+                    <td className="py-3 px-3 font-mono font-bold text-brand">{c.contract}</td>
                     <td className="py-3 px-3 font-mono">{c.bkg}</td>
                     <td className="py-3 px-3 font-bold">{c.vessel}</td>
                     <td className="py-3 px-3 font-mono">{c.date}</td>
                     <td className="py-3 px-3 font-mono font-bold text-emerald-700">{c.co2}</td>
                     <td className="py-3 px-3">
-                      <span className="font-mono font-bold text-[#004B91] text-[10px]">
+                      <span className="font-mono font-bold text-brand text-xs">
                         {c.status}
                       </span>
                     </td>
@@ -2031,7 +2031,7 @@ export const EcoCalculatorPage: React.FC<EcoCalculatorPageProps> = ({
                           setExportedContract(c.contract);
                           setTimeout(() => setExportedContract(null), 3500);
                         }}
-                        className={`px-2.5 py-1 rounded font-bold text-[11px] inline-flex items-center gap-1 transition-colors ${
+                        className={`px-2.5 py-1 rounded font-bold text-xs inline-flex items-center gap-1 transition-colors ${
                           exportedContract === c.contract
                             ? "bg-emerald-100 text-emerald-800"
                             : "bg-slate-100 hover:bg-slate-200 text-slate-700"
@@ -2064,7 +2064,7 @@ export const EcoCalculatorPage: React.FC<EcoCalculatorPageProps> = ({
           <div className="bg-white rounded-2xl p-6 sm:p-7 max-w-2xl w-full max-h-[85vh] overflow-y-auto shadow-2xl border border-slate-200 space-y-4 animate-in fade-in zoom-in-95">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div className="flex items-center gap-2">
-                <HelpCircle className="w-5 h-5 text-[#004B91]" />
+                <HelpCircle className="w-5 h-5 text-brand" />
                 <h3 className="font-black text-slate-900 text-base">
                   Carbon Accounting & Port Energy FAQ
                 </h3>
@@ -2104,7 +2104,7 @@ export const EcoCalculatorPage: React.FC<EcoCalculatorPageProps> = ({
             <div className="pt-2 text-right">
               <button
                 onClick={() => setShowFaqModal(false)}
-                className="px-5 py-2 rounded-xl bg-[#004B91] text-white text-xs font-bold"
+                className="px-5 py-2 rounded-xl bg-brand text-white text-xs font-bold"
               >
                 Close
               </button>
@@ -2119,7 +2119,7 @@ export const EcoCalculatorPage: React.FC<EcoCalculatorPageProps> = ({
           <div className="bg-white rounded-2xl p-6 sm:p-7 max-w-2xl w-full max-h-[85vh] overflow-y-auto shadow-2xl border border-slate-200 space-y-4 animate-in fade-in zoom-in-95">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div className="flex items-center gap-2">
-                <BookOpen className="w-5 h-5 text-[#004B91]" />
+                <BookOpen className="w-5 h-5 text-brand" />
                 <h3 className="font-black text-slate-900 text-base">
                   G-Port Operator Workflow Guide
                 </h3>
@@ -2148,7 +2148,7 @@ export const EcoCalculatorPage: React.FC<EcoCalculatorPageProps> = ({
             <div className="pt-2 text-right">
               <button
                 onClick={() => setShowUserGuideModal(false)}
-                className="px-5 py-2 rounded-xl bg-[#004B91] text-white text-xs font-bold"
+                className="px-5 py-2 rounded-xl bg-brand text-white text-xs font-bold"
               >
                 Close Guide
               </button>

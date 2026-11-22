@@ -74,7 +74,7 @@ export const EnterpriseHeader: React.FC<EnterpriseHeaderProps> = ({
         >
           <GPortLogo size="md" showText={true} />
           <div className="hidden sm:flex items-center gap-2 border-l border-slate-200 pl-3 text-xs text-slate-500">
-            <span className="font-bold text-[#004B91] tracking-tight">
+            <span className="font-bold text-brand tracking-tight">
               {t("SAIGON NEWPORT (SNP)", "TỔNG CÔNG TY TÂN CẢNG SÀI GÒN (SNP)")}
             </span>
             <span aria-hidden="true">·</span>
@@ -102,9 +102,9 @@ export const EnterpriseHeader: React.FC<EnterpriseHeaderProps> = ({
             type="button"
             onClick={toggleLang}
             title={t("Switch to Vietnamese (VN)", "Chuyển sang Tiếng Anh (EN)")}
-            className="flex items-center gap-1.5 text-slate-800 hover:text-[#004B91] transition-colors font-bold px-2.5 py-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-blue-50 hover:border-blue-200 text-xs whitespace-nowrap shrink-0 cursor-pointer"
+            className="flex items-center gap-1.5 text-slate-800 hover:text-brand transition-colors font-bold px-2.5 py-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-blue-50 hover:border-blue-200 text-xs whitespace-nowrap shrink-0 cursor-pointer"
           >
-            <Globe className="w-3.5 h-3.5 text-[#004B91]" />
+            <Globe className="w-3.5 h-3.5 text-brand" />
             <span>{lang}</span>
           </button>
 
@@ -113,14 +113,14 @@ export const EnterpriseHeader: React.FC<EnterpriseHeaderProps> = ({
               onClick={() => setRoleMenuOpen(!roleMenuOpen)}
               className="flex items-center gap-2 pl-2.5 border-l border-slate-200 hover:opacity-90 transition-opacity cursor-pointer"
             >
-              <div className="w-7 h-7 rounded-full bg-[#004B91] flex items-center justify-center text-[10px] font-black text-white">
+              <div className="w-7 h-7 rounded-full bg-brand flex items-center justify-center text-xs font-black text-white">
                 SNP
               </div>
               <div className="text-left hidden md:block">
-                <div className="font-bold text-slate-900 leading-tight text-[11px]">
+                <div className="font-bold text-slate-900 leading-tight text-xs">
                   {t("Port Operations", "Điều hành Cảng")}
                 </div>
-                <div className="text-[10px] text-slate-500 truncate max-w-[150px]">
+                <div className="text-xs text-slate-500 truncate max-w-[150px]">
                   {roleLabels[currentRole || "ADMIN"]}
                 </div>
               </div>
@@ -129,7 +129,7 @@ export const EnterpriseHeader: React.FC<EnterpriseHeaderProps> = ({
 
             {roleMenuOpen && (
               <div className="absolute right-0 mt-2 w-72 bg-white rounded-xl shadow-xl border border-slate-200 py-1.5 z-50">
-                <div className="px-3 py-1.5 text-[11px] font-bold text-slate-400 border-b border-slate-100">
+                <div className="px-3 py-1.5 text-xs font-bold text-slate-400 border-b border-slate-100">
                   {t("Operational Role View", "Phân quyền Góc nhìn Vận hành")}
                 </div>
                 {(["ADMIN", "TECHNICAL_SPECIALIST", "OPERATIONS_SPECIALIST", "FINANCIAL_ACCOUNTANT", "VIEWER"] as UserRole[]).map((r) => (
@@ -140,11 +140,11 @@ export const EnterpriseHeader: React.FC<EnterpriseHeaderProps> = ({
                       setRoleMenuOpen(false);
                     }}
                     className={`w-full text-left px-3 py-2 text-xs flex items-center justify-between hover:bg-slate-50 transition-colors cursor-pointer ${
-                      currentRole === r ? "bg-blue-50 text-[#004B91] font-bold" : "text-slate-700"
+                      currentRole === r ? "bg-blue-50 text-brand font-bold" : "text-slate-700"
                     }`}
                   >
                     <span>{roleLabels[r || "ADMIN"]}</span>
-                    {currentRole === r && <CheckCircle2 className="w-3.5 h-3.5 text-[#004B91]" />}
+                    {currentRole === r && <CheckCircle2 className="w-3.5 h-3.5 text-brand" />}
                   </button>
                 ))}
               </div>
@@ -159,7 +159,7 @@ export const EnterpriseHeader: React.FC<EnterpriseHeaderProps> = ({
           <div className="bg-white rounded-2xl p-6 max-w-lg w-full shadow-2xl border border-slate-200 space-y-4">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div className="flex items-center gap-2 text-slate-900 font-bold text-sm">
-                <Search className="w-4 h-4 text-[#004B91]" />
+                <Search className="w-4 h-4 text-brand" />
                 <span>
                   {t(
                     "Quick Module & Vessel Lookup",
@@ -184,12 +184,12 @@ export const EnterpriseHeader: React.FC<EnterpriseHeaderProps> = ({
                   "Jump to module (Telemetry Feeds, Load Forecast, Peak Shaving, Carbon Invoices)...",
                   "Chuyển nhanh tới phân hệ (Telemetry Feed, Dự báo Phụ tải, Cắt đỉnh, Hóa đơn Carbon)..."
                 )}
-                className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#004B91]"
+                className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-brand"
               />
             </div>
 
             <div className="text-xs space-y-1 text-slate-600">
-              <div className="font-bold text-slate-400 text-[11px] pb-1">
+              <div className="font-bold text-slate-400 text-xs pb-1">
                 {t("Direct Workspace Modules", "Các Phân hệ Điều hành Trực tiếp")}
               </div>
               <div 

@@ -1444,14 +1444,14 @@ export const PortTerminal3DScene: React.FC<PortTerminal3DSceneProps> = ({
 
               {/* Pill Badge */}
               <div
-                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold shadow-md transition-transform ${
+                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold shadow-md transition-transform ${
                   isSelected
                     ? "bg-blue-600 text-white ring-2 ring-white scale-105 z-20"
                     : "bg-slate-900/90 hover:bg-blue-600 text-white z-10"
                 }`}
               >
                 <span className="font-mono">{pin.code}</span>
-                <span className="px-1.5 py-0.2 rounded-full bg-white/20 text-[10px]">
+                <span className="px-1.5 py-0.2 rounded-full bg-white/20 text-xs">
                   {pin.statusLabel}
                 </span>
               </div>

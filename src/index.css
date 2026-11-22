@@ -1,21 +1,150 @@
 @import "tailwindcss";
 
+/* ==========================================================================
+   G-Port design tokens – the single source for type, colour, radius, shadow.
+   Components use these through Tailwind utilities (bg-brand, text-muted,
+   rounded-card, shadow-card, font-code, …); no hard-coded values.
+   ========================================================================== */
 @theme {
-  --color-port-dark: #2E598E;
-  --color-port-medium: #4A81C9;
-  --color-port-light: #94BCEB;
-  --color-port-gray: #6B7082;
-  --color-port-accent: #E55061;
-  
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  /* Typography: Inter for the UI, JetBrains Mono only for codes & hashes */
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  /* legacy `font-mono` on numbers now renders Inter with tabular figures */
+  --font-mono: var(--font-sans);
+  --font-code: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  /* Weights: nothing heavier than 600 */
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 600;
+  --font-weight-extrabold: 600;
+  --font-weight-black: 600;
+
+  /* Type scale: 12 / 13 / 14 / 16 / 24 / 28 / 32 */
+  --text-xs: 0.75rem;
+  --text-xs--line-height: 1rem;
+  --text-label: 0.8125rem;
+  --text-label--line-height: 1.125rem;
+  --text-sm: 0.875rem;
+  --text-sm--line-height: 1.25rem;
+  --text-base: 1rem;
+  --text-base--line-height: 1.5rem;
+  --text-lg: 1rem;
+  --text-lg--line-height: 1.5rem;
+  --text-xl: 1.5rem;
+  --text-xl--line-height: 2rem;
+  --text-2xl: 1.5rem;
+  --text-2xl--line-height: 2rem;
+  --text-3xl: 1.75rem;
+  --text-3xl--line-height: 2.25rem;
+  --text-4xl: 2rem;
+  --text-4xl--line-height: 2.5rem;
+  --text-kpi: 1.75rem;
+  --text-kpi--line-height: 2.25rem;
+
+  /* Brand & neutrals */
+  --color-brand: #0b3b6f;
+  --color-brand-hover: #082d55;
+  --color-brand-soft: #e8eef6;
+  --color-canvas: #f7f8fa;
+  --color-line: #e5e7eb;
+  --color-ink: #0f172a;
+  --color-muted: #64748b;
+
+  /* Status (text / soft background / dot) – the only four */
+  --color-success: #047857;
+  --color-success-soft: #ecfdf5;
+  --color-success-dot: #10b981;
+  --color-warning: #b45309;
+  --color-warning-soft: #fffbeb;
+  --color-warning-dot: #f59e0b;
+  --color-danger: #b91c1c;
+  --color-danger-soft: #fef2f2;
+  --color-danger-dot: #ef4444;
+  --color-info: #1d4ed8;
+  --color-info-soft: #eff6ff;
+  --color-info-dot: #3b82f6;
+
+  /* Chart palette (8) – same entity, same colour on every page */
+  --color-chart-1: #1f4e8c;
+  --color-chart-2: #3b82c4;
+  --color-chart-3: #1fa2b4;
+  --color-chart-4: #7c6bd6;
+  --color-chart-5: #2e9e6b;
+  --color-chart-6: #94a3b8;
+  --color-chart-7: #e0a21b;
+  --color-chart-8: #d9622b;
+
+  /* Radius: 6px controls, 10px cards */
+  --radius-xs: 4px;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 6px;
+  --radius-xl: 10px;
+  --radius-2xl: 10px;
+  --radius-3xl: 10px;
+  --radius-control: 6px;
+  --radius-card: 10px;
+
+  /* Shadow: one very light level for surfaces, one for overlays */
+  --shadow-2xs: 0 1px 2px rgb(16 24 40 / 0.04);
+  --shadow-xs: 0 1px 2px rgb(16 24 40 / 0.04);
+  --shadow-sm: 0 1px 2px rgb(16 24 40 / 0.04);
+  --shadow: 0 1px 2px rgb(16 24 40 / 0.04);
+  --shadow-card: 0 1px 2px rgb(16 24 40 / 0.04);
+  --shadow-md: 0 12px 32px rgb(16 24 40 / 0.12);
+  --shadow-lg: 0 12px 32px rgb(16 24 40 / 0.12);
+  --shadow-xl: 0 12px 32px rgb(16 24 40 / 0.12);
+  --shadow-2xl: 0 12px 32px rgb(16 24 40 / 0.12);
+  --shadow-overlay: 0 12px 32px rgb(16 24 40 / 0.12);
+
+  /* Motion */
+  --default-transition-duration: 160ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
 }
 
 @layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
   body {
-    @apply bg-slate-50 text-slate-900 font-sans;
+    @apply bg-canvas text-ink font-sans text-sm;
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "cv11", "ss01";
+  }
+  /* visible keyboard focus everywhere */
+  :focus-visible {
+    outline: 2px solid var(--color-brand);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+  svg.lucide {
+    stroke-width: 1.75;
   }
 }
 
-.glass-morphism {
-  @apply bg-white/80 backdrop-blur-md border border-white/20 shadow-xl;
+@layer utilities {
+  /* small all-caps overline – the only place where uppercase is allowed */
+  .overline {
+    font-size: 11px;
+    line-height: 1rem;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+  }
+  .font-code {
+    font-family: var(--font-code);
+    font-variant-ligatures: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    transition-duration: 1ms !important;
+  }
 }

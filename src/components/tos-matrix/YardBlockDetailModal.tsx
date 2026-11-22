@@ -60,10 +60,10 @@ export const YardBlockDetailModal: React.FC<YardBlockDetailModalProps> = ({
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-xs font-mono font-bold text-indigo-300 uppercase tracking-wider">
+                <span className="text-xs font-mono font-bold text-indigo-300">
                   YARD BLOCK TELEMETRY & STACK MATRIX
                 </span>
-                <span className="text-[10px] px-2 py-0.2 rounded-full bg-indigo-500/20 text-indigo-300 font-mono font-bold border border-indigo-500/30">
+                <span className="text-xs px-2 py-0.2 rounded-full bg-indigo-500/20 text-indigo-300 font-mono font-bold border border-indigo-500/30">
                   {blockData.category}
                 </span>
               </div>
@@ -89,27 +89,27 @@ export const YardBlockDetailModal: React.FC<YardBlockDetailModalProps> = ({
         {/* ================================================================== */}
         <div className="px-6 py-3 bg-slate-50 border-b border-slate-200/90 grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs font-mono">
           <div className="bg-white p-2.5 rounded-xl border border-slate-200">
-            <span className="text-[10px] text-slate-400 block uppercase font-bold">Allocated Moves</span>
+            <span className="text-xs text-slate-400 block font-bold">Allocated Moves</span>
             <strong className="text-sm font-black text-slate-900">{blockData.count} TEU</strong>
-            <span className="text-[10px] text-slate-500 block">From {vesselName}</span>
+            <span className="text-xs text-slate-500 block">From {vesselName}</span>
           </div>
 
           <div className="bg-white p-2.5 rounded-xl border border-slate-200">
-            <span className="text-[10px] text-slate-400 block uppercase font-bold">Transfer Distance</span>
-            <strong className="text-sm font-black text-[#004B91]">{blockData.distance.toLocaleString()} m</strong>
-            <span className="text-[10px] text-slate-500 block">Est: {blockData.estMoveTime}</span>
+            <span className="text-xs text-slate-400 block font-bold">Transfer Distance</span>
+            <strong className="text-sm font-black text-brand">{blockData.distance.toLocaleString()} m</strong>
+            <span className="text-xs text-slate-500 block">Est: {blockData.estMoveTime}</span>
           </div>
 
           <div className="bg-white p-2.5 rounded-xl border border-slate-200">
-            <span className="text-[10px] text-slate-400 block uppercase font-bold">Stack Capacity</span>
+            <span className="text-xs text-slate-400 block font-bold">Stack Capacity</span>
             <strong className="text-sm font-black text-emerald-600">{utilizationPercent}% Full</strong>
-            <span className="text-[10px] text-slate-500 block">{occupiedTeu} / {capacityTeu} TEU Slots</span>
+            <span className="text-xs text-slate-500 block">{occupiedTeu} / {capacityTeu} TEU Slots</span>
           </div>
 
           <div className="bg-white p-2.5 rounded-xl border border-slate-200">
-            <span className="text-[10px] text-slate-400 block uppercase font-bold">Block Energy & MRV</span>
+            <span className="text-xs text-slate-400 block font-bold">Block Energy & MRV</span>
             <strong className="text-sm font-black text-blue-700">{totalBlockEnergyKwh.toLocaleString()} kWh</strong>
-            <span className="text-[10px] text-slate-500 block">{totalEmissionsKg} kg CO2e</span>
+            <span className="text-xs text-slate-500 block">{totalEmissionsKg} kg CO2e</span>
           </div>
         </div>
 
@@ -121,7 +121,7 @@ export const YardBlockDetailModal: React.FC<YardBlockDetailModalProps> = ({
             onClick={() => setActiveTab("STACK_MAP")}
             className={`flex items-center gap-1.5 pb-2.5 border-b-2 px-1 transition-colors ${
               activeTab === "STACK_MAP"
-                ? "border-[#004B91] text-[#004B91]"
+                ? "border-brand text-brand"
                 : "border-transparent text-slate-500 hover:text-slate-800"
             }`}
           >
@@ -133,7 +133,7 @@ export const YardBlockDetailModal: React.FC<YardBlockDetailModalProps> = ({
             onClick={() => setActiveTab("LOGISTICS")}
             className={`flex items-center gap-1.5 pb-2.5 border-b-2 px-1 transition-colors ${
               activeTab === "LOGISTICS"
-                ? "border-[#004B91] text-[#004B91]"
+                ? "border-brand text-brand"
                 : "border-transparent text-slate-500 hover:text-slate-800"
             }`}
           >
@@ -145,7 +145,7 @@ export const YardBlockDetailModal: React.FC<YardBlockDetailModalProps> = ({
             onClick={() => setActiveTab("ENERGY_MRV")}
             className={`flex items-center gap-1.5 pb-2.5 border-b-2 px-1 transition-colors ${
               activeTab === "ENERGY_MRV"
-                ? "border-[#004B91] text-[#004B91]"
+                ? "border-brand text-brand"
                 : "border-transparent text-slate-500 hover:text-slate-800"
             }`}
           >
@@ -172,10 +172,10 @@ export const YardBlockDetailModal: React.FC<YardBlockDetailModalProps> = ({
                 </div>
 
                 {/* Container Stack Grid Visualizer */}
-                <div className="grid grid-cols-6 gap-2 text-center font-mono text-[10px]">
+                <div className="grid grid-cols-6 gap-2 text-center font-mono text-xs">
                   {["Bay 01", "Bay 02", "Bay 03", "Bay 04", "Bay 05", "Bay 06"].map((bayName, bIdx) => (
                     <div key={bIdx} className="bg-slate-800 rounded-xl p-2 border border-slate-700/80 space-y-1.5">
-                      <span className="text-[11px] font-bold text-slate-300 block">{bayName}</span>
+                      <span className="text-xs font-bold text-slate-300 block">{bayName}</span>
                       
                       {/* Rows inside bay */}
                       <div className="grid grid-cols-3 gap-1">
@@ -199,8 +199,8 @@ export const YardBlockDetailModal: React.FC<YardBlockDetailModalProps> = ({
                               }`}
                               title={isOccupied ? `Slot ${slotId}: 40ft High Cube Container` : `Slot ${slotId}: Empty`}
                             >
-                              <span className="text-[8px] font-bold">R{slotIdx}</span>
-                              <span className="text-[7px]">{isOccupied ? (isReefer ? "REEF" : "40HC") : "EMPTY"}</span>
+                              <span className="text-xs font-bold">R{slotIdx}</span>
+                              <span className="text-xs">{isOccupied ? (isReefer ? "REEF" : "40HC") : "EMPTY"}</span>
                             </div>
                           );
                         })}
@@ -209,7 +209,7 @@ export const YardBlockDetailModal: React.FC<YardBlockDetailModalProps> = ({
                   ))}
                 </div>
 
-                <div className="flex items-center justify-center gap-4 mt-3 pt-2 border-t border-slate-800 text-[10px] font-mono text-slate-400">
+                <div className="flex items-center justify-center gap-4 mt-3 pt-2 border-t border-slate-800 text-xs font-mono text-slate-400">
                   <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 bg-indigo-600 rounded-xs" /> Dry Container</span>
                   <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 bg-emerald-600 rounded-xs" /> Reefer Connected</span>
                   <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 bg-slate-700 border border-dashed border-slate-500 rounded-xs" /> Ground Slot Empty</span>
@@ -223,7 +223,7 @@ export const YardBlockDetailModal: React.FC<YardBlockDetailModalProps> = ({
                     <span className="font-bold text-slate-800">Selected Slot {selectedSlot}:</span>
                     <span className="text-slate-600 font-mono">TCNU-8921820 (40HC Dry) · Dwell Time: 1.4 days · POD: USLAX</span>
                   </div>
-                  <span className="text-[10px] font-mono font-bold bg-blue-100 text-[#004B91] px-2 py-0.5 rounded">
+                  <span className="text-xs font-mono font-bold bg-blue-100 text-brand px-2 py-0.5 rounded">
                     Cleared for Loading
                   </span>
                 </div>
@@ -236,7 +236,7 @@ export const YardBlockDetailModal: React.FC<YardBlockDetailModalProps> = ({
             <div className="space-y-4 text-xs">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
-                  <span className="text-[10px] font-mono text-slate-500 font-bold uppercase">
+                  <span className="text-xs font-mono text-slate-500 font-bold">
                     Quay-to-Yard Haulage Route
                   </span>
                   <div className="text-sm font-black text-slate-900">
@@ -248,10 +248,10 @@ export const YardBlockDetailModal: React.FC<YardBlockDetailModalProps> = ({
                 </div>
 
                 <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
-                  <span className="text-[10px] font-mono text-slate-500 font-bold uppercase">
+                  <span className="text-xs font-mono text-slate-500 font-bold">
                     Assigned Crane Coverage
                   </span>
-                  <div className="text-sm font-black text-[#004B91]">
+                  <div className="text-sm font-black text-brand">
                     Quay Cranes: {blockData.assignedCranes.join(", ")}
                   </div>
                   <p className="text-slate-600">
@@ -268,30 +268,30 @@ export const YardBlockDetailModal: React.FC<YardBlockDetailModalProps> = ({
               <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200 space-y-3">
                 <div className="flex items-center justify-between border-b border-slate-200 pb-2">
                   <span className="font-bold text-slate-800">ISO 14064 Energy & GHG Allocation</span>
-                  <span className="text-[10px] font-mono text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded font-bold">
+                  <span className="text-xs font-mono text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded font-bold">
                     Tier 3 Certified
                   </span>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 font-mono">
                   <div className="bg-white p-3 rounded-xl border border-slate-200">
-                    <span className="text-[10px] text-slate-400 block">e-RTG Gantry Energy</span>
+                    <span className="text-xs text-slate-400 block">e-RTG Gantry Energy</span>
                     <strong className="text-sm font-black text-slate-900">{rtgKwh.toLocaleString()} kWh</strong>
-                    <span className="text-[10px] text-slate-500 block">1.85 kWh / lift</span>
+                    <span className="text-xs text-slate-500 block">1.85 kWh / lift</span>
                   </div>
 
                   <div className="bg-white p-3 rounded-xl border border-slate-200">
-                    <span className="text-[10px] text-slate-400 block">e-ITV Haulier Energy</span>
+                    <span className="text-xs text-slate-400 block">e-ITV Haulier Energy</span>
                     <strong className="text-sm font-black text-slate-900">{haulierKwh.toLocaleString()} kWh</strong>
-                    <span className="text-[10px] text-slate-500 block">Battery EV transport</span>
+                    <span className="text-xs text-slate-500 block">Battery EV transport</span>
                   </div>
 
                   <div className="bg-white p-3 rounded-xl border border-slate-200">
-                    <span className="text-[10px] text-slate-400 block">Carbon Intensity</span>
+                    <span className="text-xs text-slate-400 block">Carbon Intensity</span>
                     <strong className="text-sm font-black text-emerald-700">
                       {(parseFloat(totalEmissionsKg) / blockData.count).toFixed(2)} kgCO2/TEU
                     </strong>
-                    <span className="text-[10px] text-emerald-600 block">Zero local tailpipe</span>
+                    <span className="text-xs text-emerald-600 block">Zero local tailpipe</span>
                   </div>
                 </div>
               </div>
@@ -315,7 +315,7 @@ export const YardBlockDetailModal: React.FC<YardBlockDetailModalProps> = ({
                     onClose();
                     onNavigate("ECO_CALCULATOR");
                   }}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white border border-slate-200 text-[#004B91] hover:bg-blue-50 font-bold transition-colors shadow-2xs"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white border border-slate-200 text-brand hover:bg-blue-50 font-bold transition-colors shadow-2xs"
                 >
                   <Calculator className="w-3.5 h-3.5" />
                   <span>Green Booking & Eco Routing</span>

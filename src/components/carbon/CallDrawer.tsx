@@ -49,8 +49,8 @@ export const CallDrawer: React.FC<{ record: CallRecord; onClose: () => void }> =
         <div className="bg-slate-900 text-white px-5 py-4 flex items-start justify-between gap-3">
           <div>
             <div className="font-black text-base">{r.vessel}</div>
-            <div className="text-[11px] text-slate-300">
-              {r.carrier} · {t("Berth", "Cầu")} {r.berth} · {stamp(r.etaMin)} → {stamp(r.etdMin)} · <span className="font-mono">{r.recordNo}</span>
+            <div className="text-xs text-slate-300">
+              {r.carrier} · {t("Berth", "Cầu")} {r.berth} · {stamp(r.etaMin)} → {stamp(r.etdMin)} · <span className="font-code">{r.recordNo}</span>
             </div>
           </div>
           <button type="button" onClick={onClose} className="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center shrink-0 cursor-pointer">
@@ -69,25 +69,25 @@ export const CallDrawer: React.FC<{ record: CallRecord; onClose: () => void }> =
               { l: t("Uncertainty", "Độ bất định"), v: `±${num(r.uncertaintyPct, 1)}%` },
             ].map((x) => (
               <div key={x.l} className="bg-slate-50 border border-slate-200 rounded-lg p-2">
-                <div className="text-[10px] font-bold text-slate-500">{x.l}</div>
+                <div className="text-xs font-bold text-slate-500">{x.l}</div>
                 <div className="font-bold text-slate-900 tabular-nums">{x.v}</div>
               </div>
             ))}
           </div>
           <div>
-            <div className="text-[11px] font-bold text-slate-700 mb-1">{t("Directly measured share", "Tỷ lệ đo trực tiếp")}</div>
+            <div className="text-xs font-bold text-slate-700 mb-1">{t("Directly measured share", "Tỷ lệ đo trực tiếp")}</div>
             <MeasuredBar pct={r.measuredPct} />
           </div>
 
           <div>
-            <div className="text-[11px] font-bold text-slate-700">{t("Emissions by source (kgCO₂e)", "Phát thải theo nguồn (kgCO₂e)")}</div>
+            <div className="text-xs font-bold text-slate-700">{t("Emissions by source (kgCO₂e)", "Phát thải theo nguồn (kgCO₂e)")}</div>
             <div className="h-48">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={bars} layout="vertical" margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
-                  <XAxis type="number" fontSize={10} stroke="#64748B" tickLine={false} tickFormatter={(v: number) => num(v)} />
-                  <YAxis type="category" dataKey="name" fontSize={10} stroke="#64748B" tickLine={false} width={110} />
+                  <XAxis type="number" fontSize={12} stroke="#94A3B8" tickLine={false} tickFormatter={(v: number) => num(v)} />
+                  <YAxis type="category" dataKey="name" fontSize={12} stroke="#94A3B8" tickLine={false} width={110} />
                   <Tooltip formatter={(v: any, k: any) => [`${num(Number(v))} kg`, levelLabel(k as DataLevel)]} />
-                  <Legend formatter={(k: any) => levelLabel(k as DataLevel)} wrapperStyle={{ fontSize: 10 }} />
+                  <Legend formatter={(k: any) => levelLabel(k as DataLevel)} wrapperStyle={{ fontSize: 12 }} />
                   {(["MEASURED", "ALLOCATED", "ESTIMATED"] as DataLevel[]).map((lv) => (
                     <Bar key={lv} dataKey={lv} stackId="s" fill={LEVEL_COLOR[lv]} />
                   ))}
@@ -118,7 +118,7 @@ export const CallDrawer: React.FC<{ record: CallRecord; onClose: () => void }> =
                     </td>
                     <td className="py-1.5 px-2 text-right tabular-nums">
                       {num(l.effectiveFactor, 4)}
-                      <div className="text-[10px] text-slate-400 font-mono">{l.factorId}</div>
+                      <div className="text-xs text-slate-400 font-code">{l.factorId}</div>
                     </td>
                     <td className="py-1.5 px-2 text-right tabular-nums font-bold">{num(l.kg)}</td>
                   </tr>
@@ -128,13 +128,13 @@ export const CallDrawer: React.FC<{ record: CallRecord; onClose: () => void }> =
           </div>
 
           <div>
-            <div className="text-[11px] font-bold text-slate-700">{t("At-berth power (15 min)", "Công suất khi nằm bến (15 phút)")}</div>
+            <div className="text-xs font-bold text-slate-700">{t("At-berth power (15 min)", "Công suất khi nằm bến (15 phút)")}</div>
             <div className="h-32">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={power} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
-                  <XAxis dataKey="label" fontSize={9} stroke="#64748B" tickLine={false} interval={Math.max(1, Math.floor(power.length / 5))} />
-                  <YAxis fontSize={10} stroke="#64748B" tickLine={false} width={40} tickFormatter={(v: number) => num(v)} />
+                  <CartesianGrid vertical={false} stroke="#EEF0F3" />
+                  <XAxis dataKey="label" fontSize={12} stroke="#94A3B8" tickLine={false} interval={Math.max(1, Math.floor(power.length / 5))} />
+                  <YAxis fontSize={12} stroke="#94A3B8" tickLine={false} width={40} tickFormatter={(v: number) => num(v)} />
                   <Tooltip formatter={(v: any) => [`${num(Number(v))} kW`, t("Power", "Công suất")]} />
                   <Area type="monotone" dataKey="kw" stroke="#004B91" fill="#4A81C9" fillOpacity={0.3} isAnimationActive={false} />
                 </AreaChart>
@@ -151,7 +151,7 @@ export const CallDrawer: React.FC<{ record: CallRecord; onClose: () => void }> =
               <ul className="px-3 pb-2 space-y-1">
                 {meters.map((m) => (
                   <li key={m.id + m.source} className="flex items-center justify-between gap-2">
-                    <span className="font-mono text-[11px]">{m.id}</span>
+                    <span className="font-code text-xs">{m.id}</span>
                     <span className="tabular-nums">
                       {num(m.qty)} {m.unit}
                     </span>
@@ -165,13 +165,13 @@ export const CallDrawer: React.FC<{ record: CallRecord; onClose: () => void }> =
           <div className="border border-slate-200 rounded-xl">
             <button type="button" onClick={() => setShowFormula((v) => !v)} className="w-full flex items-center justify-between px-3 py-2 font-bold text-slate-800 cursor-pointer">
               <span className="flex items-center gap-1.5">
-                <Calculator className="w-4 h-4 text-[#004B91]" />
+                <Calculator className="w-4 h-4 text-brand" />
                 {t("Show how it was allocated", "Xem cách phân bổ")}
               </span>
               {showFormula ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
             </button>
             {showFormula && (
-              <div className="px-3 pb-3 space-y-1.5 text-[11px]">
+              <div className="px-3 pb-3 space-y-1.5 text-xs">
                 {r.lines.map((l) => (
                   <div key={l.source}>
                     <b>{t(SOURCE_META[l.source].name.en, SOURCE_META[l.source].name.vn)}:</b>{" "}
@@ -212,25 +212,25 @@ export const CallDrawer: React.FC<{ record: CallRecord; onClose: () => void }> =
                   `Điện bờ giúp tránh ≈ ${num(r.avoidedAuxKg)} kgCO₂e từ máy phụ của tàu (${num(AUX_ENGINE_KG_PER_KWH, 3)} kg/kWh).`
                 )}
               </div>
-              <div className="text-[10px] text-violet-700">
+              <div className="text-xs text-violet-700">
                 {t("Influence boundary – not added to the port inventory.", "Thuộc phạm vi ảnh hưởng, không cộng vào kiểm kê của cảng.")}
               </div>
             </div>
           )}
 
-          <div className="text-[10px] text-slate-500">
+          <div className="text-xs text-slate-500">
             {t(
               `Port average ${num(LEDGER_TOTALS.intensity, 2)} kgCO₂e/TEU · this call ${pct(((r.intensity - LEDGER_TOTALS.intensity) / LEDGER_TOTALS.intensity) * 100)} vs average`,
               `Bình quân cảng ${num(LEDGER_TOTALS.intensity, 2)} kgCO₂e/TEU · lượt tàu này ${pct(((r.intensity - LEDGER_TOTALS.intensity) / LEDGER_TOTALS.intensity) * 100)} so với bình quân`
             )}
           </div>
-          <div className="text-[10px] text-slate-500 break-all">
-            SHA-256: <span className="font-mono">{r.hash}</span>
+          <div className="text-xs text-slate-500 break-all">
+            SHA-256: <span className="font-code">{r.hash}</span>
           </div>
         </div>
 
         <div className="border-t border-slate-200 p-4 flex flex-wrap items-center justify-end gap-2">
-          {notice && <span className="text-[11px] text-slate-500 mr-auto">{notice}</span>}
+          {notice && <span className="text-xs text-slate-500 mr-auto">{notice}</span>}
           <button type="button" onClick={() => downloadRecordJson(r)} className="px-3 py-2 rounded-lg border border-slate-200 text-xs font-bold text-slate-700 hover:bg-slate-50 flex items-center gap-1.5 cursor-pointer">
             <FileJson className="w-3.5 h-3.5" />
             {t("Record file (.json)", "Tệp hồ sơ (.json)")}
@@ -241,7 +241,7 @@ export const CallDrawer: React.FC<{ record: CallRecord; onClose: () => void }> =
               const ok = openRecordPdf(r, lang);
               setNotice(ok ? null : t("Pop-up blocked – allow pop-ups and retry.", "Trình duyệt chặn tab mới – hãy cho phép rồi thử lại."));
             }}
-            className="px-3 py-2 rounded-lg bg-[#004B91] text-white text-xs font-bold hover:bg-[#00386E] flex items-center gap-1.5 cursor-pointer"
+            className="px-3 py-2 rounded-lg bg-brand text-white text-xs font-bold hover:bg-brand-hover flex items-center gap-1.5 cursor-pointer"
           >
             <FileText className="w-3.5 h-3.5" />
             {t("Emission record (PDF)", "Hồ sơ phát thải (PDF)")}

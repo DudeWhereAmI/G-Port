@@ -1,7 +1,8 @@
 import React, { useMemo, useState } from "react";
 import { Area, Bar, BarChart, CartesianGrid, ComposedChart, Legend, Line, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { ExternalLink, Plus } from "lucide-react";
+import { AlertTriangle, ExternalLink, Plus } from "lucide-react";
 import { useLanguage } from "../../context/LanguageContext";
+import { SERIES } from "../../theme/tokens";
 import { formatKShort, useFormat, useMoneyFormat } from "../../utils/format";
 import { minuteLabel } from "../../data/module1Forecast";
 import { EMISSION_FACTORS, EmissionFactorVersion } from "../../data/emissionFactors";
@@ -39,7 +40,7 @@ export const IpmvpPanel: React.FC<{ onOpenM3?: () => void }> = ({ onOpenM3 }) =>
       )}
       right={
         onOpenM3 && (
-          <button type="button" onClick={onOpenM3} className="px-2.5 py-1.5 rounded-lg border border-slate-200 text-[11px] font-bold text-[#004B91] hover:bg-blue-50 flex items-center gap-1 whitespace-nowrap cursor-pointer">
+          <button type="button" onClick={onOpenM3} className="px-2.5 py-1.5 rounded-lg border border-slate-200 text-xs font-bold text-brand hover:bg-blue-50 flex items-center gap-1 whitespace-nowrap cursor-pointer">
             {t("View the M-3 dispatch plan", "Xem lịch điều độ ở M-3")}
             <ExternalLink className="w-3 h-3" />
           </button>
@@ -53,7 +54,7 @@ export const IpmvpPanel: React.FC<{ onOpenM3?: () => void }> = ({ onOpenM3 }) =>
           { l: t("Cost", "Chi phí"), v: `${vnd(IPMVP.savedVnd)}/${t("day", "ngày")}` },
         ].map((x) => (
           <div key={x.l} className="rounded-xl bg-emerald-50 border border-emerald-200 p-2.5">
-            <div className="text-[10px] font-bold text-emerald-800">{x.l}</div>
+            <div className="text-xs font-bold text-emerald-800">{x.l}</div>
             <div className="font-black text-emerald-900 tabular-nums text-sm">{x.v}</div>
           </div>
         ))}
@@ -61,18 +62,18 @@ export const IpmvpPanel: React.FC<{ onOpenM3?: () => void }> = ({ onOpenM3 }) =>
       <div className="h-60">
         <ResponsiveContainer width="100%" height="100%">
           <ComposedChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
-            <XAxis dataKey="minute" type="number" domain={[0, 1440]} ticks={Array.from({ length: 13 }, (_, i) => i * 120)} tickFormatter={(m: number) => minuteLabel(m)} fontSize={10} stroke="#64748B" tickLine={false} />
-            <YAxis domain={[0, 10000]} tickFormatter={(v: number) => formatKShort(v)} fontSize={10} stroke="#64748B" tickLine={false} width={40} label={{ value: "kW", position: "top", offset: 8, fontSize: 10 }} />
+            <CartesianGrid vertical={false} stroke="#EEF0F3" />
+            <XAxis dataKey="minute" type="number" domain={[0, 1440]} ticks={Array.from({ length: 13 }, (_, i) => i * 120)} tickFormatter={(m: number) => minuteLabel(m)} fontSize={12} stroke="#94A3B8" tickLine={false} />
+            <YAxis domain={[0, 10000]} tickFormatter={(v: number) => formatKShort(v)} fontSize={12} stroke="#94A3B8" tickLine={false} width={40} label={{ value: "kW", position: "top", offset: 8, fontSize: 12 }} />
             <Tooltip formatter={(v: any, k: any) => (k === "saved" ? null : [`${num(Number(v))} kW`, k === "baseline" ? t("Adjusted baseline", "Mức nền điều chỉnh") : t("After dispatch", "Sau điều độ")])} />
-            <Legend formatter={(k: any) => (k === "baseline" ? t("Adjusted baseline", "Mức nền điều chỉnh") : k === "reporting" ? t("After dispatch", "Sau điều độ") : t("Verified saving", "Tiết kiệm đã xác minh"))} wrapperStyle={{ fontSize: 10 }} />
+            <Legend formatter={(k: any) => (k === "baseline" ? t("Adjusted baseline", "Mức nền điều chỉnh") : k === "reporting" ? t("After dispatch", "Sau điều độ") : t("Verified saving", "Tiết kiệm đã xác minh"))} wrapperStyle={{ fontSize: 12 }} />
             <Area dataKey="saved" fill="#10B981" fillOpacity={0.45} stroke="none" isAnimationActive={false} />
-            <Line dataKey="baseline" stroke="#64748B" strokeDasharray="4 3" dot={false} strokeWidth={1.75} isAnimationActive={false} />
+            <Line dataKey="baseline" stroke="#94A3B8" strokeDasharray="4 3" dot={false} strokeWidth={1.75} isAnimationActive={false} />
             <Line dataKey="reporting" stroke="#004B91" dot={false} strokeWidth={2.25} isAnimationActive={false} />
           </ComposedChart>
         </ResponsiveContainer>
       </div>
-      <div className="text-[10px] text-slate-500">
+      <div className="text-xs text-slate-500">
         {t(
           `Peak ${num(IPMVP.peakBefore)} → ${num(IPMVP.peakAfter)} kW. Intervals after the last update are verified as metering arrives.`,
           `Đỉnh ${num(IPMVP.peakBefore)} → ${num(IPMVP.peakAfter)} kW. Các chu kỳ sau lần cập nhật cuối được xác minh khi có số đo.`
@@ -121,14 +122,14 @@ export const FactorLibrary: React.FC = () => {
       title={t("Emission-factor library (versioned)", "Thư viện hệ số phát thải (có phiên bản)")}
       note={t("Locked records keep their factor version; only new periods use a new version", "Hồ sơ đã khóa giữ hệ số cũ; chỉ kỳ mới áp dụng phiên bản mới")}
       right={
-        <button type="button" onClick={() => setOpen((o) => !o)} className="px-2.5 py-1.5 rounded-lg bg-[#004B91] text-white text-[11px] font-bold flex items-center gap-1 whitespace-nowrap cursor-pointer">
+        <button type="button" onClick={() => setOpen((o) => !o)} className="px-2.5 py-1.5 rounded-lg bg-brand text-white text-xs font-bold flex items-center gap-1 whitespace-nowrap cursor-pointer">
           <Plus className="w-3.5 h-3.5" />
           {t("Add grid EF version", "Thêm phiên bản EF lưới")}
         </button>
       }
     >
       {open && (
-        <div className="flex flex-wrap items-end gap-2 bg-slate-50 border border-slate-200 rounded-xl p-3 text-[11px]">
+        <div className="flex flex-wrap items-end gap-2 bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs">
           <label className="space-y-0.5">
             <div className="font-bold text-slate-600">{t("Value (kgCO₂e/kWh)", "Giá trị (kgCO₂e/kWh)")}</div>
             <input value={form.value} onChange={(e) => setForm({ ...form, value: e.target.value })} placeholder="0,6" className="w-24 px-2 py-1 border border-slate-200 rounded-lg" />
@@ -147,8 +148,8 @@ export const FactorLibrary: React.FC = () => {
         </div>
       )}
       {lockedOnOld > 0 && (
-        <div className="rounded-xl border border-amber-300 bg-amber-50 px-3 py-2 text-[11px] text-amber-900 font-semibold">
-          ⚠️ {t(`${lockedOnOld} locked records use an older factor version and are kept unchanged.`, `${lockedOnOld} hồ sơ dùng phiên bản cũ và được giữ nguyên.`)}
+        <div className="rounded-xl border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-900 font-semibold">
+          <AlertTriangle className="w-4 h-4 text-warning shrink-0" aria-hidden="true" /> {t(`${lockedOnOld} locked records use an older factor version and are kept unchanged.`, `${lockedOnOld} hồ sơ dùng phiên bản cũ và được giữ nguyên.`)}
         </div>
       )}
       <div className="overflow-x-auto border border-slate-200 rounded-xl">
@@ -169,15 +170,15 @@ export const FactorLibrary: React.FC = () => {
               <tr key={f.id} className={f.status === "ARCHIVED" ? "text-slate-400" : ""}>
                 <td className="py-1.5 px-2.5">
                   {t(f.name.en, f.name.vn)}
-                  <div className="font-mono text-[10px] text-slate-400">{f.id}</div>
+                  <div className="font-code text-xs text-slate-400">{f.id}</div>
                 </td>
                 <td className="py-1.5 px-2.5 text-right tabular-nums font-bold">{num(f.value, f.value < 1 ? 4 : 3)}</td>
                 <td className="py-1.5 px-2.5">{f.unit}</td>
-                <td className="py-1.5 px-2.5 text-[11px]">{t(f.source.en, f.source.vn)}</td>
+                <td className="py-1.5 px-2.5 text-xs">{t(f.source.en, f.source.vn)}</td>
                 <td className="py-1.5 px-2.5">{f.year}</td>
                 <td className="py-1.5 px-2.5 whitespace-nowrap">{f.effectiveFrom.split("-").reverse().join("/")}</td>
                 <td className="py-1.5 px-2.5">
-                  <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${f.status === "ACTIVE" ? "bg-emerald-100 text-emerald-800" : "bg-slate-100 text-slate-500"}`}>
+                  <span className={`px-1.5 py-0.5 rounded text-xs font-bold ${f.status === "ACTIVE" ? "bg-emerald-100 text-emerald-800" : "bg-slate-100 text-slate-500"}`}>
                     {f.status === "ACTIVE" ? t("In use", "Đang dùng") : t("Archived", "Lưu trữ")}
                   </span>
                 </td>
@@ -218,7 +219,7 @@ export const UncertaintyPanel: React.FC<{ calls: CallRecord[] }> = ({ calls }) =
           .filter((x) => x.v > 0)
           .sort((a, b) => b.v - a.v)
           .map((x) => (
-            <div key={x.k} className="flex items-center gap-2 text-[11px]">
+            <div key={x.k} className="flex items-center gap-2 text-xs">
               <span className="w-32 truncate">{t(SOURCE_META[x.k].name.en, SOURCE_META[x.k].name.vn)}</span>
               <div className="flex-1 h-2 rounded-full bg-slate-100 overflow-hidden">
                 <div className="h-full" style={{ width: `${(x.v / varTotal) * 100}%`, backgroundColor: SOURCE_META[x.k].color }} />
@@ -227,7 +228,7 @@ export const UncertaintyPanel: React.FC<{ calls: CallRecord[] }> = ({ calls }) =
             </div>
           ))}
       </div>
-      <div className="text-[10px] text-slate-500">{t("Share of the variance contributed by each source", "Tỷ trọng đóng góp vào phương sai theo nguồn")}</div>
+      <div className="text-xs text-slate-500">{t("Share of the variance contributed by each source", "Tỷ trọng đóng góp vào phương sai theo nguồn")}</div>
     </Panel>
   );
 };
@@ -279,46 +280,46 @@ export const ReductionWhatIf: React.FC = () => {
         <div className="space-y-3">
           {sliders.map((s) => (
             <label key={s.l} className="block space-y-1">
-              <div className="flex justify-between text-[11px] font-bold">
+              <div className="flex justify-between text-xs font-bold">
                 <span className="text-slate-700">{s.l}</span>
                 <span className="tabular-nums">{s.d}</span>
               </div>
-              <input type="range" min={s.min} max={s.max} step={s.step} value={s.v} onChange={(e) => s.set(Number(e.target.value))} className="w-full accent-[#004B91] cursor-pointer" />
+              <input type="range" min={s.min} max={s.max} step={s.step} value={s.v} onChange={(e) => s.set(Number(e.target.value))} className="w-full accent-brand cursor-pointer" />
             </label>
           ))}
         </div>
         <div className="space-y-2">
           <div className="grid grid-cols-3 gap-2 text-xs">
             <div className="rounded-xl bg-slate-50 border border-slate-200 p-2">
-              <div className="text-[10px] font-bold text-slate-500">tCO₂e/{t("year", "năm")}</div>
+              <div className="text-xs font-bold text-slate-500">tCO₂e/{t("year", "năm")}</div>
               <div className="font-black tabular-nums">
                 {num(total(calc.now))} → {num(total(calc.next))}
               </div>
             </div>
             <div className="rounded-xl bg-slate-50 border border-slate-200 p-2">
-              <div className="text-[10px] font-bold text-slate-500">kgCO₂e/TEU</div>
+              <div className="text-xs font-bold text-slate-500">kgCO₂e/TEU</div>
               <div className="font-black tabular-nums">
                 {num((total(calc.now) * 1000) / teuYear, 2)} → {num((total(calc.next) * 1000) / teuYear, 2)}
               </div>
             </div>
             <div className="rounded-xl bg-violet-50 border border-violet-200 p-2">
-              <div className="text-[10px] font-bold text-violet-800">{t("Ship emissions avoided (influence)", "Phát thải tàu tránh được (ảnh hưởng)")}</div>
+              <div className="text-xs font-bold text-violet-800">{t("Ship emissions avoided (influence)", "Phát thải tàu tránh được (ảnh hưởng)")}</div>
               <div className="font-black tabular-nums text-violet-900">{num(calc.next.avoided)} t/{t("yr", "năm")}</div>
             </div>
           </div>
           <div className="h-44">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={data} layout="vertical" margin={{ top: 4, right: 16, left: 0, bottom: 0 }}>
-                <XAxis type="number" fontSize={10} stroke="#64748B" tickFormatter={(v: number) => num(v)} />
-                <YAxis type="category" dataKey="name" fontSize={11} stroke="#64748B" width={70} />
+                <XAxis type="number" fontSize={12} stroke="#94A3B8" tickFormatter={(v: number) => num(v)} />
+                <YAxis type="category" dataKey="name" fontSize={12} stroke="#94A3B8" width={70} />
                 <Tooltip formatter={(v: any, k: any) => [`${num(Number(v))} tCO₂e/${t("yr", "năm")}`, k === "s1" ? "Scope 1" : "Scope 2"]} />
-                <Legend formatter={(k: any) => (k === "s1" ? "Scope 1" : "Scope 2")} wrapperStyle={{ fontSize: 10 }} />
-                <Bar dataKey="s2" stackId="a" fill="#4A81C9" />
-                <Bar dataKey="s1" stackId="a" fill="#F59E0B" radius={[0, 3, 3, 0]} />
+                <Legend formatter={(k: any) => (k === "s1" ? "Scope 1" : "Scope 2")} wrapperStyle={{ fontSize: 12 }} />
+                <Bar dataKey="s2" stackId="a" fill={SERIES.scope2} />
+                <Bar dataKey="s1" stackId="a" fill={SERIES.scope1} radius={[0, 3, 3, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
-          <div className="text-[10px] text-slate-500">
+          <div className="text-xs text-slate-500">
             {t(
               "More OPS raises the port's Scope 2 but removes ship auxiliary-engine emissions (carriers' Scope 3).",
               "Tăng OPS làm tăng Scope 2 của cảng nhưng loại bỏ phát thải máy phụ của tàu (Scope 3 của hãng tàu)."

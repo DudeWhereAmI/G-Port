@@ -155,53 +155,53 @@ export const CheAnalyticsView: React.FC<CheAnalyticsViewProps> = ({ onNavigate }
           onClick={() => setActiveEventDetail({ eventKey: "CONGESTION", hour: selectedHour })}
           className="bg-amber-50/80 hover:bg-amber-100/70 p-4 rounded-xl border-2 border-amber-400 shadow-2xs cursor-pointer transition-colors"
         >
-          <div className="flex items-center justify-between text-amber-900 text-[11px] font-bold mb-1">
+          <div className="flex items-center justify-between text-amber-900 text-xs font-bold mb-1">
             <span>Delayed / Waiting Vehicles</span>
             <AlertTriangle className="w-4 h-4 text-amber-600" />
           </div>
           <div className="text-xl sm:text-2xl font-black text-amber-800 font-mono tabular-nums">
             {delayedCount} <span className="text-xs font-sans font-bold">Units Delayed</span>
           </div>
-          <div className="text-[11px] text-amber-800 font-semibold mt-0.5">
+          <div className="text-xs text-amber-800 font-semibold mt-0.5">
             {ev.CONGESTION} in traffic · {ev.WAIT} waiting at cranes
           </div>
         </div>
 
         <div className="bg-white p-4 rounded-xl border border-slate-200/90 shadow-2xs">
-          <div className="flex items-center justify-between text-slate-500 text-[11px] font-bold mb-1">
+          <div className="flex items-center justify-between text-slate-500 text-xs font-bold mb-1">
             <span>Active Working Vehicles</span>
             <CheckCircle2 className="w-4 h-4 text-emerald-600" />
           </div>
           <div className="text-xl sm:text-2xl font-black text-emerald-700 font-mono tabular-nums">
             {workingCount} <span className="text-xs text-slate-500 font-sans font-semibold">Units Moving</span>
           </div>
-          <div className="text-[11px] text-slate-500 font-medium mt-0.5">
+          <div className="text-xs text-slate-500 font-medium mt-0.5">
             {ev.MOVE} hauling · {ev.PICK + ev.PLACE} lifting/stacking
           </div>
         </div>
 
         <div className="bg-white p-4 rounded-xl border border-slate-200/90 shadow-2xs">
-          <div className="flex items-center justify-between text-slate-500 text-[11px] font-bold mb-1">
+          <div className="flex items-center justify-between text-slate-500 text-xs font-bold mb-1">
             <span>Eco-Idle Standby</span>
             <Clock className="w-4 h-4 text-slate-500" />
           </div>
           <div className="text-xl sm:text-2xl font-black text-slate-900 font-mono tabular-nums">
             {ev.IDLE} <span className="text-xs text-slate-500 font-sans font-semibold">Units Paused</span>
           </div>
-          <div className="text-[11px] text-emerald-700 font-semibold mt-0.5">
+          <div className="text-xs text-emerald-700 font-semibold mt-0.5">
             Auto power-saving mode active
           </div>
         </div>
 
         <div className="bg-white p-4 rounded-xl border border-slate-200/90 shadow-2xs">
-          <div className="flex items-center justify-between text-slate-500 text-[11px] font-bold mb-1">
+          <div className="flex items-center justify-between text-slate-500 text-xs font-bold mb-1">
             <span>Equipment Power Draw</span>
-            <Zap className="w-4 h-4 text-[#004B91]" />
+            <Zap className="w-4 h-4 text-brand" />
           </div>
-          <div className="text-xl sm:text-2xl font-black text-[#004B91] font-mono tabular-nums">
+          <div className="text-xl sm:text-2xl font-black text-brand font-mono tabular-nums">
             {activeHourData.totalPowerKw.toLocaleString()} <span className="text-xs text-slate-500 font-sans font-semibold">kW</span>
           </div>
-          <div className="text-[11px] text-slate-500 font-medium mt-0.5">
+          <div className="text-xs text-slate-500 font-medium mt-0.5">
             Across {totalVehicles} active units at {selectedHour}
           </div>
         </div>
@@ -213,7 +213,7 @@ export const CheAnalyticsView: React.FC<CheAnalyticsViewProps> = ({ onNavigate }
       <div className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-2xs space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
           <div>
-            <div className="text-xs font-bold text-[#004B91]">
+            <div className="text-xs font-bold text-brand">
               Yard Vehicles &amp; Cranes Breakdown
             </div>
             <h2 className="text-base font-black text-slate-900 tracking-tight">
@@ -228,7 +228,7 @@ export const CheAnalyticsView: React.FC<CheAnalyticsViewProps> = ({ onNavigate }
                 type="button"
                 onClick={() => setSelectedHour(d.hour)}
                 className={`px-3 py-1.5 rounded-lg font-bold transition-colors cursor-pointer ${
-                  selectedHour === d.hour ? "bg-[#004B91] text-white" : "text-slate-600 hover:text-slate-900"
+                  selectedHour === d.hour ? "bg-brand text-white" : "text-slate-600 hover:text-slate-900"
                 }`}
               >
                 {d.hour}
@@ -258,12 +258,12 @@ export const CheAnalyticsView: React.FC<CheAnalyticsViewProps> = ({ onNavigate }
                       <span>{info.plainLabel}</span>
                     </span>
                     {info.isAlert && (
-                      <span className="px-1.5 py-0.2 rounded bg-amber-500 text-white text-[9px] font-bold uppercase shrink-0">
+                      <span className="px-1.5 py-0.2 rounded bg-amber-500 text-white text-xs font-bold shrink-0">
                         Attention
                       </span>
                     )}
                   </div>
-                  <p className="text-[11px] text-slate-500 mt-1 line-clamp-2">
+                  <p className="text-xs text-slate-500 mt-1 line-clamp-2">
                     {info.description}
                   </p>
                 </div>
@@ -278,7 +278,7 @@ export const CheAnalyticsView: React.FC<CheAnalyticsViewProps> = ({ onNavigate }
 
                   <button
                     type="button"
-                    className="px-2.5 py-1 rounded-lg bg-white border border-slate-200 hover:bg-[#004B91] hover:text-white text-slate-700 text-[11px] font-bold transition-colors"
+                    className="px-2.5 py-1 rounded-lg bg-white border border-slate-200 hover:bg-brand hover:text-white text-slate-700 text-xs font-bold transition-colors"
                   >
                     View Vehicles
                   </button>
@@ -303,7 +303,7 @@ export const CheAnalyticsView: React.FC<CheAnalyticsViewProps> = ({ onNavigate }
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-1.5 text-[10px] font-bold">
+          <div className="flex flex-wrap items-center gap-1.5 text-xs font-bold">
             {Object.entries(CHE_EVENT_COLORS).map(([key, item]) => (
               <button
                 key={key}
@@ -330,7 +330,7 @@ export const CheAnalyticsView: React.FC<CheAnalyticsViewProps> = ({ onNavigate }
                 return (
                   <g key={val}>
                     <line x1="40" y1={y} x2="780" y2={y} stroke="#f1f5f9" strokeWidth="1" />
-                    <text x="30" y={y + 3} fill="#94a3b8" fontSize="10" fontFamily="monospace" textAnchor="end">
+                    <text x="30" y={y + 3} fill="#94a3b8" fontSize="10" fontFamily="Inter, sans-serif" textAnchor="end">
                       {val}
                     </text>
                   </g>
@@ -346,7 +346,7 @@ export const CheAnalyticsView: React.FC<CheAnalyticsViewProps> = ({ onNavigate }
 
                 return (
                   <g key={hData.hour}>
-                    <text x={groupX + 56} y="196" fill="#334155" fontSize="11" fontWeight="bold" fontFamily="monospace" textAnchor="middle">
+                    <text x={groupX + 56} y="196" fill="#334155" fontSize="11" fontWeight="bold" fontFamily="Inter, sans-serif" textAnchor="middle">
                       {hData.hour} ({hData.totalPowerKw} kW)
                     </text>
 
@@ -381,7 +381,7 @@ export const CheAnalyticsView: React.FC<CheAnalyticsViewProps> = ({ onNavigate }
                             fill="#475569"
                             fontSize="9"
                             fontWeight="bold"
-                            fontFamily="monospace"
+                            fontFamily="Inter, sans-serif"
                             textAnchor="middle"
                           >
                             {val}

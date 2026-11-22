@@ -94,7 +94,7 @@ export function openForecastPdf(r: ForecastResult, m: ExportMeta): boolean {
     .map((p) => {
       const warn = !p.locked && p.pPeak >= 0.1;
       return `<tr class="${p.locked ? "locked" : warn ? "warn" : ""}"><td>${p.label}–${minuteLabel(p.minute + INTERVAL_MINUTES)}</td><td>${n(p.p10)}</td><td><b>${n(p.p50)}</b></td><td>${n(p.p90)}</td><td>${n(p.pv)}</td><td><b>${n(p.netGrid)}</b></td><td>${
-        p.locked ? "🔒" : `${n(p.pPeak * 100, 1)}%`
+        p.locked ? L(lang, "Locked", "Đã khóa") : `${n(p.pPeak * 100, 1)}%`
       }</td><td>${p.actual === null ? "" : n(p.actual)}</td><td>${touLabel(p.tou)}</td></tr>`;
     })
     .join("");

@@ -43,26 +43,26 @@ export const ReforecastLog: React.FC = () => {
             const delta = e.peakBeforeKw === null ? null : e.peakAfterKw - e.peakBeforeKw;
             return (
               <tr key={`${e.minute}-${i}`} className={i === 0 ? "bg-blue-50/60" : ""}>
-                <td className="py-2 px-3 font-mono font-bold text-slate-900 whitespace-nowrap">{minuteLabelWithDay(e.minute, lang)}</td>
-                <td className="py-2 px-3 font-mono text-slate-700">#{e.version}</td>
+                <td className="py-2 px-3 font-bold text-slate-900 whitespace-nowrap">{minuteLabelWithDay(e.minute, lang)}</td>
+                <td className="py-2 px-3 text-slate-700">#{e.version}</td>
                 <td className="py-2 px-3">
-                  <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold whitespace-nowrap ${KIND_STYLE[e.kind]}`}>{kindLabel[e.kind]}</span>
+                  <span className={`px-1.5 py-0.5 rounded text-xs font-bold whitespace-nowrap ${KIND_STYLE[e.kind]}`}>{kindLabel[e.kind]}</span>
                 </td>
                 <td className="py-2 px-3 text-slate-800">{t(e.cause.en, e.cause.vn)}</td>
-                <td className="py-2 px-3 text-right font-mono tabular-nums whitespace-nowrap">
+                <td className="py-2 px-3 text-right tabular-nums whitespace-nowrap">
                   {e.peakBeforeKw === null ? (
                     <b>{num(e.peakAfterKw)} kW</b>
                   ) : (
                     <>
                       {num(e.peakBeforeKw)} → <b>{num(e.peakAfterKw)} kW</b>
                       {delta !== 0 && delta !== null && (
-                        <span className={`ml-1 text-[10px] font-bold ${delta > 0 ? "text-red-700" : "text-emerald-700"}`}>
+                        <span className={`ml-1 text-xs font-bold ${delta > 0 ? "text-red-700" : "text-emerald-700"}`}>
                           ({delta > 0 ? "+" : "−"}{num(Math.abs(delta))})
                         </span>
                       )}
                     </>
                   )}
-                  <span className="text-slate-500 text-[10px]"> @{e.peakAfterTime}</span>
+                  <span className="text-slate-500 text-xs"> @{e.peakAfterTime}</span>
                 </td>
                 <td className="py-2 px-3 text-slate-600 whitespace-nowrap">{t(e.actor.en, e.actor.vn)}</td>
               </tr>
@@ -70,7 +70,7 @@ export const ReforecastLog: React.FC = () => {
           })}
         </tbody>
       </table>
-      <div className="px-3 py-2 text-[10px] text-slate-500 border-t border-slate-100 bg-slate-50">
+      <div className="px-3 py-2 text-xs text-slate-500 border-t border-slate-100 bg-slate-50">
         {t(
           "Showing the day-ahead run, event-based re-forecasts and rolling updates that changed inputs; other 15-minute rolling updates only extend the locked history.",
           "Hiển thị lần lập dự báo ngày tới, các lần tái dự báo theo sự kiện và các lần cuốn chiếu có thay đổi đầu vào; các lần cuốn chiếu 15 phút khác chỉ mở rộng phần lịch sử đã khóa."

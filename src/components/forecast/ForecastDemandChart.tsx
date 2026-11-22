@@ -11,6 +11,8 @@ import {
   ReferenceLine,
   ReferenceArea,
 } from "recharts";
+import { Lock } from "lucide-react";
+import { NEUTRAL, SERIES, STATUS } from "../../theme/tokens";
 import { useLanguage } from "../../context/LanguageContext";
 import { useFormat, formatKShort } from "../../utils/format";
 import {
@@ -29,21 +31,21 @@ import { TIMELINE_LEFT, TIMELINE_RIGHT, TimeDomain, timelineTicks } from "./time
 export type ForecastChartMode = "TOTAL" | "FEEDERS";
 
 export const FORECAST_CHART_COLORS = {
-  p50: "#004B91",
-  band: "#60A5FA",
-  actual: "#475569",
-  pv: "#059669",
-  netGrid: "#7C3AED",
-  limit: "#D97706",
-  overArea: "#FFEDD5",
-  vessel: "#F97316",
-  now: "#0F172A",
+  p50: SERIES.forecast,
+  band: SERIES.band,
+  actual: SERIES.actual,
+  pv: SERIES.pv,
+  netGrid: SERIES.netGrid,
+  limit: SERIES.limit,
+  overArea: STATUS.warning.soft,
+  vessel: SERIES.diesel,
+  now: NEUTRAL.ink,
 };
 
 export const TOU_BG: Record<TouBand, string | null> = {
-  OFF_PEAK: "#E0F2FE",
+  OFF_PEAK: STATUS.info.soft,
   STANDARD: null,
-  PEAK: "#FEE2E2",
+  PEAK: STATUS.danger.soft,
 };
 
 const Y_MAX = 10000;
@@ -97,7 +99,7 @@ const TooltipRow: React.FC<{ color: string; label: string; value: string; strong
       <span className="inline-block w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: color }} />
       {label}
     </span>
-    <span className={`font-mono tabular-nums ${strong ? "font-bold" : "font-semibold"} ${valueClass ?? ""}`}>{value}</span>
+    <span className={`tabular-nums ${strong ? "font-bold" : "font-semibold"} ${valueClass ?? ""}`}>{value}</span>
   </div>
 );
 
@@ -111,15 +113,15 @@ const ChartTooltip: React.FC<any> = ({ active, payload, mode, highlightVessel })
   const switched = !p.locked && p.pPeak >= P_PEAK_SWITCH;
 
   return (
-    <div className="bg-white border border-slate-300 rounded-xl shadow-lg px-3 py-2.5 text-[11px] text-slate-900 min-w-[236px]">
+    <div className="bg-white border border-slate-300 rounded-xl shadow-lg px-3 py-2.5 text-xs text-slate-900 min-w-[236px]">
       <div className="flex items-center justify-between gap-3 mb-1.5">
-        <span className="font-bold text-slate-900 font-mono">
+        <span className="font-bold text-slate-900">
           {p.label} – {minuteLabel(p.minute + INTERVAL_MINUTES)}
         </span>
         {p.locked ? (
-          <span className="text-[10px] font-bold text-slate-600">🔒 {t("Locked", "Đã khóa")}</span>
+          <span className="text-xs font-bold text-slate-600 inline-flex items-center gap-1"><Lock className="w-3.5 h-3.5 text-slate-500 shrink-0" aria-hidden="true" />{t("Locked", "Đã khóa")}</span>
         ) : switched ? (
-          <span className="text-[10px] font-bold text-orange-700">{t("Planned on P90", "Lập kế hoạch theo P90")}</span>
+          <span className="text-xs font-bold text-orange-700">{t("Planned on P90", "Lập kế hoạch theo P90")}</span>
         ) : null}
       </div>
       <div className="space-y-1">
@@ -218,10 +220,10 @@ export const ForecastDemandChart: React.FC<ForecastDemandChartProps> = ({
               ifOverflow="hidden"
               shape={fillShape("#94A3B8", 0.1)}
               label={{
-                value: t("🔒 Locked – kept for audit", "🔒 Đã khóa – phục vụ kiểm toán"),
+                value: t("Locked – kept for audit", "Đã khóa – phục vụ kiểm toán"),
                 position: "insideTop",
                 fill: "#334155",
-                fontSize: 11,
+                fontSize: 12,
                 fontWeight: 700,
               }}
             />
@@ -229,28 +231,28 @@ export const ForecastDemandChart: React.FC<ForecastDemandChartProps> = ({
 
           <ReferenceArea y1={SUBSTATION_LIMIT_KW} y2={Y_MAX} ifOverflow="hidden" shape={fillShape(FORECAST_CHART_COLORS.overArea, 0.75)} />
 
-          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
+          <CartesianGrid vertical={false} stroke="#EEF0F3" />
           <XAxis
             dataKey="minute"
             type="number"
             domain={domain}
             ticks={timelineTicks(domain)}
             tickFormatter={(m: number) => minuteLabel(m)}
-            stroke="#64748B"
-            fontSize={11}
+            stroke="#94A3B8"
+            fontSize={12}
             tickLine={false}
             allowDataOverflow
           />
           <YAxis
-            stroke="#64748B"
-            fontSize={11}
+            stroke="#94A3B8"
+            fontSize={12}
             tickLine={false}
             domain={[0, Y_MAX]}
             ticks={Y_TICKS}
             tickFormatter={(v: number) => formatKShort(v)}
             width={TIMELINE_LEFT}
             allowDataOverflow
-            label={{ value: "kW", position: "top", offset: 12, fontSize: 11, fill: "#475569", fontWeight: 700 }}
+            label={{ value: "kW", position: "top", offset: 12, fontSize: 12, fill: "#475569", fontWeight: 700 }}
           />
 
           <Tooltip
@@ -346,7 +348,7 @@ export const ForecastDemandChart: React.FC<ForecastDemandChartProps> = ({
             stroke={FORECAST_CHART_COLORS.limit}
             strokeDasharray="6 4"
             strokeWidth={1.75}
-            label={{ value: limitLabel, position: "insideTopRight", fill: "#B45309", fontSize: 11, fontWeight: 700 }}
+            label={{ value: limitLabel, position: "insideTopRight", fill: "#B45309", fontSize: 12, fontWeight: 700 }}
           />
 
           {NOW_MINUTE >= domain[0] && NOW_MINUTE <= domain[1] && (
@@ -358,7 +360,7 @@ export const ForecastDemandChart: React.FC<ForecastDemandChartProps> = ({
                 value: t(`Now ${minuteLabel(NOW_MINUTE)}`, `Bây giờ ${minuteLabel(NOW_MINUTE)}`),
                 position: "top",
                 fill: "#0F172A",
-                fontSize: 11,
+                fontSize: 12,
                 fontWeight: 800,
               }}
             />
@@ -379,7 +381,7 @@ export const ForecastChartLegend: React.FC<{
   const { t } = useLanguage();
   const { num } = useFormat();
   return (
-    <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[11px] font-semibold text-slate-600" style={{ paddingLeft: TIMELINE_LEFT }}>
+    <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs font-semibold text-slate-600" style={{ paddingLeft: TIMELINE_LEFT }}>
       {mode === "TOTAL" ? (
         <>
           <LegendItem color={FORECAST_CHART_COLORS.actual} kind="line" label={t("Metered (locked)", "Thực đo (đã khóa)")} />

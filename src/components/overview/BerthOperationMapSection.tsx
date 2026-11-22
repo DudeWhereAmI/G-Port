@@ -1070,7 +1070,7 @@ export const BerthOperationMapSection: React.FC<
           </div>
 
           <div className="flex-1 flex items-center gap-2 min-w-[180px]">
-            <span className="text-[11px] font-mono text-slate-500">00:00</span>
+            <span className="text-xs font-mono text-slate-500">00:00</span>
             <input
               type="range"
               min={0}
@@ -1081,9 +1081,9 @@ export const BerthOperationMapSection: React.FC<
                 setSimMode("REPLAY_24H");
                 setSimHour(parseFloat(e.target.value));
               }}
-              className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-[#004B91]"
+              className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-brand"
             />
-            <span className="text-[11px] font-mono text-slate-500">24:00</span>
+            <span className="text-xs font-mono text-slate-500">24:00</span>
           </div>
         </div>
 
@@ -1111,16 +1111,16 @@ export const BerthOperationMapSection: React.FC<
           </div>
           <span className="text-slate-300">·</span>
           <div className="flex items-center gap-1.5 text-slate-700">
-            <Zap className="w-3.5 h-3.5 text-[#004B91]" />
+            <Zap className="w-3.5 h-3.5 text-brand" />
             <span>Net Grid:</span>
-            <strong className="font-mono text-[#004B91]">
+            <strong className="font-mono text-brand">
               {activeWindow.netGridKw.toLocaleString()} kW
             </strong>
           </div>
           <button
             type="button"
             onClick={() => onInspectForecastWindow(activeWindow.id, false)}
-            className="px-2.5 py-1 rounded-lg bg-[#004B91] hover:bg-[#00386E] text-white font-bold text-[11px] flex items-center gap-1 transition-colors cursor-pointer"
+            className="px-2.5 py-1 rounded-lg bg-brand hover:bg-brand-hover text-white font-bold text-xs flex items-center gap-1 transition-colors cursor-pointer"
           >
             <Gauge className="w-3 h-3" />
             <span>Feeder Breakdown</span>
@@ -1136,7 +1136,7 @@ export const BerthOperationMapSection: React.FC<
         <div className="lg:col-span-8 relative bg-[#0B2239] overflow-hidden flex flex-col justify-between min-h-[430px]">
           {/* Top Map Legend Overlay */}
           <div className="p-3.5 flex flex-wrap items-center justify-between gap-2 z-10 pointer-events-none">
-            <div className="bg-slate-950/85 backdrop-blur-xs border border-slate-700/80 px-3 py-1.5 rounded-xl text-[11px] text-slate-200 flex flex-wrap items-center gap-3 pointer-events-auto">
+            <div className="bg-slate-950/85 backdrop-blur-xs border border-slate-700/80 px-3 py-1.5 rounded-xl text-xs text-slate-200 flex flex-wrap items-center gap-3 pointer-events-auto">
               <span className="flex items-center gap-1.5 font-semibold">
                 <span className="w-4 h-0.5 bg-emerald-400 inline-block" />
                 <span>Traveled Route (Đã đi)</span>
@@ -1152,7 +1152,7 @@ export const BerthOperationMapSection: React.FC<
             </div>
 
             {activeWindow.status === "OVERLOAD_WARNING" && (
-              <div className="bg-amber-500 text-slate-950 px-3 py-1.5 rounded-xl text-[11px] font-black flex items-center gap-1.5 shadow-lg pointer-events-auto">
+              <div className="bg-amber-500 text-slate-950 px-3 py-1.5 rounded-xl text-xs font-black flex items-center gap-1.5 shadow-lg pointer-events-auto">
                 <AlertTriangle className="w-3.5 h-3.5" />
                 <span>
                   SUBSTATION OVERLOAD WARNING ({activeWindow.expectedKw.toLocaleString()} kW &gt; 8,000 kW)
@@ -1557,7 +1557,7 @@ export const BerthOperationMapSection: React.FC<
           {/* Bottom Quick Vessel Selector Bar inside Map */}
           <div className="px-4 py-2.5 bg-slate-950/90 border-t border-slate-800 flex flex-wrap items-center justify-between gap-2 text-xs">
             <div className="flex flex-wrap items-center gap-1.5">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mr-1">
+              <span className="text-xs font-bold text-slate-400 mr-1">
                 Active AIS Targets:
               </span>
               {vesselsAIS.map((v) => {
@@ -1567,7 +1567,7 @@ export const BerthOperationMapSection: React.FC<
                     key={v.id}
                     type="button"
                     onClick={() => setSelectedVesselId(v.id)}
-                    className={`px-2.5 py-1 rounded-lg font-bold text-[11px] flex items-center gap-1.5 transition-colors cursor-pointer ${
+                    className={`px-2.5 py-1 rounded-lg font-bold text-xs flex items-center gap-1.5 transition-colors cursor-pointer ${
                       active
                         ? "bg-white text-slate-950"
                         : "bg-slate-800/90 text-slate-300 hover:bg-slate-700"
@@ -1578,7 +1578,7 @@ export const BerthOperationMapSection: React.FC<
                       style={{ backgroundColor: v.color }}
                     />
                     <span>{v.vesselName.replace("MV ", "")}</span>
-                    <span className="text-[10px] opacity-75">
+                    <span className="text-xs opacity-75">
                       · {v.stateBadgeText}
                     </span>
                   </button>
@@ -1586,7 +1586,7 @@ export const BerthOperationMapSection: React.FC<
               })}
             </div>
 
-            <span className="text-[11px] text-slate-400 font-mono">
+            <span className="text-xs text-slate-400 font-mono">
               Click any ship, crane, or geofence zone to inspect
             </span>
           </div>
@@ -1597,7 +1597,7 @@ export const BerthOperationMapSection: React.FC<
           <div className="space-y-4">
             <div className="flex items-start justify-between gap-2 border-b border-slate-200 pb-3">
               <div>
-                <div className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-500">
+                <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-500">
                   <span>AIS Target · IMO {selectedVessel.imo}</span>
                   <span aria-hidden="true">·</span>
                   <span>Voyage {selectedVessel.voyage}</span>
@@ -1605,13 +1605,13 @@ export const BerthOperationMapSection: React.FC<
                 <h3 className="text-base font-black text-slate-900 mt-0.5">
                   {selectedVessel.vesselName}
                 </h3>
-                <div className="text-xs font-semibold text-[#004B91] mt-0.5">
+                <div className="text-xs font-semibold text-brand mt-0.5">
                   {selectedVessel.berthLabel}
                 </div>
               </div>
 
               <span
-                className="px-2.5 py-1 rounded-lg text-[10px] font-bold text-white shrink-0"
+                className="px-2.5 py-1 rounded-lg text-xs font-bold text-white shrink-0"
                 style={{ backgroundColor: selectedVessel.color }}
               >
                 {selectedVessel.stateBadgeText}
@@ -1621,35 +1621,35 @@ export const BerthOperationMapSection: React.FC<
             {/* Key Real-Time Navigation & Load Metrics */}
             <div className="grid grid-cols-2 gap-2.5 text-xs">
               <div className="p-3 rounded-xl bg-white border border-slate-200/80">
-                <span className="text-[10px] font-bold uppercase text-slate-400 block">
+                <span className="text-xs font-bold text-slate-400 block">
                   AIS Speed &amp; Heading
                 </span>
                 <strong className="font-mono text-slate-900 font-bold block mt-0.5">
                   {selectedVessel.speedKnots}
                 </strong>
-                <span className="text-[10px] text-slate-500 font-mono">
+                <span className="text-xs text-slate-500 font-mono">
                   HDG {(selectedVessel.headingDeg + 360) % 360}°T
                 </span>
               </div>
 
               <div className="p-3 rounded-xl bg-white border border-slate-200/80">
-                <span className="text-[10px] font-bold uppercase text-slate-400 block">
+                <span className="text-xs font-bold text-slate-400 block">
                   Cargo Progress
                 </span>
                 <strong className="font-mono text-slate-900 font-bold block mt-0.5">
                   {selectedVessel.teuProgress}
                 </strong>
-                <span className="text-[10px] text-slate-500">
+                <span className="text-xs text-slate-500">
                   TOS Manifest Sync
                 </span>
               </div>
 
               <div className="col-span-2 p-3 rounded-xl bg-white border border-slate-200/80 flex items-center justify-between">
                 <div>
-                  <span className="text-[10px] font-bold uppercase text-slate-400 block">
+                  <span className="text-xs font-bold text-slate-400 block">
                     Active Berth Electrical Demand
                   </span>
-                  <strong className="font-mono text-sm font-black text-[#004B91]">
+                  <strong className="font-mono text-sm font-black text-brand">
                     {selectedVessel.powerKwLabel}
                   </strong>
                 </div>
@@ -1661,9 +1661,9 @@ export const BerthOperationMapSection: React.FC<
                       "LIVE_MONITORING"
                     )
                   }
-                  className="px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-[11px] flex items-center gap-1 transition-colors cursor-pointer"
+                  className="px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs flex items-center gap-1 transition-colors cursor-pointer"
                 >
-                  <Gauge className="w-3.5 h-3.5 text-[#004B91]" />
+                  <Gauge className="w-3.5 h-3.5 text-brand" />
                   <span>Sub-Meters</span>
                 </button>
               </div>
@@ -1672,17 +1672,17 @@ export const BerthOperationMapSection: React.FC<
             {/* Active Window Feeder Snapshot for Selected Vessel */}
             <div className="p-3.5 rounded-xl bg-white border border-slate-200/80 space-y-2 text-xs">
               <div className="flex items-center justify-between">
-                <span className="font-bold text-slate-900 text-[11px] uppercase tracking-wider">
+                <span className="font-bold text-slate-900 text-xs">
                   1-Day Forecast Link ({activeWindow.timeWindow})
                 </span>
                 <span className="font-mono font-bold text-slate-700">
                   {activeWindow.expectedKw.toLocaleString()} kW
                 </span>
               </div>
-              <p className="text-[11px] text-slate-600 leading-relaxed">
+              <p className="text-xs text-slate-600 leading-relaxed">
                 {activeWindow.operationSummary}
               </p>
-              <div className="grid grid-cols-3 gap-1.5 pt-1 text-[10px] font-mono">
+              <div className="grid grid-cols-3 gap-1.5 pt-1 text-xs font-mono">
                 <div className="p-1.5 rounded bg-slate-50 border border-slate-200/70">
                   <span className="text-slate-400 block">F-01 Cranes</span>
                   <strong className="text-slate-900">
@@ -1716,7 +1716,7 @@ export const BerthOperationMapSection: React.FC<
                     "TURNAROUND"
                   )
                 }
-                className="py-2 px-3 rounded-xl bg-[#004B91] hover:bg-[#00386E] text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                className="py-2 px-3 rounded-xl bg-brand hover:bg-brand-hover text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
               >
                 <Ship className="w-3.5 h-3.5" />
                 <span>2D Turnaround Popup</span>
@@ -1744,7 +1744,7 @@ export const BerthOperationMapSection: React.FC<
               }
               className="w-full py-2 px-3 rounded-xl border border-slate-300 bg-white hover:bg-slate-100 text-slate-800 font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
             >
-              <FileText className="w-3.5 h-3.5 text-[#004B91]" />
+              <FileText className="w-3.5 h-3.5 text-brand" />
               <span>Open 1-Day Load Forecast Report ({selectedVessel.linkedWindowId})</span>
               <ArrowUpRight className="w-3.5 h-3.5 text-slate-400" />
             </button>
@@ -1796,7 +1796,7 @@ export const BerthOperationMapSection: React.FC<
               onClick={() => setActivePhaseTab("IN_PROGRESS")}
               className={`px-3 py-1.5 rounded-lg font-bold transition-colors cursor-pointer ${
                 activePhaseTab === "IN_PROGRESS"
-                  ? "bg-white text-[#004B91] shadow-2xs"
+                  ? "bg-white text-brand shadow-2xs"
                   : "text-slate-600 hover:text-slate-900"
               }`}
             >
@@ -1830,10 +1830,10 @@ export const BerthOperationMapSection: React.FC<
                   <div className="flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
                     <div>
-                      <h4 className="text-xs font-black uppercase tracking-wider text-slate-900">
+                      <h4 className="text-xs font-black text-slate-900">
                         1. Đã Chạy Hôm Nay (Completed · 00:00–12:00)
                       </h4>
-                      <span className="text-[11px] text-slate-500">
+                      <span className="text-xs text-slate-500">
                         6 windows completed · Metered &amp; verified
                       </span>
                     </div>
@@ -1842,7 +1842,7 @@ export const BerthOperationMapSection: React.FC<
                     <strong className="text-xs font-black text-emerald-700 block">
                       {completedEnergyMwh} MWh
                     </strong>
-                    <span className="text-[10px] text-slate-500">Recorded</span>
+                    <span className="text-xs text-slate-500">Recorded</span>
                   </div>
                 </div>
 
@@ -1863,7 +1863,7 @@ export const BerthOperationMapSection: React.FC<
                           <div className="text-xs font-black font-mono text-slate-900">
                             {item.timeWindow} · {item.vesselName.replace("MV ", "")}
                           </div>
-                          <div className="text-[11px] text-slate-500">
+                          <div className="text-xs text-slate-500">
                             {item.berth} · {item.stsCranes} Cranes · {item.reeferPlugs} Reefers
                           </div>
                         </div>
@@ -1871,13 +1871,13 @@ export const BerthOperationMapSection: React.FC<
                           <div className="text-xs font-black text-slate-900">
                             {item.actualKw?.toLocaleString()} kW
                           </div>
-                          <div className="text-[10px] text-slate-500">
+                          <div className="text-xs text-slate-500">
                             Forecast: {item.expectedKw.toLocaleString()} kW
                           </div>
                         </div>
                       </div>
 
-                      <p className="text-[11px] text-slate-600 line-clamp-1">
+                      <p className="text-xs text-slate-600 line-clamp-1">
                         {item.operationSummary}
                       </p>
 
@@ -1891,7 +1891,7 @@ export const BerthOperationMapSection: React.FC<
                               e.stopPropagation();
                               onOpenMeterModal(m.entityId, "LIVE_MONITORING");
                             }}
-                            className="px-2 py-0.5 rounded bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-[#004B91] font-mono text-[10px] font-semibold transition-colors cursor-pointer"
+                            className="px-2 py-0.5 rounded bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-brand font-mono text-xs font-semibold transition-colors cursor-pointer"
                           >
                             {m.id} ({m.kwOrFlow})
                           </button>
@@ -1910,21 +1910,21 @@ export const BerthOperationMapSection: React.FC<
               <div className="space-y-3">
                 <div className="flex items-center justify-between border-b border-blue-200 pb-3">
                   <div className="flex items-center gap-2">
-                    <Activity className="w-4 h-4 text-[#004B91] shrink-0" />
+                    <Activity className="w-4 h-4 text-brand shrink-0" />
                     <div>
-                      <h4 className="text-xs font-black uppercase tracking-wider text-slate-900">
+                      <h4 className="text-xs font-black text-slate-900">
                         2. Đang Làm Tại Bến (Active Now · 12:00–16:00)
                       </h4>
-                      <span className="text-[11px] text-slate-600">
+                      <span className="text-xs text-slate-600">
                         Live SCADA telemetry &amp; Peak Overload Alert (8,151 kW)
                       </span>
                     </div>
                   </div>
                   <div className="text-right font-mono">
-                    <strong className="text-xs font-black text-[#004B91] block">
+                    <strong className="text-xs font-black text-brand block">
                       {inProgressEnergyMwh} MWh
                     </strong>
-                    <span className="text-[10px] text-slate-500">Active Slot</span>
+                    <span className="text-xs text-slate-500">Active Slot</span>
                   </div>
                 </div>
 
@@ -1947,7 +1947,7 @@ export const BerthOperationMapSection: React.FC<
                       >
                         <div className="flex items-start justify-between gap-2">
                           <div>
-                            <div className="flex items-center gap-1.5 text-[11px] font-bold text-[#004B91]">
+                            <div className="flex items-center gap-1.5 text-xs font-bold text-brand">
                               <span>LIVE WINDOW</span>
                               <span aria-hidden="true">·</span>
                               <span>{item.berth}</span>
@@ -1964,7 +1964,7 @@ export const BerthOperationMapSection: React.FC<
                             >
                               {item.expectedKw.toLocaleString()} kW
                             </div>
-                            <div className="text-[10px] text-emerald-700">
+                            <div className="text-xs text-emerald-700">
                               Solar: -{item.solarKw.toLocaleString()} kW
                             </div>
                           </div>
@@ -1975,10 +1975,10 @@ export const BerthOperationMapSection: React.FC<
                         </p>
 
                         {/* Active Tasks Checklist */}
-                        <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200/80 space-y-1 text-[11px] text-slate-600">
+                        <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200/80 space-y-1 text-xs text-slate-600">
                           {item.scheduledTasks.map((task, idx) => (
                             <div key={idx} className="flex items-start gap-1.5">
-                              <span className="text-[#004B91] font-bold">•</span>
+                              <span className="text-brand font-bold">•</span>
                               <span>{task}</span>
                             </div>
                           ))}
@@ -1994,7 +1994,7 @@ export const BerthOperationMapSection: React.FC<
                                 e.stopPropagation();
                                 onOpenMeterModal(m.entityId, "LIVE_MONITORING");
                               }}
-                              className="px-2 py-0.5 rounded bg-blue-50 hover:bg-blue-100 text-[#004B91] font-mono text-[10px] font-bold transition-colors cursor-pointer"
+                              className="px-2 py-0.5 rounded bg-blue-50 hover:bg-blue-100 text-brand font-mono text-xs font-bold transition-colors cursor-pointer"
                             >
                               {m.id} · {m.kwOrFlow}
                             </button>
@@ -2016,10 +2016,10 @@ export const BerthOperationMapSection: React.FC<
                   <div className="flex items-center gap-2">
                     <Clock className="w-4 h-4 text-amber-600 shrink-0" />
                     <div>
-                      <h4 className="text-xs font-black uppercase tracking-wider text-slate-900">
+                      <h4 className="text-xs font-black text-slate-900">
                         3. Chuẩn Bị Thực Hiện (Scheduled · 16:00–24:00)
                       </h4>
-                      <span className="text-[11px] text-slate-500">
+                      <span className="text-xs text-slate-500">
                         4 upcoming windows queued on TOS &amp; Power Schedule
                       </span>
                     </div>
@@ -2028,7 +2028,7 @@ export const BerthOperationMapSection: React.FC<
                     <strong className="text-xs font-black text-amber-700 block">
                       {upcomingEnergyMwh} MWh
                     </strong>
-                    <span className="text-[10px] text-slate-500">Forecasted</span>
+                    <span className="text-xs text-slate-500">Forecasted</span>
                   </div>
                 </div>
 
@@ -2055,33 +2055,33 @@ export const BerthOperationMapSection: React.FC<
                             <div className="text-xs font-black font-mono text-slate-900">
                               {item.timeWindow} · {item.vesselName.replace("MV ", "")}
                             </div>
-                            <div className="text-[11px] text-slate-500">
+                            <div className="text-xs text-slate-500">
                               {item.berth} · {item.stsCranes} Cranes · {item.touLabel}
                             </div>
                           </div>
                           <div className="text-right font-mono shrink-0">
                             <div
                               className={`text-xs font-black ${
-                                isOverload ? "text-amber-700" : "text-[#004B91]"
+                                isOverload ? "text-amber-700" : "text-brand"
                               }`}
                             >
                               {item.expectedKw.toLocaleString()} kW
                             </div>
-                            <div className="text-[10px] text-slate-500">
+                            <div className="text-xs text-slate-500">
                               Range: {item.lowBoundKw.toLocaleString()}–{item.highBoundKw.toLocaleString()}
                             </div>
                           </div>
                         </div>
 
-                        <p className="text-[11px] text-slate-600 line-clamp-1">
+                        <p className="text-xs text-slate-600 line-clamp-1">
                           {item.operationSummary}
                         </p>
 
-                        <div className="flex items-center justify-between text-[10px] text-slate-500 pt-1 border-t border-slate-100">
+                        <div className="flex items-center justify-between text-xs text-slate-500 pt-1 border-t border-slate-100">
                           <span>
                             {item.scheduledTasks.length} scheduled work items
                           </span>
-                          <span className="font-bold text-[#004B91]">
+                          <span className="font-bold text-brand">
                             Click to inspect schedule &amp; feeders →
                           </span>
                         </div>
@@ -2103,7 +2103,7 @@ export const BerthOperationMapSection: React.FC<
           <div className="relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden my-8">
             <div className="bg-slate-900 text-white px-6 py-4 flex items-center justify-between">
               <div>
-                <div className="text-[11px] text-sky-300 font-semibold">
+                <div className="text-xs text-sky-300 font-semibold">
                   {selectedScheduleItem.phase === "COMPLETED"
                     ? "Completed Operation Record"
                     : selectedScheduleItem.phase === "IN_PROGRESS"
@@ -2129,19 +2129,19 @@ export const BerthOperationMapSection: React.FC<
               {/* Top 4 Consistent Load Forecast Metrics */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-slate-50 p-4 rounded-xl border border-slate-200">
                 <div>
-                  <span className="text-slate-400 block text-[10px] uppercase font-bold">
+                  <span className="text-slate-400 block text-xs font-bold">
                     Expected Power
                   </span>
                   <strong className="text-slate-900 text-sm font-black font-mono">
                     {selectedScheduleItem.expectedKw.toLocaleString()} kW
                   </strong>
-                  <span className="text-[10px] text-slate-500 font-mono block">
+                  <span className="text-xs text-slate-500 font-mono block">
                     Range: {selectedScheduleItem.lowBoundKw.toLocaleString()}–{selectedScheduleItem.highBoundKw.toLocaleString()} kW
                   </span>
                 </div>
 
                 <div>
-                  <span className="text-slate-400 block text-[10px] uppercase font-bold">
+                  <span className="text-slate-400 block text-xs font-bold">
                     {selectedScheduleItem.actualKw
                       ? "Actual Metered"
                       : "Schedule Status"}
@@ -2151,31 +2151,31 @@ export const BerthOperationMapSection: React.FC<
                       ? `${selectedScheduleItem.actualKw.toLocaleString()} kW`
                       : "Queued on TOS"}
                   </strong>
-                  <span className="text-[10px] text-slate-500 block">
+                  <span className="text-xs text-slate-500 block">
                     Solar Offset: -{selectedScheduleItem.solarKw.toLocaleString()} kW
                   </span>
                 </div>
 
                 <div>
-                  <span className="text-slate-400 block text-[10px] uppercase font-bold">
+                  <span className="text-slate-400 block text-xs font-bold">
                     Net Grid Draw
                   </span>
-                  <strong className="text-[#004B91] text-sm font-black font-mono">
+                  <strong className="text-brand text-sm font-black font-mono">
                     {selectedScheduleItem.netGridKw.toLocaleString()} kW
                   </strong>
-                  <span className="text-[10px] text-slate-500 block">
+                  <span className="text-xs text-slate-500 block">
                     Limit: 8,000 kW
                   </span>
                 </div>
 
                 <div>
-                  <span className="text-slate-400 block text-[10px] uppercase font-bold">
+                  <span className="text-slate-400 block text-xs font-bold">
                     Berth &amp; Equipment
                   </span>
                   <strong className="text-slate-900 text-xs font-bold block">
                     {selectedScheduleItem.stsCranes} STS Cranes
                   </strong>
-                  <span className="text-[10px] text-slate-500 block">
+                  <span className="text-xs text-slate-500 block">
                     {selectedScheduleItem.reeferPlugs} Reefer Plugs
                   </span>
                 </div>
@@ -2183,7 +2183,7 @@ export const BerthOperationMapSection: React.FC<
 
               {/* Scheduled Work List */}
               <div className="space-y-2">
-                <div className="font-bold text-slate-900 uppercase tracking-wider text-[11px]">
+                <div className="font-bold text-slate-900 text-xs">
                   Scheduled Berth Tasks &amp; Operational Events
                 </div>
                 <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
@@ -2198,7 +2198,7 @@ export const BerthOperationMapSection: React.FC<
 
               {/* Consistent F-01 to F-06 Feeder Load Table */}
               <div className="space-y-2">
-                <div className="font-bold text-slate-900 uppercase tracking-wider text-[11px]">
+                <div className="font-bold text-slate-900 text-xs">
                   1-Day Load Forecast Feeder Breakdown (F-01 to F-06)
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 font-mono text-xs">
@@ -2215,10 +2215,10 @@ export const BerthOperationMapSection: React.FC<
                       className="p-2.5 rounded-xl border border-slate-200 bg-white flex items-center justify-between"
                     >
                       <div>
-                        <span className="text-[10px] font-bold text-[#004B91] block">
+                        <span className="text-xs font-bold text-brand block">
                           {f.code}
                         </span>
-                        <span className="font-sans text-[11px] text-slate-600">
+                        <span className="font-sans text-xs text-slate-600">
                           {f.name}
                         </span>
                       </div>
@@ -2232,7 +2232,7 @@ export const BerthOperationMapSection: React.FC<
 
               {/* Linked Meters */}
               <div className="space-y-2">
-                <div className="font-bold text-slate-900 uppercase tracking-wider text-[11px]">
+                <div className="font-bold text-slate-900 text-xs">
                   Linked Telemetry Sub-Meters
                 </div>
                 <div className="flex flex-wrap gap-2">
@@ -2246,7 +2246,7 @@ export const BerthOperationMapSection: React.FC<
                       }}
                       className="px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-blue-50 text-slate-800 font-bold text-xs flex items-center gap-1.5 transition-colors cursor-pointer"
                     >
-                      <Gauge className="w-3.5 h-3.5 text-[#004B91]" />
+                      <Gauge className="w-3.5 h-3.5 text-brand" />
                       <span>
                         {m.label} ({m.id}) · {m.kwOrFlow}
                       </span>
@@ -2266,7 +2266,7 @@ export const BerthOperationMapSection: React.FC<
                       setSelectedScheduleItem(null);
                       onTraceEntityInTelemetry(targetEntity, "TURNAROUND");
                     }}
-                    className="px-3.5 py-2 rounded-xl bg-[#004B91] hover:bg-[#00386E] text-white font-bold text-xs flex items-center gap-1.5 transition-colors cursor-pointer"
+                    className="px-3.5 py-2 rounded-xl bg-brand hover:bg-brand-hover text-white font-bold text-xs flex items-center gap-1.5 transition-colors cursor-pointer"
                   >
                     <Ship className="w-3.5 h-3.5" />
                     <span>Open Telemetry Turnaround Popup</span>

@@ -124,7 +124,7 @@ export const VesselYardMatrixView: React.FC<VesselYardMatrixViewProps> = ({ onNa
       <div className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-2xs space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-100">
           <div>
-            <div className="text-xs font-bold text-[#004B91]">
+            <div className="text-xs font-bold text-brand">
               Quay Cranes &amp; Ship Unloading Plan
             </div>
             <h2 className="text-base font-black text-slate-900 tracking-tight">
@@ -138,7 +138,7 @@ export const VesselYardMatrixView: React.FC<VesselYardMatrixViewProps> = ({ onNa
               onClick={() => setShowScheduleTimeline(!showScheduleTimeline)}
               className="px-3 py-1.5 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-50 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
             >
-              <Clock className="w-3.5 h-3.5 text-[#004B91]" />
+              <Clock className="w-3.5 h-3.5 text-brand" />
               <span>{showScheduleTimeline ? "Hide Hourly Crane Timeline" : "Show Hourly Crane Timeline"}</span>
             </button>
           </div>
@@ -154,7 +154,7 @@ export const VesselYardMatrixView: React.FC<VesselYardMatrixViewProps> = ({ onNa
                 key={c.id}
                 className={`rounded-xl p-3 border transition-all flex flex-col justify-between gap-2 ${
                   isSelected
-                    ? "bg-blue-50/90 border-2 border-[#004B91] shadow-xs"
+                    ? "bg-blue-50/90 border-2 border-brand shadow-xs"
                     : isHighestLoad
                     ? "bg-amber-50/40 border-amber-300"
                     : "bg-slate-50/80 border-slate-200 hover:border-slate-300"
@@ -170,7 +170,7 @@ export const VesselYardMatrixView: React.FC<VesselYardMatrixViewProps> = ({ onNa
                     <span>{c.id}</span>
                   </button>
                   {isHighestLoad && (
-                    <span className="text-[9px] font-bold uppercase px-1.5 py-0.2 rounded bg-amber-500 text-white">
+                    <span className="text-xs font-bold px-1.5 py-0.2 rounded bg-amber-500 text-white">
                       Peak Crane
                     </span>
                   )}
@@ -178,12 +178,12 @@ export const VesselYardMatrixView: React.FC<VesselYardMatrixViewProps> = ({ onNa
 
                 <div className="flex items-baseline justify-between font-mono">
                   <div>
-                    <span className="text-[10px] text-slate-400 block font-sans">Power Draw</span>
+                    <span className="text-xs text-slate-400 block font-sans">Power Draw</span>
                     <strong className="text-sm font-black text-slate-900 tabular-nums">{c.kwRate} kW</strong>
                   </div>
                   <div className="text-right">
-                    <span className="text-[10px] text-slate-400 block font-sans">Workload</span>
-                    <strong className="text-sm font-black text-[#004B91] tabular-nums">{c.moves} moves</strong>
+                    <span className="text-xs text-slate-400 block font-sans">Workload</span>
+                    <strong className="text-sm font-black text-brand tabular-nums">{c.moves} moves</strong>
                   </div>
                 </div>
 
@@ -191,8 +191,8 @@ export const VesselYardMatrixView: React.FC<VesselYardMatrixViewProps> = ({ onNa
                   <button
                     type="button"
                     onClick={() => setSelectedCrane(prev => prev === c.id ? "ALL" : c.id)}
-                    className={`py-1 rounded text-[10px] font-bold transition-colors cursor-pointer ${
-                      isSelected ? "bg-[#004B91] text-white" : "bg-white border border-slate-200 text-slate-700 hover:bg-slate-100"
+                    className={`py-1 rounded text-xs font-bold transition-colors cursor-pointer ${
+                      isSelected ? "bg-brand text-white" : "bg-white border border-slate-200 text-slate-700 hover:bg-slate-100"
                     }`}
                   >
                     {isSelected ? "Showing" : "Filter Map"}
@@ -200,7 +200,7 @@ export const VesselYardMatrixView: React.FC<VesselYardMatrixViewProps> = ({ onNa
                   <button
                     type="button"
                     onClick={() => setActiveCraneDetail(c.id)}
-                    className="py-1 rounded bg-[#004B91] hover:bg-blue-800 text-white text-[10px] font-bold transition-colors cursor-pointer"
+                    className="py-1 rounded bg-brand hover:bg-blue-800 text-white text-xs font-bold transition-colors cursor-pointer"
                   >
                     Details
                   </button>
@@ -212,8 +212,8 @@ export const VesselYardMatrixView: React.FC<VesselYardMatrixViewProps> = ({ onNa
 
         {/* Ship Bay Workload Bar (Bays 87 -> 03) */}
         <div className="overflow-x-auto no-scrollbar">
-          <div className="min-w-[860px] bg-slate-50 rounded-xl p-3 border border-slate-200/70 text-[10px]">
-            <div className="flex items-center justify-between mb-2 text-slate-600 font-semibold text-[11px]">
+          <div className="min-w-[860px] bg-slate-50 rounded-xl p-3 border border-slate-200/70 text-xs">
+            <div className="flex items-center justify-between mb-2 text-slate-600 font-semibold text-xs">
               <span>Ship Container Bays (Bays 87 to 03) — Highlighted bays have &gt;200 container moves</span>
               <span className="font-mono text-slate-500">Stern (Back) ← Ship Length → Bow (Front)</span>
             </div>
@@ -229,10 +229,10 @@ export const VesselYardMatrixView: React.FC<VesselYardMatrixViewProps> = ({ onNa
                       isHeavyBay ? "bg-amber-50 border-amber-400" : "bg-white border-slate-200"
                     }`}
                   >
-                    <span className="text-[10px] font-bold text-slate-800">Bay {b.bay}</span>
+                    <span className="text-xs font-bold text-slate-800">Bay {b.bay}</span>
 
                     <div 
-                      className={`h-6 rounded flex items-center justify-center text-[9px] font-bold ${
+                      className={`h-6 rounded flex items-center justify-center text-xs font-bold ${
                         craneObj ? `${craneObj.lightBg} ${craneObj.text} border ${craneObj.border}` : "bg-slate-100 text-slate-400"
                       }`}
                       title={`Deck: ${b.upperMoves} moves`}
@@ -241,7 +241,7 @@ export const VesselYardMatrixView: React.FC<VesselYardMatrixViewProps> = ({ onNa
                     </div>
 
                     <div 
-                      className={`h-6 rounded flex items-center justify-center text-[9px] font-bold ${
+                      className={`h-6 rounded flex items-center justify-center text-xs font-bold ${
                         craneObj ? `${craneObj.lightBg} ${craneObj.text} border ${craneObj.border}` : "bg-slate-100 text-slate-400"
                       }`}
                       title={`Hold: ${b.lowerMoves} moves`}
@@ -249,8 +249,8 @@ export const VesselYardMatrixView: React.FC<VesselYardMatrixViewProps> = ({ onNa
                       {b.lowerMoves}
                     </div>
 
-                    <div className={`text-[10px] font-black border-t border-slate-100 pt-0.5 ${
-                      isHeavyBay ? "text-amber-800" : "text-[#004B91]"
+                    <div className={`text-xs font-black border-t border-slate-100 pt-0.5 ${
+                      isHeavyBay ? "text-amber-800" : "text-brand"
                     }`}>
                       {b.moves}
                     </div>
@@ -264,7 +264,7 @@ export const VesselYardMatrixView: React.FC<VesselYardMatrixViewProps> = ({ onNa
         {/* Collapsible Hourly Schedule Timeline */}
         {showScheduleTimeline && (
           <div className="overflow-x-auto no-scrollbar">
-            <div className="min-w-[860px] bg-slate-900 rounded-xl p-3.5 text-white text-[10px]">
+            <div className="min-w-[860px] bg-slate-900 rounded-xl p-3.5 text-white text-xs">
               <div className="flex items-center justify-between mb-2 text-slate-300 font-semibold text-xs">
                 <span>Hourly Quay Crane Bay Sequence (20:00 – 03:00)</span>
                 <span className="font-mono text-slate-400">Colors match Crane S01–S05</span>
@@ -273,14 +273,14 @@ export const VesselYardMatrixView: React.FC<VesselYardMatrixViewProps> = ({ onNa
               <div className="space-y-1.5">
                 {TIMELINE_ROWS.map((row, rIdx) => (
                   <div key={rIdx} className="flex items-center gap-2 border-b border-slate-800/80 pb-1">
-                    <span className="w-14 font-mono text-slate-400 shrink-0 text-[10px]">{row.time}</span>
+                    <span className="w-14 font-mono text-slate-400 shrink-0 text-xs">{row.time}</span>
                     <div className="relative flex-1 h-6 bg-slate-800/70 rounded overflow-hidden">
                       {row.activeBlocks.map((blk, bIdx) => {
                         const cObj = CRANE_CONFIGS.find(c => c.id === blk.crane);
                         return (
                           <div
                             key={bIdx}
-                            className="absolute top-0 bottom-0 rounded flex items-center px-2 text-[9px] font-bold shadow-xs"
+                            className="absolute top-0 bottom-0 rounded flex items-center px-2 text-xs font-bold shadow-xs"
                             style={{
                               left: `${blk.left / 10}%`,
                               width: `${blk.w / 10}%`,
@@ -306,12 +306,12 @@ export const VesselYardMatrixView: React.FC<VesselYardMatrixViewProps> = ({ onNa
       <div className="bg-white border border-slate-200/90 rounded-xl px-4 py-2.5 flex flex-wrap items-center justify-between gap-3 text-xs shadow-2xs">
         <div className="flex flex-wrap items-center gap-3">
           <div className="flex items-center gap-2 font-bold">
-            <Ship className="w-4 h-4 text-[#004B91]" />
+            <Ship className="w-4 h-4 text-brand" />
             <span className="text-slate-600">Active Ship:</span>
             <select
               value={selectedVessel}
               onChange={(e) => setSelectedVessel(e.target.value)}
-              className="bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5 text-slate-900 font-bold focus:outline-none focus:ring-1 focus:ring-[#004B91]"
+              className="bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5 text-slate-900 font-bold focus:outline-none focus:ring-1 focus:ring-brand"
             >
               <option value="CALF-250901">MV CALF-250901 (Cat Lai Feeder)</option>
               <option value="CALF-250902">MV SPIRIT OF MUMBAI (Berth B2)</option>
@@ -320,7 +320,7 @@ export const VesselYardMatrixView: React.FC<VesselYardMatrixViewProps> = ({ onNa
             <button
               type="button"
               onClick={() => setShowVesselDetail(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#004B91] hover:bg-blue-800 text-white font-bold text-xs transition-colors shadow-2xs cursor-pointer"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-brand hover:bg-blue-800 text-white font-bold text-xs transition-colors shadow-2xs cursor-pointer"
             >
               <span>Ship &amp; Shore Power Details</span>
               <ExternalLink className="w-3 h-3" />
@@ -332,7 +332,7 @@ export const VesselYardMatrixView: React.FC<VesselYardMatrixViewProps> = ({ onNa
             <select
               value={selectedCrane}
               onChange={(e) => setSelectedCrane(e.target.value)}
-              className="bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5 text-slate-900 font-mono focus:outline-none focus:ring-1 focus:ring-[#004B91]"
+              className="bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5 text-slate-900 font-mono focus:outline-none focus:ring-1 focus:ring-brand"
             >
               <option value="ALL">All 5 Cranes (S01 – S05)</option>
               <option value="S01">Crane S01 (402 moves · 430 kW)</option>
@@ -366,12 +366,12 @@ export const VesselYardMatrixView: React.FC<VesselYardMatrixViewProps> = ({ onNa
         <div className="lg:col-span-7 bg-white rounded-2xl border border-slate-200/90 p-4 shadow-2xs flex flex-col">
           <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-2">
             <div className="flex items-center gap-2">
-              <Compass className="w-4 h-4 text-[#004B91]" />
-              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-800">
+              <Compass className="w-4 h-4 text-brand" />
+              <h3 className="text-xs font-bold text-slate-800">
                 Terminal Yard Map — Click any Yard Block to highlight route
               </h3>
             </div>
-            <span className="text-[11px] font-semibold text-amber-700">
+            <span className="text-xs font-semibold text-amber-700">
               Amber blocks = High Traffic (&gt;200 moves)
             </span>
           </div>
@@ -390,7 +390,7 @@ export const VesselYardMatrixView: React.FC<VesselYardMatrixViewProps> = ({ onNa
               {/* Waterway / River Channel */}
               <rect x="0" y="420" width="720" height="60" fill="#082f49" />
               <line x1="0" y1="420" x2="720" y2="420" stroke="#38bdf8" strokeWidth="2" strokeDasharray="6 3" />
-              <text x="20" y="465" fill="#38bdf8" fontSize="10" fontFamily="monospace" opacity="0.8">
+              <text x="20" y="465" fill="#38bdf8" fontSize="10" fontFamily="Inter, sans-serif" opacity="0.8">
                 DONG NAI RIVER · BERTH B1 – B4
               </text>
 
@@ -401,7 +401,7 @@ export const VesselYardMatrixView: React.FC<VesselYardMatrixViewProps> = ({ onNa
                 {[...Array(14)].map((_, i) => (
                   <rect key={i} x={60 + i * 15} y="0" width="12" height="7" rx="1" fill={i % 3 === 0 ? "#eab308" : i % 2 === 0 ? "#22c55e" : "#ef4444"} />
                 ))}
-                <text x="165" y="17" fill="#ffffff" fontSize="9" fontWeight="bold" textAnchor="middle" fontFamily="monospace">
+                <text x="165" y="17" fill="#ffffff" fontSize="9" fontWeight="bold" textAnchor="middle" fontFamily="Inter, sans-serif">
                   MV {selectedVessel} (Click for Shore Power)
                 </text>
               </g>
@@ -413,7 +413,7 @@ export const VesselYardMatrixView: React.FC<VesselYardMatrixViewProps> = ({ onNa
                 return (
                   <g key={crane.id} className="cursor-pointer" onClick={() => setActiveCraneDetail(crane.id)}>
                     <circle cx={cx} cy={cy} r="6.5" fill={crane.color} stroke="#ffffff" strokeWidth="1.5" />
-                    <text x={cx} y={cy - 10} fill={crane.color} fontSize="9" fontWeight="bold" textAnchor="middle" fontFamily="monospace">
+                    <text x={cx} y={cy - 10} fill={crane.color} fontSize="9" fontWeight="bold" textAnchor="middle" fontFamily="Inter, sans-serif">
                       {crane.id}
                     </text>
                   </g>
@@ -496,7 +496,7 @@ export const VesselYardMatrixView: React.FC<VesselYardMatrixViewProps> = ({ onNa
                       fill={isSelected ? "#38bdf8" : "#f8fafc"}
                       fontSize="9"
                       fontWeight="bold"
-                      fontFamily="monospace"
+                      fontFamily="Inter, sans-serif"
                     >
                       {b.block} ({b.count})
                     </text>
@@ -512,12 +512,12 @@ export const VesselYardMatrixView: React.FC<VesselYardMatrixViewProps> = ({ onNa
 
               {/* Main Road */}
               <line x1="300" y1="40" x2="300" y2="240" stroke="#475569" strokeWidth="4" strokeDasharray="8 4" />
-              <text x="310" y="60" fill="#94a3b8" fontSize="9" fontFamily="monospace">MAIN YARD ROAD</text>
+              <text x="310" y="60" fill="#94a3b8" fontSize="9" fontFamily="Inter, sans-serif">MAIN YARD ROAD</text>
             </svg>
 
             {/* Clear Map Legend */}
-            <div className="absolute top-2.5 right-2.5 bg-slate-900/90 backdrop-blur-xs border border-slate-700/80 rounded-lg p-2.5 text-[10px] text-white flex flex-col gap-1.5">
-              <span className="font-bold text-slate-300 uppercase text-[9px]">Yard Block Types</span>
+            <div className="absolute top-2.5 right-2.5 bg-slate-900/90 backdrop-blur-xs border border-slate-700/80 rounded-lg p-2.5 text-xs text-white flex flex-col gap-1.5">
+              <span className="font-bold text-slate-300 text-xs">Yard Block Types</span>
               <div className="flex items-center gap-1.5">
                 <span className="w-2.5 h-2.5 rounded-xs bg-[#78350f] border border-amber-400" />
                 <span className="text-amber-300 font-semibold">High Activity (&gt;200 moves)</span>
@@ -538,7 +538,7 @@ export const VesselYardMatrixView: React.FC<VesselYardMatrixViewProps> = ({ onNa
         <div className="lg:col-span-5 bg-white rounded-2xl border border-slate-200/90 p-4 shadow-2xs flex flex-col">
           <div className="flex items-center justify-between pb-2 border-b border-slate-100 mb-3">
             <div>
-              <div className="text-[10px] font-bold text-slate-500 uppercase">
+              <div className="text-xs font-bold text-slate-500">
                 Yard Block Container Moves
               </div>
               <h3 className="text-sm font-black text-slate-900 tracking-tight">
@@ -552,14 +552,14 @@ export const VesselYardMatrixView: React.FC<VesselYardMatrixViewProps> = ({ onNa
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search block..."
-                className="w-full px-2.5 py-1 bg-slate-50 border border-slate-200 rounded-lg text-xs font-mono focus:outline-none focus:ring-1 focus:ring-[#004B91]"
+                className="w-full px-2.5 py-1 bg-slate-50 border border-slate-200 rounded-lg text-xs font-mono focus:outline-none focus:ring-1 focus:ring-brand"
               />
             </div>
           </div>
 
           <div className="flex-1 overflow-y-auto max-h-[450px] no-scrollbar border border-slate-200/80 rounded-xl">
             <table className="w-full text-left text-xs border-collapse font-mono">
-              <thead className="bg-slate-100 text-slate-600 sticky top-0 text-[10px] font-bold uppercase border-b border-slate-200">
+              <thead className="bg-slate-100 text-slate-600 sticky top-0 text-xs font-bold border-b border-slate-200">
                 <tr>
                   <th className="py-2 px-2.5">Block</th>
                   <th className="py-2 px-2">Type / Status</th>
@@ -568,7 +568,7 @@ export const VesselYardMatrixView: React.FC<VesselYardMatrixViewProps> = ({ onNa
                   <th className="py-2 px-2 text-center">Details</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 text-[11px]">
+              <tbody className="divide-y divide-slate-100 text-xs">
                 {filteredBlocks.map((b) => {
                   const isSelected = highlightedBlock === b.block;
                   const isHeavy = b.count >= 200;
@@ -579,7 +579,7 @@ export const VesselYardMatrixView: React.FC<VesselYardMatrixViewProps> = ({ onNa
                       onClick={() => setHighlightedBlock(prev => prev === b.block ? null : b.block)}
                       className={`cursor-pointer transition-colors ${
                         isSelected 
-                          ? "bg-blue-50/90 text-[#004B91] font-bold" 
+                          ? "bg-blue-50/90 text-brand font-bold" 
                           : isHeavy
                           ? "bg-amber-50/50 hover:bg-amber-50"
                           : "hover:bg-slate-50 text-slate-700"
@@ -594,16 +594,16 @@ export const VesselYardMatrixView: React.FC<VesselYardMatrixViewProps> = ({ onNa
                       </td>
                       <td className="py-2 px-2 font-sans">
                         {isHeavy ? (
-                          <span className="inline-flex items-center gap-1 px-1.5 py-0.2 rounded bg-amber-500 text-white text-[9px] font-bold uppercase">
+                          <span className="inline-flex items-center gap-1 px-1.5 py-0.2 rounded bg-amber-500 text-white text-xs font-bold">
                             <AlertTriangle className="w-2.5 h-2.5" />
                             High Volume
                           </span>
                         ) : isReefer ? (
-                          <span className="px-1.5 py-0.2 rounded bg-emerald-100 text-emerald-800 text-[9px] font-bold uppercase">
+                          <span className="px-1.5 py-0.2 rounded bg-emerald-100 text-emerald-800 text-xs font-bold">
                             Reefer Cooling
                           </span>
                         ) : (
-                          <span className="text-[10px] text-slate-500">Dry Stack</span>
+                          <span className="text-xs text-slate-500">Dry Stack</span>
                         )}
                       </td>
                       <td className={`py-2 px-2 text-right font-black tabular-nums ${
@@ -623,7 +623,7 @@ export const VesselYardMatrixView: React.FC<VesselYardMatrixViewProps> = ({ onNa
                       >
                         <button
                           type="button"
-                          className="px-2 py-1 rounded bg-slate-100 hover:bg-[#004B91] text-slate-700 hover:text-white font-sans font-bold text-[10px] transition-colors cursor-pointer"
+                          className="px-2 py-1 rounded bg-slate-100 hover:bg-brand text-slate-700 hover:text-white font-sans font-bold text-xs transition-colors cursor-pointer"
                         >
                           Inspect
                         </button>
@@ -632,7 +632,7 @@ export const VesselYardMatrixView: React.FC<VesselYardMatrixViewProps> = ({ onNa
                   );
                 })}
               </tbody>
-              <tfoot className="bg-slate-50 text-slate-900 font-bold text-[11px] border-t border-slate-200 sticky bottom-0">
+              <tfoot className="bg-slate-50 text-slate-900 font-bold text-xs border-t border-slate-200 sticky bottom-0">
                 <tr>
                   <td colSpan={2} className="py-2 px-2.5 font-sans">Total ({filteredBlocks.length} Blocks)</td>
                   <td className="py-2 px-2 text-right tabular-nums">{totalMoves.toLocaleString()} moves</td>

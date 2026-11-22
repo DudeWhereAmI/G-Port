@@ -53,7 +53,7 @@ const Card: React.FC<{ title?: string; note?: string; right?: React.ReactNode; c
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2">
         <div>
           {title && <h2 className="font-bold text-slate-900 text-sm">{title}</h2>}
-          {note && <div className="text-[11px] text-slate-500 mt-0.5">{note}</div>}
+          {note && <div className="text-xs text-slate-500 mt-0.5">{note}</div>}
         </div>
         {right}
       </div>
@@ -133,11 +133,11 @@ export const OptimizationPage: React.FC<OptimizationPageProps> = ({
       <div className="bg-white p-6 rounded-2xl border border-slate-200/90 shadow-2xs space-y-3">
         <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-3">
           <div>
-            <div className="text-xs font-bold text-[#004B91] mb-1">
+            <div className="text-xs font-bold text-brand mb-1">
               {t("Peak Shaving & Dispatch (M-3)", "Cắt Đỉnh & Điều Độ Phụ Tải (M-3)")}
             </div>
             <h1 className="text-2xl font-black text-slate-900 tracking-tight">{t("Dispatch Decision Center", "Trung Tâm Ra Quyết Định Điều Độ")}</h1>
-            <div className="text-[11px] text-slate-600 mt-1">
+            <div className="text-xs text-slate-600 mt-1">
               {t(
                 `MILP · 96 × 15-min intervals · 12 asset groups · flexible ${num(FLEX_CAPACITY_KW)} kW`,
                 `MILP · 96 chu kỳ 15 phút · 12 nhóm tài sản · linh hoạt ${num(FLEX_CAPACITY_KW)} kW`
@@ -169,7 +169,7 @@ export const OptimizationPage: React.FC<OptimizationPageProps> = ({
               <button
                 type="button"
                 onClick={() => (onBackToForecast ? onBackToForecast() : onNavigate?.("MODULE_1_FORECAST"))}
-                className="px-2.5 py-1 rounded-full border border-blue-200 bg-blue-50 text-[#004B91] text-[11px] font-bold flex items-center gap-1 hover:bg-blue-100 cursor-pointer"
+                className="px-2.5 py-1 rounded-full border border-blue-200 bg-blue-50 text-brand text-xs font-bold flex items-center gap-1 hover:bg-blue-100 cursor-pointer"
               >
                 {t(`Input from M-1: P90 forecast · version #${FORECAST_VERSION}`, `Đầu vào từ M-1: dự báo P90 · phiên bản #${FORECAST_VERSION}`)}
                 <ExternalLink className="w-3 h-3" />
@@ -177,7 +177,7 @@ export const OptimizationPage: React.FC<OptimizationPageProps> = ({
               <button
                 type="button"
                 onClick={() => (onVerifyInModule2 ? onVerifyInModule2() : onNavigate?.("VESSEL_CARBON_INVOICE"))}
-                className="px-2.5 py-1 rounded-full border border-emerald-200 bg-emerald-50 text-emerald-800 text-[11px] font-bold flex items-center gap-1 hover:bg-emerald-100 cursor-pointer"
+                className="px-2.5 py-1 rounded-full border border-emerald-200 bg-emerald-50 text-emerald-800 text-xs font-bold flex items-center gap-1 hover:bg-emerald-100 cursor-pointer"
               >
                 <ShieldCheck className="w-3 h-3" />
                 {t("Verify savings in Module 2 (IPMVP)", "Xác minh tiết kiệm ở Module 2 (IPMVP)")}
@@ -187,7 +187,7 @@ export const OptimizationPage: React.FC<OptimizationPageProps> = ({
         </div>
         {/* C3 rhythms + solver */}
         <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-2 pt-3 border-t border-slate-100">
-          <div className="flex flex-wrap items-center gap-1.5 text-[11px] font-semibold text-slate-700">
+          <div className="flex flex-wrap items-center gap-1.5 text-xs font-semibold text-slate-700">
             {[
               t("22:00 day-ahead plan", "22:00 Lập kế hoạch ngày"),
               t("Every 15 min rolling re-plan", "Mỗi 15 phút điều chỉnh cuốn chiếu"),
@@ -195,12 +195,12 @@ export const OptimizationPage: React.FC<OptimizationPageProps> = ({
             ].map((x, i) => (
               <React.Fragment key={x}>
                 {i > 0 && <ArrowRight className="w-3 h-3 text-slate-400" />}
-                <span className={`px-2 py-0.5 rounded-full border ${i === 1 ? "border-[#004B91] bg-blue-50 text-[#004B91]" : "border-slate-200 bg-slate-50"}`}>{x}</span>
+                <span className={`px-2 py-0.5 rounded-full border ${i === 1 ? "border-brand bg-blue-50 text-brand" : "border-slate-200 bg-slate-50"}`}>{x}</span>
               </React.Fragment>
             ))}
           </div>
-          <div className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-600">
-            <Cpu className="w-3.5 h-3.5 text-[#004B91]" />
+          <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-600">
+            <Cpu className="w-3.5 h-3.5 text-brand" />
             {t(
               `Last solve ${minuteLabel(MILP_STATS.lastSolveMinute)} · ${num(MILP_STATS.solveSec, 2)} s · full pipeline ${MILP_STATS.pipelineSec} s · budget ${num(MILP_STATS.budgetMin, 2)} min`,
               `Lần giải gần nhất ${minuteLabel(MILP_STATS.lastSolveMinute)} · ${num(MILP_STATS.solveSec, 2)} s · toàn luồng ${MILP_STATS.pipelineSec} s · ngân sách ${num(MILP_STATS.budgetMin, 2)} phút`
@@ -208,7 +208,7 @@ export const OptimizationPage: React.FC<OptimizationPageProps> = ({
           </div>
         </div>
         {mode === "RECOMMEND" && (
-          <div className="text-[11px] text-slate-500">
+          <div className="text-xs text-slate-500">
             {t(
               "Recommendation mode: the plan runs alongside existing procedures; no command is sent to equipment.",
               "Chế độ Khuyến nghị: kế hoạch chạy song song với quy trình hiện hữu; không gửi lệnh tới thiết bị."
@@ -220,24 +220,24 @@ export const OptimizationPage: React.FC<OptimizationPageProps> = ({
       {/* KPIs */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <div className="bg-emerald-50/70 p-4 rounded-xl border-2 border-emerald-300">
-          <div className="flex items-center justify-between text-emerald-900 text-[11px] font-bold mb-1">
+          <div className="flex items-center justify-between text-emerald-900 text-xs font-bold mb-1">
             <span>{t("Peak after dispatch", "Đỉnh sau điều độ")}</span>
             <TrendingDown className="w-4 h-4 text-emerald-600" />
           </div>
           <div className="text-xl sm:text-2xl font-black text-emerald-800 tabular-nums">
             {num(result.peakAfter.kw)} <span className="text-xs font-bold">kW</span>
           </div>
-          <div className="text-[11px] text-emerald-800 font-semibold">
+          <div className="text-xs text-emerald-800 font-semibold">
             {kw(result.peakBefore.kw)} → {kw(result.peakAfter.kw)} (−{pct(result.reductionPct)})
           </div>
         </div>
         <div className="bg-white p-4 rounded-xl border border-slate-200/90">
-          <div className="flex items-center justify-between text-slate-500 text-[11px] font-bold mb-1">
+          <div className="flex items-center justify-between text-slate-500 text-xs font-bold mb-1">
             <span>{t("Cost saving / day", "Tiết kiệm chi phí / ngày")}</span>
-            <Zap className="w-4 h-4 text-[#004B91]" />
+            <Zap className="w-4 h-4 text-brand" />
           </div>
           <div className="text-xl sm:text-2xl font-black text-slate-900 tabular-nums">{vnd(result.savingVndPerDay)}</div>
-          <div className="text-[11px] text-slate-500">{t("Objective J before − after", "Hàm mục tiêu J trước − sau")}</div>
+          <div className="text-xs text-slate-500">{t("Objective J before − after", "Hàm mục tiêu J trước − sau")}</div>
         </div>
         <button
           type="button"
@@ -245,32 +245,32 @@ export const OptimizationPage: React.FC<OptimizationPageProps> = ({
           className="text-left bg-white p-4 rounded-xl border border-amber-300 hover:bg-amber-50/50 cursor-pointer"
           title={t("Open the approval queue", "Mở hàng đợi phê duyệt")}
         >
-          <div className="flex items-center justify-between text-slate-500 text-[11px] font-bold mb-1">
+          <div className="flex items-center justify-between text-slate-500 text-xs font-bold mb-1">
             <span>{t("Operator approvals", "Phê duyệt vận hành")}</span>
             <Sliders className="w-4 h-4 text-amber-600" />
           </div>
           <div className="text-xl sm:text-2xl font-black text-slate-900 tabular-nums">
             {approvedCount}/{APPROVAL_GROUPS.length}
           </div>
-          <div className="text-[11px] text-amber-700 font-semibold">
+          <div className="text-xs text-amber-700 font-semibold">
             {APPROVAL_GROUPS.length - approvedCount > 0
               ? t(`${APPROVAL_GROUPS.length - approvedCount} pending`, `${APPROVAL_GROUPS.length - approvedCount} chờ duyệt`)
               : t("All approved", "Đã duyệt tất cả")}
           </div>
         </button>
         <div className="bg-white p-4 rounded-xl border border-slate-200/90">
-          <div className="flex items-center justify-between text-slate-500 text-[11px] font-bold mb-1">
+          <div className="flex items-center justify-between text-slate-500 text-xs font-bold mb-1">
             <span>{t("Grid energy & CO₂e saved", "Giảm điện lưới & CO₂e")}</span>
             <Leaf className="w-4 h-4 text-emerald-600" />
           </div>
           <div className="text-xl sm:text-2xl font-black text-slate-900 tabular-nums">
             {num(result.energy.savedKwh)} <span className="text-xs font-bold text-slate-500">kWh</span>
           </div>
-          <div className="text-[11px] text-emerald-700 font-semibold">{tco2(result.co2SavedT * 1000)}/{t("day", "ngày")}</div>
+          <div className="text-xs text-emerald-700 font-semibold">{tco2(result.co2SavedT * 1000)}/{t("day", "ngày")}</div>
         </div>
       </div>
 
-      <div className="flex items-start gap-2 text-[11px] text-slate-600 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2">
+      <div className="flex items-start gap-2 text-xs text-slate-600 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2">
         <Info className="w-3.5 h-3.5 mt-0.5 shrink-0 text-slate-500" />
         <span>
           {t(
@@ -304,7 +304,7 @@ export const OptimizationPage: React.FC<OptimizationPageProps> = ({
         }
       >
         <BeforeAfterChart result={result} basis={basis} showTou />
-        <div className="flex flex-wrap gap-x-4 gap-y-1 text-[11px] font-semibold text-slate-600 pl-12">
+        <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs font-semibold text-slate-600 pl-12">
           <LegendItem color={M3_COLORS.before} kind="dashed" label={t("Before (M-1)", "Trước (M-1)")} />
           <LegendItem color={M3_COLORS.after} kind="line" label={t("After dispatch", "Sau điều độ")} />
           <LegendItem color={M3_COLORS.reduced} kind="band" label={t("Cut from peak", "Cắt khỏi giờ đỉnh")} />
@@ -331,11 +331,11 @@ export const OptimizationPage: React.FC<OptimizationPageProps> = ({
           note={t(`Contribution of each group at ${result.peakBefore.label}`, `Đóng góp của từng nhóm lúc ${result.peakBefore.label}`)}
           right={
             <div className="flex items-center gap-2">
-              {pngNotice && <span className="text-[10px] text-slate-500">{pngNotice}</span>}
+              {pngNotice && <span className="text-xs text-slate-500">{pngNotice}</span>}
               <button
                 type="button"
                 onClick={exportWaterfall}
-                className="px-2.5 py-1.5 rounded-lg border border-slate-200 text-[11px] font-bold text-slate-700 hover:bg-slate-50 flex items-center gap-1 whitespace-nowrap cursor-pointer"
+                className="px-2.5 py-1.5 rounded-lg border border-slate-200 text-xs font-bold text-slate-700 hover:bg-slate-50 flex items-center gap-1 whitespace-nowrap cursor-pointer"
               >
                 <ImageDown className="w-3.5 h-3.5" />
                 {t("Download PNG", "Tải ảnh PNG")}
@@ -389,13 +389,13 @@ export const OptimizationPage: React.FC<OptimizationPageProps> = ({
           <ObjectiveChart before={result.cost.before} after={result.cost.after} />
           <div className="space-y-2 text-xs">
             <div className="rounded-xl bg-slate-50 border border-slate-200 p-3">
-              <div className="text-[10px] font-bold text-slate-500">{t("TOU energy (largest term)", "Tiền điện TOU (thành phần lớn nhất)")}</div>
+              <div className="text-xs font-bold text-slate-500">{t("TOU energy (largest term)", "Tiền điện TOU (thành phần lớn nhất)")}</div>
               <div className="font-bold text-slate-900 tabular-nums">
                 {vnd(result.cost.before.touEnergy)} → {vnd(result.cost.after.touEnergy)}
               </div>
             </div>
             <div className="rounded-xl bg-slate-50 border border-slate-200 p-3">
-              <div className="text-[10px] font-bold text-slate-500">{t("Total J", "Tổng J")}</div>
+              <div className="text-xs font-bold text-slate-500">{t("Total J", "Tổng J")}</div>
               <div className="font-bold text-slate-900 tabular-nums">
                 {vnd(result.cost.before.total)} → {vnd(result.cost.after.total)}
               </div>
@@ -406,7 +406,7 @@ export const OptimizationPage: React.FC<OptimizationPageProps> = ({
                 `−${num(result.energy.savedKwh)} kWh grid energy · ${num(result.co2SavedT, 2)} tCO₂e/day`,
                 `Giảm ${num(result.energy.savedKwh)} kWh điện lưới · ${num(result.co2SavedT, 2)} tCO₂e/ngày`
               )}
-              <div className="text-[10px] font-semibold text-emerald-800 mt-0.5">
+              <div className="text-xs font-semibold text-emerald-800 mt-0.5">
                 {t(`Plus ${num(result.energy.shiftedKwh)} kWh shifted in time`, `Thêm ${num(result.energy.shiftedKwh)} kWh được dời giờ`)}
               </div>
             </div>
@@ -427,9 +427,10 @@ export const OptimizationPage: React.FC<OptimizationPageProps> = ({
             <span
               key={g.id}
               title={`${t(g.name.en, g.name.vn)} · ${kw(g.ratedKw)} · ${t(g.rule.en, g.rule.vn)}`}
-              className="px-2 py-1 rounded-full bg-slate-100 border border-slate-200 text-[11px] font-bold text-slate-700 cursor-help"
+              className="px-2 py-1 rounded-full bg-slate-100 border border-slate-200 text-xs font-bold text-slate-700 cursor-help"
             >
-              🔒 {t(g.name.en, g.name.vn)}
+              <Lock className="inline w-3 h-3 mr-1 -mt-0.5" aria-hidden="true" />
+              {t(g.name.en, g.name.vn)}
             </span>
           ))}
         </div>

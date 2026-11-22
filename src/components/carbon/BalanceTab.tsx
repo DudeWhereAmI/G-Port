@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from "react";
+import { AlertTriangle, CheckCircle2 } from "lucide-react";
 import { Bar, BarChart, CartesianGrid, Cell, LabelList, ReferenceLine, ResponsiveContainer, Sankey, Tooltip, XAxis, YAxis } from "recharts";
 import { useLanguage } from "../../context/LanguageContext";
 import { useFormat } from "../../utils/format";
@@ -40,8 +41,8 @@ const Gauge: React.FC<{ value: number; max: number; threshold: number; label: st
       <text x={100} y={92} textAnchor="middle" fontSize={16} fontWeight={800} fill="#0F172A">
         {label}
       </text>
-      <text x={18} y={116} fontSize={9} fill="#64748B">0</text>
-      <text x={182} y={116} fontSize={9} fill="#64748B" textAnchor="end">{max}%</text>
+      <text x={18} y={116} fontSize={12} fill="#64748B">0</text>
+      <text x={182} y={116} fontSize={12} fill="#64748B" textAnchor="end">{max}%</text>
     </svg>
   );
 };
@@ -116,7 +117,7 @@ export const BalanceTab: React.FC<BalanceTabProps> = ({ calls, onOpenCall }) => 
         }}
       >
         <rect x={x} y={y} width={width} height={Math.max(1, height)} fill={isCall ? "#004B91" : "#4A81C9"} fillOpacity={0.9} />
-        <text x={right ? x - 4 : x + width + 4} y={y + height / 2} dy={3} textAnchor={right ? "end" : "start"} fontSize={9.5} fill="#0F172A" fontWeight={isCall ? 700 : 500}>
+        <text x={right ? x - 4 : x + width + 4} y={y + height / 2} dy={3} textAnchor={right ? "end" : "start"} fontSize={12} fill="#0F172A" fontWeight={isCall ? 700 : 500}>
           {payload.name} · {num(payload.value)} MWh
         </text>
       </g>
@@ -169,7 +170,7 @@ export const BalanceTab: React.FC<BalanceTabProps> = ({ calls, onOpenCall }) => 
               <span className="font-bold text-red-700">{pct(BALANCE_STATS.rawDeltaBalPct, 2)}</span> {t("raw data", "dữ liệu thô")} →{" "}
               <span className="font-bold text-emerald-700">{pct(DELTA_BAL_PCT, 2)}</span> {t("after cleaning", "sau làm sạch")}
             </div>
-            <div className="text-[10px] text-slate-500 text-center">Δbal = |E_grid − (Σ6 − E_PV + E_loss)| / E_grid</div>
+            <div className="text-xs text-slate-500 text-center">Δbal = |E_grid − (Σ6 − E_PV + E_loss)| / E_grid</div>
           </div>
         </Panel>
         <Panel
@@ -180,7 +181,7 @@ export const BalanceTab: React.FC<BalanceTabProps> = ({ calls, onOpenCall }) => 
             <div className="min-w-[640px] space-y-[2px]">
               {QUALITY_GRID.map((row, f) => (
                 <div key={f} className="flex items-center gap-2 h-4">
-                  <span className="w-10 text-[10px] font-bold text-slate-600">{FEEDERS[f].id}</span>
+                  <span className="w-10 text-xs font-bold text-slate-600">{FEEDERS[f].id}</span>
                   <div className="flex-1 grid h-full" style={{ gridTemplateColumns: "repeat(96, minmax(0, 1fr))" }}>
                     {row.map((q, i) => (
                       <button
@@ -197,7 +198,7 @@ export const BalanceTab: React.FC<BalanceTabProps> = ({ calls, onOpenCall }) => 
               ))}
             </div>
           </div>
-          <div className="flex flex-wrap items-center gap-3 text-[10px] font-semibold text-slate-600">
+          <div className="flex flex-wrap items-center gap-3 text-xs font-semibold text-slate-600">
             {(Object.keys(Q_COLOR) as QualityFlag[]).map((q) => (
               <span key={q} className="inline-flex items-center gap-1">
                 <span className="w-3 h-2.5 rounded-sm" style={{ backgroundColor: Q_COLOR[q] }} />
@@ -206,7 +207,7 @@ export const BalanceTab: React.FC<BalanceTabProps> = ({ calls, onOpenCall }) => 
             ))}
           </div>
           {cell && (
-            <div className="text-[11px] bg-slate-50 border border-slate-200 rounded-lg px-3 py-2">
+            <div className="text-xs bg-slate-50 border border-slate-200 rounded-lg px-3 py-2">
               <b>
                 {FEEDERS[cell.f].id} · {minuteLabel(cell.i * 15)}–{minuteLabel(cell.i * 15 + 15)}
               </b>{" "}
@@ -226,24 +227,24 @@ export const BalanceTab: React.FC<BalanceTabProps> = ({ calls, onOpenCall }) => 
           title={t("Fuel reconciliation", "Đối soát nhiên liệu")}
           note={t("Opening + receipts − closing ± adjustment = F_tot vs ΣF_k", "Tồn đầu + Nhập − Tồn cuối ± Hiệu chỉnh = F_tot so với ΣF_k")}
           right={
-            <span className={`px-2 py-0.5 rounded text-[11px] font-bold ${fuelOk ? "bg-emerald-100 text-emerald-800" : "bg-red-100 text-red-800"}`}>
-              {fuelOk ? "✅" : "⚠️"} {t("Difference", "Chênh lệch")} {pct(FUEL_RECON.diffPct)} ({t("limit", "ngưỡng")} {FUEL_THRESHOLD_PCT}%)
+            <span className={`px-2 py-0.5 rounded text-xs font-bold ${fuelOk ? "bg-emerald-100 text-emerald-800" : "bg-red-100 text-red-800"}`}>
+              {fuelOk ? <CheckCircle2 className="w-4 h-4 text-success shrink-0" aria-hidden="true" /> : <AlertTriangle className="w-4 h-4 text-warning shrink-0" aria-hidden="true" />} {t("Difference", "Chênh lệch")} {pct(FUEL_RECON.diffPct)} ({t("limit", "ngưỡng")} {FUEL_THRESHOLD_PCT}%)
             </span>
           }
         >
           <div className="h-60">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={fuelSteps} margin={{ top: 20, right: 8, left: 0, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
-                <XAxis dataKey="name" fontSize={10} stroke="#64748B" tickLine={false} interval={0} />
-                <YAxis fontSize={10} stroke="#64748B" tickLine={false} width={48} tickFormatter={(v: number) => num(v)} label={{ value: "L", position: "top", offset: 8, fontSize: 10 }} />
+                <CartesianGrid vertical={false} stroke="#EEF0F3" />
+                <XAxis dataKey="name" fontSize={12} stroke="#94A3B8" tickLine={false} interval={0} />
+                <YAxis fontSize={12} stroke="#94A3B8" tickLine={false} width={48} tickFormatter={(v: number) => num(v)} label={{ value: "L", position: "top", offset: 8, fontSize: 12 }} />
                 <Tooltip formatter={(v: any, k: any, p: any) => (k === "base" ? null : [`${num(p.payload.delta)} L`, p.payload.name])} />
                 <Bar dataKey="base" stackId="w" fill="transparent" />
                 <Bar dataKey="value" stackId="w" radius={[3, 3, 0, 0]}>
                   {fuelSteps.map((s, i) => (
                     <Cell key={i} fill={s.color} />
                   ))}
-                  <LabelList dataKey="delta" position="top" formatter={(v: any) => num(Number(v))} style={{ fontSize: 10, fontWeight: 700, fill: "#0F172A" }} />
+                  <LabelList dataKey="delta" position="top" formatter={(v: any) => num(Number(v))} style={{ fontSize: 12, fontWeight: 700, fill: "#0F172A" }} />
                 </Bar>
                 <ReferenceLine y={0} stroke="#0F172A" />
               </BarChart>
@@ -268,10 +269,10 @@ export const BalanceTab: React.FC<BalanceTabProps> = ({ calls, onOpenCall }) => 
                     <td className="py-2 px-3">{d.meter}</td>
                     <td className="py-2 px-3">
                       {t(d.deviation.en, d.deviation.vn)}
-                      <div className="text-[10px] text-slate-500">{t(d.action.en, d.action.vn)}</div>
+                      <div className="text-xs text-slate-500">{t(d.action.en, d.action.vn)}</div>
                     </td>
                     <td className="py-2 px-3">
-                      <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${d.status === "RESOLVED" ? "bg-emerald-100 text-emerald-800" : "bg-amber-100 text-amber-900"}`}>
+                      <span className={`px-1.5 py-0.5 rounded text-xs font-bold ${d.status === "RESOLVED" ? "bg-emerald-100 text-emerald-800" : "bg-amber-100 text-amber-900"}`}>
                         {d.status === "RESOLVED" ? t("Resolved", "Đã xử lý") : t("Investigating", "Đang kiểm tra")}
                       </span>
                     </td>

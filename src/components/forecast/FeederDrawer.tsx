@@ -55,16 +55,16 @@ export const FeederDrawer: React.FC<FeederDrawerProps> = ({ window: w, onClose, 
         <div className="flex-1 overflow-y-auto p-5 space-y-5 text-xs text-slate-800">
           <div className="grid grid-cols-3 gap-2 bg-slate-50 p-3 rounded-xl border border-slate-200">
             <div>
-              <div className="text-[10px] uppercase font-bold text-slate-400">{t("Peak interval", "Chu kỳ đỉnh")}</div>
-              <div className="font-mono font-black text-slate-900">{w.peakTime}</div>
+              <div className="text-xs font-bold text-slate-400">{t("Peak interval", "Chu kỳ đỉnh")}</div>
+              <div className="font-black text-slate-900">{w.peakTime}</div>
             </div>
             <div>
-              <div className="text-[10px] uppercase font-bold text-slate-400">{t("Load P50", "Phụ tải P50")}</div>
-              <div className="font-mono font-black text-slate-900">{kw(w.p50Kw)}</div>
+              <div className="text-xs font-bold text-slate-400">{t("Load P50", "Phụ tải P50")}</div>
+              <div className="font-black text-slate-900">{kw(w.p50Kw)}</div>
             </div>
             <div>
-              <div className="text-[10px] uppercase font-bold text-slate-400">{t("Net grid", "Điện lưới thuần")}</div>
-              <div className="font-mono font-black text-[#004B91]">{kw(w.netGridKw)}</div>
+              <div className="text-xs font-bold text-slate-400">{t("Net grid", "Điện lưới thuần")}</div>
+              <div className="font-black text-brand">{kw(w.netGridKw)}</div>
             </div>
           </div>
 
@@ -79,8 +79,8 @@ export const FeederDrawer: React.FC<FeederDrawerProps> = ({ window: w, onClose, 
                 <Tooltip
                   content={({ active, payload }: any) =>
                     active && payload?.length ? (
-                      <div className="bg-white border border-slate-300 rounded-lg shadow px-2.5 py-1.5 text-[11px] text-slate-900">
-                        <b>{payload[0].payload.id}</b> {payload[0].payload.label}: <b className="font-mono">{kw(payload[0].value)}</b>
+                      <div className="bg-white border border-slate-300 rounded-lg shadow px-2.5 py-1.5 text-xs text-slate-900">
+                        <b>{payload[0].payload.id}</b> {payload[0].payload.label}: <b className="">{kw(payload[0].value)}</b>
                       </div>
                     ) : null
                   }
@@ -88,9 +88,9 @@ export const FeederDrawer: React.FC<FeederDrawerProps> = ({ window: w, onClose, 
               </PieChart>
             </ResponsiveContainer>
             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-              <span className="text-[10px] font-bold text-slate-500">{t("Total", "Tổng")}</span>
-              <span className="font-mono font-black text-slate-900 text-base">{num(total)}</span>
-              <span className="text-[10px] text-slate-500">kW</span>
+              <span className="text-xs font-bold text-slate-500">{t("Total", "Tổng")}</span>
+              <span className="font-black text-slate-900 text-base">{num(total)}</span>
+              <span className="text-xs text-slate-500">kW</span>
             </div>
           </div>
 
@@ -100,9 +100,9 @@ export const FeederDrawer: React.FC<FeederDrawerProps> = ({ window: w, onClose, 
                 <div className="flex items-center justify-between gap-2">
                   <span className="flex items-center gap-1.5 font-semibold text-slate-700">
                     <span className="inline-block w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: r.color }} />
-                    <b className="text-[#004B91]">{r.id}</b> {r.label}
+                    <b className="text-brand">{r.id}</b> {r.label}
                   </span>
-                  <span className="font-mono tabular-nums font-bold text-slate-900">
+                  <span className="tabular-nums font-bold text-slate-900">
                     {kw(r.kw)} <span className="text-slate-500 font-semibold">· {pct(total ? (r.kw / total) * 100 : 0)}</span>
                   </span>
                 </div>
@@ -119,7 +119,7 @@ export const FeederDrawer: React.FC<FeederDrawerProps> = ({ window: w, onClose, 
             ))}
           </div>
 
-          <div className="text-[11px] text-slate-500 border-t border-slate-100 pt-3 space-y-0.5">
+          <div className="text-xs text-slate-500 border-t border-slate-100 pt-3 space-y-0.5">
             <div>
               {t("Vessels", "Tàu")}: <b className="text-slate-800">{w.vessels.join(" & ") || "—"}</b> · {w.stsCranes} STS · {num(w.reeferPlugs)} reefer
             </div>
@@ -133,7 +133,7 @@ export const FeederDrawer: React.FC<FeederDrawerProps> = ({ window: w, onClose, 
           <button
             type="button"
             onClick={onOpenReport}
-            className="px-4 py-2 bg-[#004B91] text-white rounded-lg text-xs font-bold hover:bg-[#00386E] cursor-pointer"
+            className="px-4 py-2 bg-brand text-white rounded-lg text-xs font-bold hover:bg-brand-hover cursor-pointer"
           >
             {t("View 24h report", "Xem báo cáo 24h")}
           </button>

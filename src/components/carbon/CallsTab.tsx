@@ -49,7 +49,7 @@ export const CallsTab: React.FC<{ calls: CallRecord[]; onOpenCall: (r: CallRecor
       <button
         type="button"
         onClick={() => setSort((s) => ({ k, dir: s.k === k ? ((s.dir * -1) as 1 | -1) : -1 }))}
-        className={`inline-flex items-center gap-1 font-bold cursor-pointer hover:text-[#004B91] ${sort.k === k ? "text-[#004B91]" : ""}`}
+        className={`inline-flex items-center gap-1 font-bold cursor-pointer hover:text-brand ${sort.k === k ? "text-brand" : ""}`}
       >
         {label}
         {sort.k === k ? sort.dir === 1 ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" /> : <ArrowUpDown className="w-3 h-3 opacity-40" />}
@@ -87,7 +87,7 @@ export const CallsTab: React.FC<{ calls: CallRecord[]; onOpenCall: (r: CallRecor
                 <tr key={r.id} onClick={() => onOpenCall(r)} className="cursor-pointer hover:bg-slate-50">
                   <td className="py-2 px-2.5">
                     <div className="font-bold text-slate-900">{r.vessel}</div>
-                    <div className="text-[10px] text-slate-400">{stamp(r.etaMin)}</div>
+                    <div className="text-xs text-slate-400">{stamp(r.etaMin)}</div>
                   </td>
                   <td className="py-2 px-2.5 text-slate-600 max-w-[160px]">{r.carrier}</td>
                   <td className="py-2 px-2.5">{r.berth}</td>
@@ -119,21 +119,21 @@ export const CallsTab: React.FC<{ calls: CallRecord[]; onOpenCall: (r: CallRecor
         <div className="h-72">
           <ResponsiveContainer width="100%" height="100%">
             <ScatterChart margin={{ top: 8, right: 16, left: 0, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
-              <XAxis type="number" dataKey="x" name="TEU" fontSize={10} stroke="#64748B" tickFormatter={(v: number) => num(v)} label={{ value: "TEU", position: "insideBottomRight", offset: -2, fontSize: 10 }} />
-              <YAxis type="number" dataKey="y" name="kgCO₂e/TEU" fontSize={10} stroke="#64748B" width={40} domain={[10, 22]} />
+              <CartesianGrid vertical={false} stroke="#EEF0F3" />
+              <XAxis type="number" dataKey="x" name="TEU" fontSize={12} stroke="#94A3B8" tickFormatter={(v: number) => num(v)} label={{ value: "TEU", position: "insideBottomRight", offset: -2, fontSize: 12 }} />
+              <YAxis type="number" dataKey="y" name="kgCO₂e/TEU" fontSize={12} stroke="#94A3B8" width={40} domain={[10, 22]} />
               <ZAxis type="number" dataKey="z" range={[60, 360]} />
-              <ReferenceLine y={LEDGER_TOTALS.intensity} stroke="#0F172A" strokeDasharray="4 3" label={{ value: num(LEDGER_TOTALS.intensity, 2), position: "right", fontSize: 10 }} />
+              <ReferenceLine y={LEDGER_TOTALS.intensity} stroke="#0F172A" strokeDasharray="4 3" label={{ value: num(LEDGER_TOTALS.intensity, 2), position: "right", fontSize: 12 }} />
               <Tooltip
                 content={({ active, payload }: any) =>
                   active && payload?.length ? (
-                    <div className="bg-white border border-slate-300 rounded-lg shadow px-2.5 py-1.5 text-[11px] text-slate-900">
+                    <div className="bg-white border border-slate-300 rounded-lg shadow px-2.5 py-1.5 text-xs text-slate-900">
                       <b>{payload[0].payload.r.vessel}</b> · {num(payload[0].payload.x)} TEU · {num(payload[0].payload.y, 2)} kg/TEU
                     </div>
                   ) : null
                 }
               />
-              <Legend wrapperStyle={{ fontSize: 10 }} />
+              <Legend wrapperStyle={{ fontSize: 12 }} />
               <Scatter name={t("Uses OPS", "Có dùng OPS")} data={ops} fill="#7C3AED" onClick={(p: any) => onOpenCall(p.r ?? p.payload?.r)} cursor="pointer">
                 {ops.map((p) => (
                   <Cell key={p.r.id} fill="#7C3AED" />

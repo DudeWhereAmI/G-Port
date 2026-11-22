@@ -182,10 +182,10 @@ export const CraneTelemetryDetailModal: React.FC<CraneTelemetryDetailModalProps>
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-xs font-mono font-bold text-sky-400 uppercase tracking-wider">
+                <span className="text-xs font-mono font-bold text-sky-400">
                   QUAYSIDE STS CRANE TELEMETRY
                 </span>
-                <span className="text-[10px] px-2 py-0.2 rounded-full bg-emerald-500/20 text-emerald-300 font-mono font-bold border border-emerald-500/30">
+                <span className="text-xs px-2 py-0.2 rounded-full bg-emerald-500/20 text-emerald-300 font-mono font-bold border border-emerald-500/30">
                   ● IEC 61850 ONLINE
                 </span>
               </div>
@@ -221,35 +221,35 @@ export const CraneTelemetryDetailModal: React.FC<CraneTelemetryDetailModalProps>
         {/* ================================================================== */}
         <div className="px-6 py-3 bg-slate-50 border-b border-slate-200/90 grid grid-cols-2 sm:grid-cols-5 gap-3 text-xs font-mono">
           <div className="bg-white p-2.5 rounded-xl border border-slate-200">
-            <span className="text-[10px] text-slate-400 block uppercase font-bold">Active Power Draw</span>
+            <span className="text-xs text-slate-400 block font-bold">Active Power Draw</span>
             <strong className="text-sm font-black text-slate-900">{currentCrane.currentKw} kW</strong>
-            <span className="text-[10px] text-slate-500 block">Rated: {currentCrane.ratedKw} kW</span>
+            <span className="text-xs text-slate-500 block">Rated: {currentCrane.ratedKw} kW</span>
           </div>
 
           <div className="bg-white p-2.5 rounded-xl border border-slate-200">
-            <span className="text-[10px] text-slate-400 block uppercase font-bold">Total Moves</span>
-            <strong className="text-sm font-black text-[#004B91]">{currentCrane.moves} TEU</strong>
-            <span className="text-[10px] text-emerald-600 block">GMPH: {currentCrane.grossMph}</span>
+            <span className="text-xs text-slate-400 block font-bold">Total Moves</span>
+            <strong className="text-sm font-black text-brand">{currentCrane.moves} TEU</strong>
+            <span className="text-xs text-emerald-600 block">GMPH: {currentCrane.grossMph}</span>
           </div>
 
           <div className="bg-white p-2.5 rounded-xl border border-slate-200">
-            <span className="text-[10px] text-slate-400 block uppercase font-bold">Regenerative Recovery</span>
+            <span className="text-xs text-slate-400 block font-bold">Regenerative Recovery</span>
             <strong className="text-sm font-black text-emerald-600">+{currentCrane.regenKw} kW</strong>
-            <span className="text-[10px] text-emerald-700 block">Total: {currentCrane.regenTotalKwh} kWh</span>
+            <span className="text-xs text-emerald-700 block">Total: {currentCrane.regenTotalKwh} kWh</span>
           </div>
 
           <div className="bg-white p-2.5 rounded-xl border border-slate-200">
-            <span className="text-[10px] text-slate-400 block uppercase font-bold">Substation Line</span>
+            <span className="text-xs text-slate-400 block font-bold">Substation Line</span>
             <strong className="text-sm font-black text-slate-900">{currentCrane.voltageKv} kV</strong>
-            <span className="text-[10px] text-slate-500 block">{currentCrane.currentAmps} A · cosφ {currentCrane.cosPhi}</span>
+            <span className="text-xs text-slate-500 block">{currentCrane.currentAmps} A · cosφ {currentCrane.cosPhi}</span>
           </div>
 
           <div className="bg-white p-2.5 rounded-xl border border-slate-200 col-span-2 sm:col-span-1">
-            <span className="text-[10px] text-slate-400 block uppercase font-bold">Energy Intensity</span>
+            <span className="text-xs text-slate-400 block font-bold">Energy Intensity</span>
             <strong className="text-sm font-black text-blue-700">
               {(currentCrane.totalKwh / currentCrane.moves).toFixed(2)} kWh/move
             </strong>
-            <span className="text-[10px] text-slate-500 block">Total: {currentCrane.totalKwh.toLocaleString()} kWh</span>
+            <span className="text-xs text-slate-500 block">Total: {currentCrane.totalKwh.toLocaleString()} kWh</span>
           </div>
         </div>
 
@@ -261,7 +261,7 @@ export const CraneTelemetryDetailModal: React.FC<CraneTelemetryDetailModalProps>
             onClick={() => setActiveTab("SCADA_POWER")}
             className={`flex items-center gap-1.5 pb-2.5 border-b-2 px-1 transition-colors whitespace-nowrap ${
               activeTab === "SCADA_POWER"
-                ? "border-[#004B91] text-[#004B91]"
+                ? "border-brand text-brand"
                 : "border-transparent text-slate-500 hover:text-slate-800"
             }`}
           >
@@ -273,7 +273,7 @@ export const CraneTelemetryDetailModal: React.FC<CraneTelemetryDetailModalProps>
             onClick={() => setActiveTab("BAY_MOVES")}
             className={`flex items-center gap-1.5 pb-2.5 border-b-2 px-1 transition-colors whitespace-nowrap ${
               activeTab === "BAY_MOVES"
-                ? "border-[#004B91] text-[#004B91]"
+                ? "border-brand text-brand"
                 : "border-transparent text-slate-500 hover:text-slate-800"
             }`}
           >
@@ -285,7 +285,7 @@ export const CraneTelemetryDetailModal: React.FC<CraneTelemetryDetailModalProps>
             onClick={() => setActiveTab("REGEN_ENERGY")}
             className={`flex items-center gap-1.5 pb-2.5 border-b-2 px-1 transition-colors whitespace-nowrap ${
               activeTab === "REGEN_ENERGY"
-                ? "border-[#004B91] text-[#004B91]"
+                ? "border-brand text-brand"
                 : "border-transparent text-slate-500 hover:text-slate-800"
             }`}
           >
@@ -297,7 +297,7 @@ export const CraneTelemetryDetailModal: React.FC<CraneTelemetryDetailModalProps>
             onClick={() => setActiveTab("SPECS")}
             className={`flex items-center gap-1.5 pb-2.5 border-b-2 px-1 transition-colors whitespace-nowrap ${
               activeTab === "SPECS"
-                ? "border-[#004B91] text-[#004B91]"
+                ? "border-brand text-brand"
                 : "border-transparent text-slate-500 hover:text-slate-800"
             }`}
           >
@@ -332,7 +332,7 @@ export const CraneTelemetryDetailModal: React.FC<CraneTelemetryDetailModalProps>
                       return (
                         <g key={kw}>
                           <line x1="40" y1={y} x2="740" y2={y} stroke="#334155" strokeWidth="0.8" strokeDasharray="3 3" />
-                          <text x="32" y={y + 3} fill="#64748b" fontSize="9" fontFamily="monospace" textAnchor="end">
+                          <text x="32" y={y + 3} fill="#64748b" fontSize="9" fontFamily="Inter, sans-serif" textAnchor="end">
                             {kw}kW
                           </text>
                         </g>
@@ -376,13 +376,13 @@ export const CraneTelemetryDetailModal: React.FC<CraneTelemetryDetailModalProps>
                           className="cursor-pointer"
                         >
                           <circle cx={x} cy={y} r={isHovered ? 5 : 3.5} fill="#ffffff" stroke={currentCrane.color} strokeWidth="2" />
-                          <text x={x} y="174" fill="#94a3b8" fontSize="8" fontFamily="monospace" textAnchor="middle">
+                          <text x={x} y="174" fill="#94a3b8" fontSize="8" fontFamily="Inter, sans-serif" textAnchor="middle">
                             {d.hour}
                           </text>
                           {isHovered && (
                             <g>
                               <rect x={x - 30} y={y - 25} width="60" height="18" rx="3" fill="#0f172a" stroke="#38bdf8" />
-                              <text x={x} y={y - 13} fill="#ffffff" fontSize="9" fontWeight="bold" fontFamily="monospace" textAnchor="middle">
+                              <text x={x} y={y - 13} fill="#ffffff" fontSize="9" fontWeight="bold" fontFamily="Inter, sans-serif" textAnchor="middle">
                                 {d.powerKw} kW
                               </text>
                             </g>
@@ -397,19 +397,19 @@ export const CraneTelemetryDetailModal: React.FC<CraneTelemetryDetailModalProps>
               {/* Power Quality Parameters */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
                 <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
-                  <span className="text-[10px] text-slate-400 font-mono block">Harmonic Distortion</span>
+                  <span className="text-xs text-slate-400 font-mono block">Harmonic Distortion</span>
                   <strong className="text-sm font-black text-slate-900 font-mono">THD-I: 2.4%</strong>
-                  <span className="text-[10px] text-emerald-600 block">IEEE 519 Compliant (&lt;5%)</span>
+                  <span className="text-xs text-emerald-600 block">IEEE 519 Compliant (&lt;5%)</span>
                 </div>
                 <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
-                  <span className="text-[10px] text-slate-400 font-mono block">Power Factor (cosφ)</span>
+                  <span className="text-xs text-slate-400 font-mono block">Power Factor (cosφ)</span>
                   <strong className="text-sm font-black text-slate-900 font-mono">{currentCrane.cosPhi} Lagging</strong>
-                  <span className="text-[10px] text-emerald-600 block">Zero EVN penalty</span>
+                  <span className="text-xs text-emerald-600 block">Zero EVN penalty</span>
                 </div>
                 <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
-                  <span className="text-[10px] text-slate-400 font-mono block">Motor Inverter DC Bus</span>
+                  <span className="text-xs text-slate-400 font-mono block">Motor Inverter DC Bus</span>
                   <strong className="text-sm font-black text-slate-900 font-mono">680 V DC</strong>
-                  <span className="text-[10px] text-blue-600 block">AFE Regenerative Drive</span>
+                  <span className="text-xs text-blue-600 block">AFE Regenerative Drive</span>
                 </div>
               </div>
             </div>
@@ -424,7 +424,7 @@ export const CraneTelemetryDetailModal: React.FC<CraneTelemetryDetailModalProps>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
                   {currentCrane.assignedBays.map(bay => (
-                    <div key={bay} className="px-3 py-1.5 rounded-xl bg-white border border-slate-300 font-mono text-xs font-bold text-[#004B91] shadow-2xs">
+                    <div key={bay} className="px-3 py-1.5 rounded-xl bg-white border border-slate-300 font-mono text-xs font-bold text-brand shadow-2xs">
                       Bay {bay}
                     </div>
                   ))}
@@ -433,7 +433,7 @@ export const CraneTelemetryDetailModal: React.FC<CraneTelemetryDetailModalProps>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                 <div className="p-3.5 rounded-xl bg-blue-50/70 border border-blue-200 space-y-1">
-                  <span className="text-[10px] font-mono text-blue-700 font-bold uppercase">Workload Distribution</span>
+                  <span className="text-xs font-mono text-blue-700 font-bold">Workload Distribution</span>
                   <div className="text-sm font-black text-slate-900">{currentCrane.moves} Total Moves</div>
                   <p className="text-slate-600 text-xs">
                     65% Discharge moves (Inbound containers to yard blocks) · 35% Export loading.
@@ -441,7 +441,7 @@ export const CraneTelemetryDetailModal: React.FC<CraneTelemetryDetailModalProps>
                 </div>
 
                 <div className="p-3.5 rounded-xl bg-emerald-50/70 border border-emerald-200 space-y-1">
-                  <span className="text-[10px] font-mono text-emerald-700 font-bold uppercase">Operator & Shift Roster</span>
+                  <span className="text-xs font-mono text-emerald-700 font-bold">Operator & Shift Roster</span>
                   <div className="text-sm font-black text-slate-900">{currentCrane.operator}</div>
                   <p className="text-slate-600 text-xs">
                     Certified for Twin-Lift & Hazardous Cargo Lifts. Zero safety infractions recorded.
@@ -469,23 +469,23 @@ export const CraneTelemetryDetailModal: React.FC<CraneTelemetryDetailModalProps>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
-                  <span className="text-[10px] text-slate-400 font-mono block">Peak Regenerated Power</span>
+                  <span className="text-xs text-slate-400 font-mono block">Peak Regenerated Power</span>
                   <strong className="text-sm font-black text-emerald-600 font-mono">-{currentCrane.regenKw} kW</strong>
-                  <span className="text-[10px] text-slate-500 block">During lowering cycle</span>
+                  <span className="text-xs text-slate-500 block">During lowering cycle</span>
                 </div>
                 <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
-                  <span className="text-[10px] text-slate-400 font-mono block">Energy Cost Offset</span>
+                  <span className="text-xs text-slate-400 font-mono block">Energy Cost Offset</span>
                   <strong className="text-sm font-black text-slate-900 font-mono">
                     ~{(currentCrane.regenTotalKwh * 2500).toLocaleString()} VND
                   </strong>
-                  <span className="text-[10px] text-emerald-600 block">EVN Normal tariff rate</span>
+                  <span className="text-xs text-emerald-600 block">EVN Normal tariff rate</span>
                 </div>
                 <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
-                  <span className="text-[10px] text-slate-400 font-mono block">Avoided Emissions</span>
+                  <span className="text-xs text-slate-400 font-mono block">Avoided Emissions</span>
                   <strong className="text-sm font-black text-slate-900 font-mono">
                     {(currentCrane.regenTotalKwh * 0.7221).toFixed(1)} kgCO2e
                   </strong>
-                  <span className="text-[10px] text-emerald-600 block">ISO 14064 MRV credited</span>
+                  <span className="text-xs text-emerald-600 block">ISO 14064 MRV credited</span>
                 </div>
               </div>
             </div>
@@ -496,29 +496,29 @@ export const CraneTelemetryDetailModal: React.FC<CraneTelemetryDetailModalProps>
             <div className="space-y-3 text-xs">
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
-                  <span className="text-[10px] text-slate-400 font-mono block">Outreach</span>
+                  <span className="text-xs text-slate-400 font-mono block">Outreach</span>
                   <strong className="text-sm font-black text-slate-900">52.0 m</strong>
-                  <span className="text-[10px] text-slate-500 block">Up to 18 rows across</span>
+                  <span className="text-xs text-slate-500 block">Up to 18 rows across</span>
                 </div>
                 <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
-                  <span className="text-[10px] text-slate-400 font-mono block">Backreach</span>
+                  <span className="text-xs text-slate-400 font-mono block">Backreach</span>
                   <strong className="text-sm font-black text-slate-900">15.0 m</strong>
-                  <span className="text-[10px] text-slate-500 block">Landside buffer</span>
+                  <span className="text-xs text-slate-500 block">Landside buffer</span>
                 </div>
                 <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
-                  <span className="text-[10px] text-slate-400 font-mono block">Safe Working Load</span>
+                  <span className="text-xs text-slate-400 font-mono block">Safe Working Load</span>
                   <strong className="text-sm font-black text-slate-900">65.0 Tonnes</strong>
-                  <span className="text-[10px] text-slate-500 block">Twin-lift spreader</span>
+                  <span className="text-xs text-slate-500 block">Twin-lift spreader</span>
                 </div>
                 <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
-                  <span className="text-[10px] text-slate-400 font-mono block">Hoist Speed</span>
+                  <span className="text-xs text-slate-400 font-mono block">Hoist Speed</span>
                   <strong className="text-sm font-black text-slate-900">90 / 180 m/min</strong>
-                  <span className="text-[10px] text-slate-500 block">Loaded / Empty</span>
+                  <span className="text-xs text-slate-500 block">Loaded / Empty</span>
                 </div>
               </div>
 
               <div className="p-4 rounded-xl bg-slate-900 text-slate-300 font-mono space-y-1">
-                <div className="text-[10px] text-slate-400 font-bold uppercase">Safety & Interlock Telemetry:</div>
+                <div className="text-xs text-slate-400 font-bold">Safety & Interlock Telemetry:</div>
                 <div className="flex items-center gap-2 text-emerald-400">
                   <CheckCircle2 className="w-4 h-4" />
                   <span>Anemometer Wind Limit: 12 m/s (Current: 4.2 m/s - Safe)</span>
@@ -552,7 +552,7 @@ export const CraneTelemetryDetailModal: React.FC<CraneTelemetryDetailModalProps>
                     onClose();
                     onNavigate("VESSEL_SCHEDULE");
                   }}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white border border-slate-200 text-slate-700 hover:text-[#004B91] hover:bg-blue-50 font-bold transition-colors shadow-2xs"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white border border-slate-200 text-slate-700 hover:text-brand hover:bg-blue-50 font-bold transition-colors shadow-2xs"
                 >
                   <Ship className="w-3.5 h-3.5 text-blue-600" />
                   <span>Berth Schedule</span>

@@ -77,7 +77,7 @@ export const MeasurementPage: React.FC<MeasurementPageProps> = ({
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200/90 shadow-2xs">
         <div>
           <div className="flex items-center gap-2 text-xs font-semibold text-slate-500 mb-1">
-            <span className="font-bold text-[#004B91]">Module 02</span>
+            <span className="font-bold text-brand">Module 02</span>
             <span aria-hidden="true">·</span>
             <span>Energy & Carbon MRV</span>
             <span aria-hidden="true">·</span>
@@ -91,7 +91,7 @@ export const MeasurementPage: React.FC<MeasurementPageProps> = ({
         <div className="flex items-center gap-2.5 shrink-0">
           <button
             onClick={onAddOpLog}
-            className="px-3.5 py-2 bg-[#004B91] hover:bg-[#00386E] text-white text-xs font-bold rounded-xl transition-all shadow-2xs flex items-center gap-1.5"
+            className="px-3.5 py-2 bg-brand hover:bg-brand-hover text-white text-xs font-bold rounded-xl transition-all shadow-2xs flex items-center gap-1.5"
           >
             <Plus className="w-3.5 h-3.5" />
             <span>Log Operations</span>
@@ -109,7 +109,7 @@ export const MeasurementPage: React.FC<MeasurementPageProps> = ({
       {/* Top 4 KPI Metrics */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-2xs">
-          <div className="flex items-center justify-between text-slate-500 text-[11px] font-bold uppercase tracking-wider mb-2">
+          <div className="flex items-center justify-between text-slate-500 text-xs font-bold mb-2">
             <span>Total Terminal Emissions</span>
             <Leaf className="w-4 h-4 text-emerald-600" />
           </div>
@@ -122,7 +122,7 @@ export const MeasurementPage: React.FC<MeasurementPageProps> = ({
         </div>
 
         <div className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-2xs">
-          <div className="flex items-center justify-between text-slate-500 text-[11px] font-bold uppercase tracking-wider mb-2">
+          <div className="flex items-center justify-between text-slate-500 text-xs font-bold mb-2">
             <span>Carbon Intensity</span>
             <TrendingDown className="w-4 h-4 text-emerald-600" />
           </div>
@@ -135,7 +135,7 @@ export const MeasurementPage: React.FC<MeasurementPageProps> = ({
         </div>
 
         <div className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-2xs">
-          <div className="flex items-center justify-between text-slate-500 text-[11px] font-bold uppercase tracking-wider mb-2">
+          <div className="flex items-center justify-between text-slate-500 text-xs font-bold mb-2">
             <span>Scope 1 (Direct Fuel)</span>
             <Fuel className="w-4 h-4 text-rose-500" />
           </div>
@@ -148,9 +148,9 @@ export const MeasurementPage: React.FC<MeasurementPageProps> = ({
         </div>
 
         <div className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-2xs">
-          <div className="flex items-center justify-between text-slate-500 text-[11px] font-bold uppercase tracking-wider mb-2">
+          <div className="flex items-center justify-between text-slate-500 text-xs font-bold mb-2">
             <span>Scope 2 (Grid Power)</span>
-            <Zap className="w-4 h-4 text-[#004B91]" />
+            <Zap className="w-4 h-4 text-brand" />
           </div>
           <div className="text-2xl font-black text-slate-900 mb-1">
             {(totalScope2Kg / 1000).toFixed(2)} <span className="text-xs font-semibold text-slate-500">tCO₂e</span>
@@ -251,7 +251,7 @@ export const MeasurementPage: React.FC<MeasurementPageProps> = ({
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="flex items-center gap-2 font-semibold text-slate-700">
-                    <span className="w-2.5 h-2.5 rounded-xs bg-[#004B91]" />
+                    <span className="w-2.5 h-2.5 rounded-xs bg-brand" />
                     Scope 2 (Grid Electricity):
                   </span>
                   <strong className="text-slate-900">
@@ -302,7 +302,7 @@ export const MeasurementPage: React.FC<MeasurementPageProps> = ({
 
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
-                <thead className="bg-slate-50 text-slate-500 uppercase tracking-wider font-semibold border-b border-slate-200/60">
+                <thead className="bg-slate-50 text-slate-500 font-semibold border-b border-slate-200/60">
                   <tr>
                     <th className="py-2.5 px-3">Zone Identifier</th>
                     <th className="py-2.5 px-3 font-mono">Electricity (kWh)</th>
@@ -320,13 +320,13 @@ export const MeasurementPage: React.FC<MeasurementPageProps> = ({
                       <td className="py-2.5 px-3 font-mono text-slate-700">{z.electricityKwh.toLocaleString()}</td>
                       <td className="py-2.5 px-3 font-mono text-slate-700">{z.fuelLiters.toLocaleString()}</td>
                       <td className="py-2.5 px-3 font-mono font-bold text-rose-600">{z.scope1Co2Kg.toLocaleString()}</td>
-                      <td className="py-2.5 px-3 font-mono font-bold text-[#004B91]">{z.scope2Co2Kg.toLocaleString()}</td>
+                      <td className="py-2.5 px-3 font-mono font-bold text-brand">{z.scope2Co2Kg.toLocaleString()}</td>
                       <td className="py-2.5 px-3 font-mono font-black text-slate-900">{z.totalCo2Kg.toLocaleString()} kg</td>
                       <td className="py-2.5 px-3">
                         <div className="flex items-center gap-2">
                           <span className="font-mono text-slate-700 font-bold">{z.sharePercent}%</span>
                           <div className="w-16 bg-slate-100 rounded-xs h-1.5 overflow-hidden">
-                            <div className="h-1.5 bg-[#004B91] rounded-xs" style={{ width: `${z.sharePercent}%` }} />
+                            <div className="h-1.5 bg-brand rounded-xs" style={{ width: `${z.sharePercent}%` }} />
                           </div>
                         </div>
                       </td>
@@ -353,7 +353,7 @@ export const MeasurementPage: React.FC<MeasurementPageProps> = ({
             </div>
             <button
               onClick={onAddAsset}
-              className="px-3 py-1.5 bg-[#004B91] text-white rounded-lg text-xs font-bold hover:bg-[#00386E] transition-colors"
+              className="px-3 py-1.5 bg-brand text-white rounded-lg text-xs font-bold hover:bg-brand-hover transition-colors"
             >
               + Register New Asset
             </button>
@@ -361,7 +361,7 @@ export const MeasurementPage: React.FC<MeasurementPageProps> = ({
 
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50 text-slate-500 uppercase tracking-wider font-semibold border-b border-slate-200/60">
+              <thead className="bg-slate-50 text-slate-500 font-semibold border-b border-slate-200/60">
                 <tr>
                   <th className="py-2.5 px-3">Asset Name & ID</th>
                   <th className="py-2.5 px-3">Equipment Class</th>
@@ -376,11 +376,11 @@ export const MeasurementPage: React.FC<MeasurementPageProps> = ({
                   <tr key={asset.id} className="hover:bg-slate-50 transition-colors">
                     <td className="py-2.5 px-3">
                       <div className="font-bold text-slate-900">{asset.data.asset_name || asset.id}</div>
-                      <div className="text-[10px] text-slate-400 font-mono">{asset.data.asset_id || asset.id}</div>
+                      <div className="text-xs text-slate-400 font-mono">{asset.data.asset_id || asset.id}</div>
                     </td>
                     <td className="py-2.5 px-3 font-medium text-slate-700">{asset.activityLabel}</td>
                     <td className="py-2.5 px-3">
-                      <span className={`font-mono text-[11px] font-bold ${
+                      <span className={`font-mono text-xs font-bold ${
                         asset.data.power_source === "Grid" ? "text-blue-700" :
                         asset.data.fuel_type === "Diesel" ? "text-amber-800" : "text-emerald-700"
                       }`}>
@@ -416,7 +416,7 @@ export const MeasurementPage: React.FC<MeasurementPageProps> = ({
             </div>
             <button
               onClick={onAddOpLog}
-              className="px-3 py-1.5 bg-[#004B91] text-white rounded-lg text-xs font-bold hover:bg-[#00386E] transition-colors"
+              className="px-3 py-1.5 bg-brand text-white rounded-lg text-xs font-bold hover:bg-brand-hover transition-colors"
             >
               + Record Shift Entry
             </button>
@@ -424,7 +424,7 @@ export const MeasurementPage: React.FC<MeasurementPageProps> = ({
 
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50 text-slate-500 uppercase tracking-wider font-semibold border-b border-slate-200/60">
+              <thead className="bg-slate-50 text-slate-500 font-semibold border-b border-slate-200/60">
                 <tr>
                   <th className="py-2.5 px-3">Date & Shift</th>
                   <th className="py-2.5 px-3">Asset / Machinery Activity</th>
@@ -439,16 +439,16 @@ export const MeasurementPage: React.FC<MeasurementPageProps> = ({
                   <tr key={log.id} className="hover:bg-slate-50 transition-colors">
                     <td className="py-2.5 px-3">
                       <div className="font-bold text-slate-900">{log.activityDate}</div>
-                      <div className="text-[10px] text-slate-400 font-mono">{log.shift || "Day Shift"}</div>
+                      <div className="text-xs text-slate-400 font-mono">{log.shift || "Day Shift"}</div>
                     </td>
                     <td className="py-2.5 px-3">
                       <div className="font-bold text-slate-900">{log.activityName}</div>
-                      <div className="text-[10px] text-slate-400">{log.activityLabel}</div>
+                      <div className="text-xs text-slate-400">{log.activityLabel}</div>
                     </td>
                     <td className="py-2.5 px-3 font-mono">{log.data.operating_hours || "8"} hrs</td>
-                    <td className="py-2.5 px-3 font-mono text-[#004B91] font-bold">{log.data.electricity_kwh || "0"} kWh</td>
+                    <td className="py-2.5 px-3 font-mono text-brand font-bold">{log.data.electricity_kwh || "0"} kWh</td>
                     <td className="py-2.5 px-3 font-mono text-rose-600 font-bold">{log.data.fuel_liters || "0"} L</td>
-                    <td className="py-2.5 px-3 font-mono text-[11px]">
+                    <td className="py-2.5 px-3 font-mono text-xs">
                       {log.source === "AUTO" ? (
                         <span className="text-emerald-700 font-bold">IoT SCADA Stream</span>
                       ) : log.source === "BATCH" ? (
@@ -480,7 +480,7 @@ export const MeasurementPage: React.FC<MeasurementPageProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2.5">
               <div className="flex items-center justify-between">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-800">Tier 1 • Automated Primary</span>
+                <span className="text-xs font-bold text-emerald-800">Tier 1 • Automated Primary</span>
                 <span className="w-2 h-2 rounded-xs bg-emerald-500" />
               </div>
               <h4 className="font-black text-slate-900 text-sm">Hardware-Authenticated Telemetry</h4>
@@ -491,8 +491,8 @@ export const MeasurementPage: React.FC<MeasurementPageProps> = ({
 
             <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2.5">
               <div className="flex items-center justify-between">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-[#004B91]">Tier 2 • Batch Reconciliation</span>
-                <span className="w-2 h-2 rounded-xs bg-[#004B91]" />
+                <span className="text-xs font-bold text-brand">Tier 2 • Batch Reconciliation</span>
+                <span className="w-2 h-2 rounded-xs bg-brand" />
               </div>
               <h4 className="font-black text-slate-900 text-sm">Certified Batch Uploads</h4>
               <p className="text-xs text-slate-600 leading-relaxed">
@@ -502,7 +502,7 @@ export const MeasurementPage: React.FC<MeasurementPageProps> = ({
 
             <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2.5">
               <div className="flex items-center justify-between">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-600">Tier 3 • Manual Audit Trail</span>
+                <span className="text-xs font-bold text-slate-600">Tier 3 • Manual Audit Trail</span>
                 <span className="w-2 h-2 rounded-xs bg-amber-500" />
               </div>
               <h4 className="font-black text-slate-900 text-sm">Supervised Operator Entry</h4>

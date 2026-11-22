@@ -16,7 +16,7 @@ export function useLevelLabel() {
 
 export const LevelBadge: React.FC<{ level: DataLevel }> = ({ level }) => {
   const label = useLevelLabel();
-  return <span className={`inline-flex px-1.5 py-0.5 rounded border text-[10px] font-bold whitespace-nowrap ${LEVEL_STYLE[level]}`}>{label(level)}</span>;
+  return <span className={`inline-flex px-1.5 py-0.5 rounded border text-xs font-bold whitespace-nowrap ${LEVEL_STYLE[level]}`}>{label(level)}</span>;
 };
 
 export const STATUS_STEPS: RecordStatus[] = ["DRAFT", "RECONCILED", "LOCKED", "SHARED"];
@@ -42,7 +42,7 @@ const STATUS_STYLE: Record<RecordStatus, string> = {
 
 export const RecordStatusBadge: React.FC<{ status: RecordStatus }> = ({ status }) => {
   const label = useStatusLabel();
-  return <span className={`inline-flex px-1.5 py-0.5 rounded text-[10px] font-bold whitespace-nowrap ${STATUS_STYLE[status]}`}>{label(status)}</span>;
+  return <span className={`inline-flex px-1.5 py-0.5 rounded text-xs font-bold whitespace-nowrap ${STATUS_STYLE[status]}`}>{label(status)}</span>;
 };
 
 /** Draft → Reconciled → Locked → Shared stepper. */
@@ -54,7 +54,7 @@ export const StatusStepper: React.FC<{ status: RecordStatus }> = ({ status }) =>
       {STATUS_STEPS.map((s, i) => (
         <React.Fragment key={s}>
           {i > 0 && <span className={`h-0.5 w-3 ${i <= idx ? "bg-emerald-500" : "bg-slate-200"}`} />}
-          <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${i <= idx ? "bg-emerald-600 text-white" : "bg-slate-100 text-slate-500"}`}>{label(s)}</span>
+          <span className={`px-1.5 py-0.5 rounded text-xs font-bold ${i <= idx ? "bg-emerald-600 text-white" : "bg-slate-100 text-slate-500"}`}>{label(s)}</span>
         </React.Fragment>
       ))}
     </div>
@@ -67,7 +67,7 @@ export const MeasuredBar: React.FC<{ pct: number }> = ({ pct }) => (
     <div className="h-1.5 flex-1 rounded-full bg-slate-100 overflow-hidden">
       <div className="h-full bg-emerald-500" style={{ width: `${Math.min(100, pct)}%` }} />
     </div>
-    <span className="text-[10px] tabular-nums text-slate-600 w-8 text-right">{Math.round(pct)}%</span>
+    <span className="text-xs tabular-nums text-slate-600 w-8 text-right">{Math.round(pct)}%</span>
   </div>
 );
 
@@ -78,6 +78,6 @@ export const IntensityBar: React.FC<{ value: number; avg: number; max?: number; 
       <div className={`h-full rounded-full ${value > avg ? "bg-amber-500" : "bg-emerald-500"}`} style={{ width: `${Math.min(100, (value / max) * 100)}%` }} />
       <div className="absolute -top-1 -bottom-1 w-0.5 bg-slate-900" style={{ left: `${(avg / max) * 100}%` }} />
     </div>
-    <span className="text-[10px] tabular-nums text-slate-700 w-9 text-right">{label}</span>
+    <span className="text-xs tabular-nums text-slate-700 w-9 text-right">{label}</span>
   </div>
 );

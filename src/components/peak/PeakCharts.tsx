@@ -22,26 +22,27 @@ import { formatKShort, useFormat, useMoneyFormat } from "../../utils/format";
 import { INTERVAL_MINUTES, SUBSTATION_LIMIT_KW, TouBand, minuteLabel } from "../../data/module1Forecast";
 import { AdjustKey, CostBreakdown, DispatchInterval, DispatchResult } from "../../data/module3PeakShaving";
 import { TOU_BG } from "../forecast/ForecastDemandChart";
+import { SERIES } from "../../theme/tokens";
 
 export const M3_COLORS = {
-  before: "#64748B",
-  after: "#004B91",
-  reduced: "#10B981",
-  shifted: "#3B82F6",
-  target: "#059669",
-  limit: "#D97706",
-  pv: "#F59E0B",
-  grid: "#004B91",
-  bess: "#7C3AED",
+  before: SERIES.before,
+  after: SERIES.after,
+  reduced: SERIES.reduced,
+  shifted: SERIES.shifted,
+  target: SERIES.target,
+  limit: SERIES.limit,
+  pv: SERIES.pv,
+  grid: SERIES.forecast,
+  bess: SERIES.bess,
 };
 
 export const ADJUST_COLORS: Record<AdjustKey, string> = {
-  ITV: "#10B981",
-  SWAP: "#34D399",
-  REEFER: "#0EA5E9",
-  RTG: "#4A81C9",
-  HVAC: "#94A3B8",
-  BESS: "#7C3AED",
+  ITV: SERIES.f05,
+  SWAP: "#86CBA8",
+  REEFER: SERIES.f03,
+  RTG: SERIES.f02,
+  HVAC: SERIES.f06,
+  BESS: SERIES.bess,
 };
 
 export function useAdjustLabels() {
@@ -73,7 +74,7 @@ function touRuns(intervals: { minute: number; tou: TouBand }[]) {
 }
 
 const Box: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <div className="bg-white border border-slate-300 rounded-xl shadow-lg px-3 py-2 text-[11px] text-slate-900 space-y-0.5 min-w-[200px]">{children}</div>
+  <div className="bg-white border border-slate-300 rounded-xl shadow-lg px-3 py-2 text-xs text-slate-900 space-y-0.5 min-w-[200px]">{children}</div>
 );
 const Row: React.FC<{ c: string; l: string; v: string; b?: boolean }> = ({ c, l, v, b }) => (
   <div className="flex items-center justify-between gap-4">
@@ -143,22 +144,22 @@ export const BeforeAfterChart: React.FC<{ result: DispatchResult; basis: "GRID" 
                 value: t(`Shifted ${num(itvShift)} kW of EV charging to off-peak`, `Dời ${num(itvShift)} kW sạc xe sang giờ thấp điểm`),
                 position: "insideTop",
                 fill: "#1D4ED8",
-                fontSize: 11,
+                fontSize: 12,
                 fontWeight: 700,
               }}
             />
           )}
-          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
-          <XAxis dataKey="minute" type="number" domain={[0, 1440]} ticks={X_TICKS} tickFormatter={(m: number) => minuteLabel(m)} stroke="#64748B" fontSize={11} tickLine={false} />
+          <CartesianGrid vertical={false} stroke="#EEF0F3" />
+          <XAxis dataKey="minute" type="number" domain={[0, 1440]} ticks={X_TICKS} tickFormatter={(m: number) => minuteLabel(m)} stroke="#94A3B8" fontSize={12} tickLine={false} />
           <YAxis
             domain={[0, 10000]}
             ticks={[0, 2000, 4000, 6000, 8000, 10000]}
             tickFormatter={(v: number) => formatKShort(v)}
-            stroke="#64748B"
-            fontSize={11}
+            stroke="#94A3B8"
+            fontSize={12}
             tickLine={false}
             width={48}
-            label={{ value: "kW", position: "top", offset: 12, fontSize: 11, fill: "#475569", fontWeight: 700 }}
+            label={{ value: "kW", position: "top", offset: 12, fontSize: 12, fill: "#475569", fontWeight: 700 }}
           />
           <Tooltip content={<TooltipBody />} />
           <Area type="monotone" dataKey="cut" fill={M3_COLORS.reduced} fillOpacity={0.45} stroke="none" activeDot={false} isAnimationActive animationDuration={400} />
@@ -170,7 +171,7 @@ export const BeforeAfterChart: React.FC<{ result: DispatchResult; basis: "GRID" 
             stroke={M3_COLORS.limit}
             strokeDasharray="6 4"
             strokeWidth={1.5}
-            label={{ value: t(`Substation limit ${num(SUBSTATION_LIMIT_KW)} kW`, `Giới hạn trạm ${num(SUBSTATION_LIMIT_KW)} kW`), position: "insideTopRight", fill: "#B45309", fontSize: 11, fontWeight: 700 }}
+            label={{ value: t(`Substation limit ${num(SUBSTATION_LIMIT_KW)} kW`, `Giới hạn trạm ${num(SUBSTATION_LIMIT_KW)} kW`), position: "insideTopRight", fill: "#B45309", fontSize: 12, fontWeight: 700 }}
           />
           {basis === "GRID" && (
             <ReferenceLine
@@ -178,7 +179,7 @@ export const BeforeAfterChart: React.FC<{ result: DispatchResult; basis: "GRID" 
               stroke={M3_COLORS.target}
               strokeDasharray="3 3"
               strokeWidth={1.5}
-              label={{ value: t(`Peak target ${num(target)} kW`, `Mục tiêu đỉnh (peak target) ${num(target)} kW`), position: "insideBottomLeft", fill: "#047857", fontSize: 11, fontWeight: 700 }}
+              label={{ value: t(`Peak target ${num(target)} kW`, `Mục tiêu đỉnh (peak target) ${num(target)} kW`), position: "insideBottomLeft", fill: "#047857", fontSize: 12, fontWeight: 700 }}
             />
           )}
           {basis === "GRID" && (
@@ -244,9 +245,9 @@ export const WaterfallChart: React.FC<{ result: DispatchResult }> = ({ result })
     <div className="h-72">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={steps} margin={{ top: 22, right: 8, left: 0, bottom: 0 }}>
-          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
-          <XAxis dataKey="name" fontSize={10} stroke="#64748B" tickLine={false} interval={0} height={44} tick={{ width: 80 } as any} />
-          <YAxis domain={[lo, hi]} allowDataOverflow fontSize={11} stroke="#64748B" tickLine={false} width={48} tickFormatter={(v: number) => num(v)} label={{ value: "kW", position: "top", offset: 10, fontSize: 11, fill: "#475569", fontWeight: 700 }} />
+          <CartesianGrid vertical={false} stroke="#EEF0F3" />
+          <XAxis dataKey="name" fontSize={12} stroke="#94A3B8" tickLine={false} interval={0} height={44} tick={{ width: 80 } as any} />
+          <YAxis domain={[lo, hi]} allowDataOverflow fontSize={12} stroke="#94A3B8" tickLine={false} width={48} tickFormatter={(v: number) => num(v)} label={{ value: "kW", position: "top", offset: 10, fontSize: 12, fill: "#475569", fontWeight: 700 }} />
           <ReferenceLine y={SUBSTATION_LIMIT_KW} stroke={M3_COLORS.limit} strokeDasharray="6 4" />
           <Tooltip
             cursor={{ fill: "#F1F5F9" }}
@@ -271,7 +272,7 @@ export const WaterfallChart: React.FC<{ result: DispatchResult }> = ({ result })
                 const n = Number(v);
                 return n > 1000 ? num(n) : `${n > 0 ? "+" : "−"}${num(Math.abs(n))}`;
               }}
-              style={{ fontSize: 11, fontWeight: 700, fill: "#0F172A" }}
+              style={{ fontSize: 12, fontWeight: 700, fill: "#0F172A" }}
             />
           </Bar>
         </BarChart>
@@ -306,21 +307,21 @@ export const PowerBalanceChart: React.FC<{ result: DispatchResult }> = ({ result
     { key: "grid", name: t("Grid", "Lưới"), color: M3_COLORS.grid, side: "src" },
     { key: "pv", name: t("PV self-use", "PV tự dùng"), color: M3_COLORS.pv, side: "src" },
     ...(bess ? [{ key: "bessOut", name: t("BESS discharge", "BESS xả"), color: M3_COLORS.bess, side: "src" as const }] : []),
-    { key: "stsRtg", name: t("STS + e-RTG (P90, locked)", "Cẩu STS + RTG (P90, khóa)"), color: "#1E3A8A", side: "load" },
-    { key: "reefer", name: "Reefer", color: "#0EA5E9", side: "load" },
-    { key: "ev", name: t("EV charging", "Sạc xe điện"), color: "#10B981", side: "load" },
-    { key: "lighting", name: t("Lighting", "Chiếu sáng"), color: "#FACC15", side: "load" },
-    { key: "base", name: t("Base load (incl. losses)", "Phụ tải nền (gồm tổn thất)"), color: "#94A3B8", side: "load" },
-    { key: "ops", name: "OPS", color: "#7C3AED", side: "load" },
+    { key: "stsRtg", name: t("STS + e-RTG (P90, locked)", "Cẩu STS + RTG (P90, khóa)"), color: SERIES.f01, side: "load" },
+    { key: "reefer", name: "Reefer", color: SERIES.f03, side: "load" },
+    { key: "ev", name: t("EV charging", "Sạc xe điện"), color: SERIES.f05, side: "load" },
+    { key: "lighting", name: t("Lighting", "Chiếu sáng"), color: "#CBD5E1", side: "load" },
+    { key: "base", name: t("Base load (incl. losses)", "Phụ tải nền (gồm tổn thất)"), color: SERIES.f06, side: "load" },
+    { key: "ops", name: "OPS", color: SERIES.f04, side: "load" },
     ...(bess ? [{ key: "bessIn", name: t("BESS charge", "BESS sạc"), color: "#C4B5FD", side: "load" as const }] : []),
   ];
   return (
     <div className="h-72">
       <ResponsiveContainer width="100%" height="100%">
         <ComposedChart data={data} stackOffset="sign" margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
-          <XAxis dataKey="minute" type="number" domain={[0, 1440]} ticks={X_TICKS} tickFormatter={(m: number) => minuteLabel(m)} stroke="#64748B" fontSize={10} tickLine={false} />
-          <YAxis domain={[-10000, 10000]} ticks={[-10000, -5000, 0, 5000, 10000]} tickFormatter={(v: number) => formatKShort(Math.abs(v))} stroke="#64748B" fontSize={10} tickLine={false} width={40} />
+          <CartesianGrid vertical={false} stroke="#EEF0F3" />
+          <XAxis dataKey="minute" type="number" domain={[0, 1440]} ticks={X_TICKS} tickFormatter={(m: number) => minuteLabel(m)} stroke="#94A3B8" fontSize={12} tickLine={false} />
+          <YAxis domain={[-10000, 10000]} ticks={[-10000, -5000, 0, 5000, 10000]} tickFormatter={(v: number) => formatKShort(Math.abs(v))} stroke="#94A3B8" fontSize={12} tickLine={false} width={40} />
           <ReferenceLine y={0} stroke="#0F172A" />
           <Tooltip
             content={({ active, payload }: any) =>
@@ -337,7 +338,7 @@ export const PowerBalanceChart: React.FC<{ result: DispatchResult }> = ({ result
           {series.map((s) => (
             <Area key={s.key} type="monotone" dataKey={s.key} name={s.name} stackId="bal" fill={s.color} stroke={s.color} fillOpacity={0.75} strokeWidth={0.5} isAnimationActive={false} />
           ))}
-          <Legend iconType="square" wrapperStyle={{ fontSize: 10 }} />
+          <Legend iconType="square" wrapperStyle={{ fontSize: 12 }} />
         </ComposedChart>
       </ResponsiveContainer>
     </div>
@@ -367,9 +368,9 @@ export const ObjectiveChart: React.FC<{ before: CostBreakdown; after: CostBreakd
     <div className="h-64">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={data.slice(1)} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
-          <XAxis dataKey="name" fontSize={10} stroke="#64748B" tickLine={false} interval={0} height={40} />
-          <YAxis fontSize={10} stroke="#64748B" tickLine={false} width={40} label={{ value: t("M VND", "triệu đ"), position: "top", offset: 8, fontSize: 10, fill: "#475569" }} />
+          <CartesianGrid vertical={false} stroke="#EEF0F3" />
+          <XAxis dataKey="name" fontSize={12} stroke="#94A3B8" tickLine={false} interval={0} height={40} />
+          <YAxis fontSize={12} stroke="#94A3B8" tickLine={false} width={40} label={{ value: t("M VND", "triệu đ"), position: "top", offset: 8, fontSize: 12, fill: "#475569" }} />
           <Tooltip
             content={({ active, payload }: any) =>
               active && payload?.length ? (
@@ -381,7 +382,7 @@ export const ObjectiveChart: React.FC<{ before: CostBreakdown; after: CostBreakd
               ) : null
             }
           />
-          <Legend wrapperStyle={{ fontSize: 10 }} />
+          <Legend wrapperStyle={{ fontSize: 12 }} />
           <Bar dataKey="before" name={t("Before", "Trước")} fill={M3_COLORS.before} radius={[3, 3, 0, 0]} />
           <Bar dataKey="after" name={t("After", "Sau")} fill={M3_COLORS.after} radius={[3, 3, 0, 0]} />
         </BarChart>

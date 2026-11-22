@@ -2875,7 +2875,7 @@ export const Historical2DReplayView: React.FC<Historical2DReplayViewProps> = ({
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           {/* Compact Dropdown for Replay Log Selection (Zero multi-line wrapping!) */}
           <div className="flex items-center gap-2 min-w-0 flex-1">
-            <label className="text-[10px] font-black uppercase tracking-wider text-slate-500 shrink-0">
+            <label className="text-xs font-black text-slate-500 shrink-0">
               Replay Log:
             </label>
             <select
@@ -2932,14 +2932,14 @@ export const Historical2DReplayView: React.FC<Historical2DReplayViewProps> = ({
         <div className="bg-white px-3 py-2 rounded-xl border border-slate-200/80 space-y-1.5">
           <div className="flex items-center justify-between gap-2 text-xs">
             <div className="flex items-center gap-2 min-w-0">
-              <span className="px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200 font-mono font-bold text-[10px] shrink-0">
+              <span className="px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200 font-mono font-bold text-xs shrink-0">
                 {activePhase.timeLabel}
               </span>
               <span className="font-bold text-slate-900 truncate">
                 {activePhase.phaseTitle}
               </span>
             </div>
-            <span className="text-[10px] font-mono font-bold text-slate-500 shrink-0">
+            <span className="text-xs font-mono font-bold text-slate-500 shrink-0">
               {Math.round(progressPct)}% · {currentScenario.durationLabel}
             </span>
           </div>
@@ -2961,7 +2961,7 @@ export const Historical2DReplayView: React.FC<Historical2DReplayViewProps> = ({
       {/* 2. ENTITY-SCOPED 2D HISTORICAL TERMINAL SCHEMATIC MAP (SVG)
           ONLY renders the active Berth, assigned STS Crane(s), active Truck(s), and target Container Bay(s) for THIS case! */}
       <div className="bg-[#0f172a] rounded-2xl border border-slate-800 p-3 shadow-inner overflow-hidden">
-        <div className="flex flex-wrap items-center justify-between gap-2 mb-2 px-1 text-[11px] text-slate-300">
+        <div className="flex flex-wrap items-center justify-between gap-2 mb-2 px-1 text-xs text-slate-300">
           <div className="flex items-center gap-2 font-bold">
             <span className="w-2 h-2 rounded-full bg-emerald-400" />
             <span>
@@ -2971,7 +2971,7 @@ export const Historical2DReplayView: React.FC<Historical2DReplayViewProps> = ({
               ({currentScenario.berthLabel})
             </span>
           </div>
-          <span className="text-[10px] font-mono text-slate-400">
+          <span className="text-xs font-mono text-slate-400">
             Showing only involved entities ({currentScenario.activeCranes.map((c) => c.code).join(", ")} ↔{" "}
             {currentScenario.activeBays.map((b) => b.title).join(", ")})
           </span>
@@ -2998,7 +2998,7 @@ export const Historical2DReplayView: React.FC<Historical2DReplayViewProps> = ({
               fill="#7dd3fc"
               fontSize="9.5"
               fontWeight="bold"
-              fontFamily="monospace"
+              fontFamily="Inter, sans-serif"
             >
               NAVIGATION CHANNEL · ACTIVE ZONE: {currentScenario.berthLabel}
             </text>
@@ -3138,7 +3138,7 @@ export const Historical2DReplayView: React.FC<Historical2DReplayViewProps> = ({
               fill="#bfdbfe"
               fontSize="7.5"
               fontWeight="bold"
-              fontFamily="monospace"
+              fontFamily="Inter, sans-serif"
             >
               INTERNAL TERMINAL TRANSFER LANE
             </text>
@@ -3223,7 +3223,7 @@ export const Historical2DReplayView: React.FC<Historical2DReplayViewProps> = ({
                     y="250"
                     fill={bay.stroke}
                     fontSize="8"
-                    fontFamily="monospace"
+                    fontFamily="Inter, sans-serif"
                     fontWeight="bold"
                   >
                     {bay.feeder}
@@ -3358,7 +3358,7 @@ export const Historical2DReplayView: React.FC<Historical2DReplayViewProps> = ({
                       textAnchor="middle"
                       fill="#bae6fd"
                       fontSize="6.5"
-                      fontFamily="monospace"
+                      fontFamily="Inter, sans-serif"
                       fontWeight="bold"
                     >
                       Trip {trk.currentTripNum}/{trk.totalTripsInLog}
@@ -3370,7 +3370,7 @@ export const Historical2DReplayView: React.FC<Historical2DReplayViewProps> = ({
           </svg>
         </div>
 
-        <div className="mt-2 px-1 text-[11px] text-slate-400">
+        <div className="mt-2 px-1 text-xs text-slate-400">
           {currentScenario.scopeDescription}
         </div>
       </div>
@@ -3378,14 +3378,14 @@ export const Historical2DReplayView: React.FC<Historical2DReplayViewProps> = ({
       {/* 3. SYNCHRONIZED COMPACT METER BREAKDOWN CARDS */}
       <div>
         <div className="flex items-center justify-between mb-2">
-          <h4 className="text-xs font-black uppercase tracking-wider text-slate-800 flex items-center gap-1.5">
+          <h4 className="text-xs font-black text-slate-800 flex items-center gap-1.5">
             <Gauge className="w-3.5 h-3.5 text-blue-600" />
             <span>
               Synchronized Sub-Meter Telemetry Breakdown (Scrubbed to{" "}
               {activePhase.timeLabel})
             </span>
           </h4>
-          <span className="text-[11px] text-slate-400 hidden sm:inline">
+          <span className="text-xs text-slate-400 hidden sm:inline">
             Click any meter card to open full Meter Diagram
           </span>
         </div>
@@ -3408,10 +3408,10 @@ export const Historical2DReplayView: React.FC<Historical2DReplayViewProps> = ({
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
                     <div className="flex items-center gap-1.5">
-                      <span className="px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 font-mono font-bold text-[10px]">
+                      <span className="px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 font-mono font-bold text-xs">
                         {meter.id}
                       </span>
-                      <span className="text-[10px] font-mono text-slate-400">
+                      <span className="text-xs font-mono text-slate-400">
                         {meter.protocol}
                       </span>
                     </div>
@@ -3426,7 +3426,7 @@ export const Historical2DReplayView: React.FC<Historical2DReplayViewProps> = ({
                     >
                       {currentPoint.val} {meter.unit}
                     </div>
-                    <div className="text-[10px] font-mono text-slate-500">
+                    <div className="text-xs font-mono text-slate-500">
                       {currentPoint.sec} {meter.secondaryUnit} ·{" "}
                       <strong className="text-slate-700">
                         {currentPoint.t}
@@ -3463,11 +3463,11 @@ export const Historical2DReplayView: React.FC<Historical2DReplayViewProps> = ({
                             }}
                           />
                         </div>
-                        <div className="text-[9px] font-mono font-bold text-slate-700">
+                        <div className="text-xs font-mono font-bold text-slate-700">
                           {pt.val}
                           {meter.unit}
                         </div>
-                        <div className="text-[9px] font-mono text-slate-400">
+                        <div className="text-xs font-mono text-slate-400">
                           {pt.t}
                         </div>
                       </div>
@@ -3475,7 +3475,7 @@ export const Historical2DReplayView: React.FC<Historical2DReplayViewProps> = ({
                   })}
                 </div>
 
-                <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px]">
+                <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs">
                   <span className="text-slate-600 font-medium truncate">
                     Status:{" "}
                     <strong className="text-slate-900">

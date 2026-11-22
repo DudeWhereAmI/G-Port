@@ -225,7 +225,7 @@ export const N4WorkflowPipelineView: React.FC = () => {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100">
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-blue-100 text-[#004B91]">
+              <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-blue-100 text-brand">
                 N4 TOS WORKFLOW MATRIX
               </span>
               <h2 className="text-base font-black text-slate-900 tracking-tight">
@@ -259,13 +259,13 @@ export const N4WorkflowPipelineView: React.FC = () => {
                   onClick={() => setSelectedStepIdx(idx)}
                   className={`rounded-xl p-3 border cursor-pointer transition-all flex flex-col justify-between select-none ${
                     isSelected
-                      ? "bg-blue-50/90 border-[#004B91] shadow-md ring-2 ring-blue-500/20"
+                      ? "bg-blue-50/90 border-brand shadow-md ring-2 ring-blue-500/20"
                       : "bg-slate-50 hover:bg-slate-100/80 border-slate-200 text-slate-700"
                   }`}
                 >
                   <div className="flex items-center justify-between mb-2">
-                    <span className={`text-[10px] font-mono font-black px-1.5 py-0.5 rounded ${
-                      isSelected ? "bg-[#004B91] text-white" : "bg-slate-200 text-slate-600"
+                    <span className={`text-xs font-mono font-black px-1.5 py-0.5 rounded ${
+                      isSelected ? "bg-brand text-white" : "bg-slate-200 text-slate-600"
                     }`}>
                       Stage {s.stepNumber}
                     </span>
@@ -278,12 +278,12 @@ export const N4WorkflowPipelineView: React.FC = () => {
                     <div className="text-xs font-black text-slate-900 leading-snug truncate">
                       {s.title}
                     </div>
-                    <div className="text-[10px] text-slate-500 truncate">
+                    <div className="text-xs text-slate-500 truncate">
                       {s.vietnameseTitle}
                     </div>
                   </div>
 
-                  <div className="mt-3 pt-2 border-t border-slate-200/60 flex items-center justify-between text-[9px] font-mono">
+                  <div className="mt-3 pt-2 border-t border-slate-200/60 flex items-center justify-between text-xs font-mono">
                     <span className={`font-bold ${
                       s.status === "COMPLETED" ? "text-emerald-600" : "text-amber-600"
                     }`}>
@@ -306,11 +306,11 @@ export const N4WorkflowPipelineView: React.FC = () => {
           {/* Left Drill-Down Details */}
           <div className="flex-1 space-y-4">
             <div className="flex items-center gap-3">
-              <div className="p-3 rounded-xl bg-blue-50 border border-blue-200 text-[#004B91]">
+              <div className="p-3 rounded-xl bg-blue-50 border border-blue-200 text-brand">
                 {currentStep.icon}
               </div>
               <div>
-                <div className="text-xs font-mono font-bold text-[#004B91] uppercase">
+                <div className="text-xs font-mono font-bold text-brand">
                   Stage {currentStep.stepNumber} Execution Detail
                 </div>
                 <h3 className="text-lg font-black text-slate-900">
@@ -325,7 +325,7 @@ export const N4WorkflowPipelineView: React.FC = () => {
             {/* Inputs & Outputs Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
               <div className="bg-slate-50 rounded-xl p-3 border border-slate-200">
-                <span className="text-[10px] font-mono text-slate-500 font-bold uppercase block mb-1.5">
+                <span className="text-xs font-mono text-slate-500 font-bold block mb-1.5">
                   Direct Ingest / Sources
                 </span>
                 <ul className="space-y-1 text-xs text-slate-700">
@@ -339,7 +339,7 @@ export const N4WorkflowPipelineView: React.FC = () => {
               </div>
 
               <div className="bg-slate-50 rounded-xl p-3 border border-slate-200">
-                <span className="text-[10px] font-mono text-slate-500 font-bold uppercase block mb-1.5">
+                <span className="text-xs font-mono text-slate-500 font-bold block mb-1.5">
                   Sub-Configuration & Rules
                 </span>
                 <div className="text-xs font-semibold text-slate-800 bg-white p-2 rounded-lg border border-slate-200 mb-2">
@@ -356,12 +356,12 @@ export const N4WorkflowPipelineView: React.FC = () => {
 
             {/* Activity Logs & Audit Trails */}
             <div className="bg-slate-900 text-slate-200 rounded-xl p-3 font-mono text-xs space-y-1.5">
-              <div className="text-[10px] text-slate-400 font-bold uppercase flex items-center justify-between border-b border-slate-800 pb-1">
+              <div className="text-xs text-slate-400 font-bold flex items-center justify-between border-b border-slate-800 pb-1">
                 <span>Verified Operation Records</span>
                 <span className="text-emerald-400">● LIVE AUDIT READY</span>
               </div>
               {currentStep.details.records.map((rec, rIdx) => (
-                <div key={rIdx} className="text-[11px] flex items-center gap-2">
+                <div key={rIdx} className="text-xs flex items-center gap-2">
                   <span className="text-slate-500">&gt;</span>
                   <span>{rec}</span>
                 </div>
@@ -372,7 +372,7 @@ export const N4WorkflowPipelineView: React.FC = () => {
           {/* Right Metrics & Quick Actions */}
           <div className="lg:w-80 shrink-0 space-y-3">
             <div className="bg-slate-50 rounded-xl p-4 border border-slate-200 space-y-3">
-              <div className="text-xs font-bold text-slate-800 uppercase tracking-wide">
+              <div className="text-xs font-bold text-slate-800">
                 Stage Metrics & SLAs
               </div>
               <div className="space-y-2">
@@ -386,7 +386,7 @@ export const N4WorkflowPipelineView: React.FC = () => {
             </div>
 
             {/* Broadcaster Quick Status */}
-            <div className="bg-gradient-to-br from-[#004B91] to-blue-900 text-white rounded-xl p-4 space-y-2.5 shadow-sm">
+            <div className="bg-gradient-to-br from-brand to-blue-900 text-white rounded-xl p-4 space-y-2.5 shadow-sm">
               <div className="flex items-center gap-2 text-xs font-bold">
                 <Tv className="w-4 h-4 text-sky-300" />
                 <span>Publishing Channels</span>
@@ -394,7 +394,7 @@ export const N4WorkflowPipelineView: React.FC = () => {
               <div className="text-xs text-sky-100">
                 Connected to Operations Video Wall & Driver PWA Mobile App.
               </div>
-              <div className="pt-2 border-t border-white/20 flex items-center justify-between text-[11px] font-mono">
+              <div className="pt-2 border-t border-white/20 flex items-center justify-between text-xs font-mono">
                 <span className="flex items-center gap-1">
                   <Smartphone className="w-3.5 h-3.5 text-emerald-400" />
                   <span>Mobile PWA: Active</span>

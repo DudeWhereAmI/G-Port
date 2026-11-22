@@ -186,10 +186,10 @@ export const FeederDetailModal: React.FC<FeederDetailModalProps> = ({
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-xs font-mono font-bold text-amber-300 uppercase tracking-wider">
+                <span className="text-xs font-mono font-bold text-amber-300">
                   SUBSTATION PRIMARY FEEDER TELEMETRY
                 </span>
-                <span className="text-[10px] px-2 py-0.2 rounded-full bg-emerald-500/20 text-emerald-300 font-mono font-bold border border-emerald-500/30">
+                <span className="text-xs px-2 py-0.2 rounded-full bg-emerald-500/20 text-emerald-300 font-mono font-bold border border-emerald-500/30">
                   ● BREAKER {fData.status}
                 </span>
               </div>
@@ -212,33 +212,33 @@ export const FeederDetailModal: React.FC<FeederDetailModalProps> = ({
         {/* ================================================================== */}
         <div className="px-6 py-3 bg-slate-50 border-b border-slate-200/90 grid grid-cols-2 sm:grid-cols-5 gap-3 text-xs font-mono">
           <div className="bg-white p-2.5 rounded-xl border border-slate-200">
-            <span className="text-[10px] text-slate-400 block uppercase font-bold">Active Power (P)</span>
+            <span className="text-xs text-slate-400 block font-bold">Active Power (P)</span>
             <strong className="text-sm font-black text-slate-900">{fData.powerKw.toLocaleString()} kW</strong>
-            <span className="text-[10px] text-slate-500 block">{fData.powerKva} kVA</span>
+            <span className="text-xs text-slate-500 block">{fData.powerKva} kVA</span>
           </div>
 
           <div className="bg-white p-2.5 rounded-xl border border-slate-200">
-            <span className="text-[10px] text-slate-400 block uppercase font-bold">Voltage & Current</span>
+            <span className="text-xs text-slate-400 block font-bold">Voltage & Current</span>
             <strong className="text-sm font-black text-slate-900">{fData.voltageKv} kV</strong>
-            <span className="text-[10px] text-slate-500 block">{fData.currentA} A</span>
+            <span className="text-xs text-slate-500 block">{fData.currentA} A</span>
           </div>
 
           <div className="bg-white p-2.5 rounded-xl border border-slate-200">
-            <span className="text-[10px] text-slate-400 block uppercase font-bold">Power Factor (cosφ)</span>
+            <span className="text-xs text-slate-400 block font-bold">Power Factor (cosφ)</span>
             <strong className="text-sm font-black text-emerald-600">{fData.cosPhi}</strong>
-            <span className="text-[10px] text-emerald-700 block">Optimal</span>
+            <span className="text-xs text-emerald-700 block">Optimal</span>
           </div>
 
           <div className="bg-white p-2.5 rounded-xl border border-slate-200">
-            <span className="text-[10px] text-slate-400 block uppercase font-bold">Frequency</span>
+            <span className="text-xs text-slate-400 block font-bold">Frequency</span>
             <strong className="text-sm font-black text-slate-900">{fData.frequencyHz} Hz</strong>
-            <span className="text-[10px] text-slate-500 block">Synchronized</span>
+            <span className="text-xs text-slate-500 block">Synchronized</span>
           </div>
 
           <div className="bg-white p-2.5 rounded-xl border border-slate-200 col-span-2 sm:col-span-1">
-            <span className="text-[10px] text-slate-400 block uppercase font-bold">Harmonics (THD)</span>
+            <span className="text-xs text-slate-400 block font-bold">Harmonics (THD)</span>
             <strong className="text-sm font-black text-blue-700">{fData.thdI}% THD-I</strong>
-            <span className="text-[10px] text-slate-500 block">THD-V: {fData.thdV}%</span>
+            <span className="text-xs text-slate-500 block">THD-V: {fData.thdV}%</span>
           </div>
         </div>
 
@@ -250,7 +250,7 @@ export const FeederDetailModal: React.FC<FeederDetailModalProps> = ({
             onClick={() => setActiveTab("SLD_DIAGRAM")}
             className={`flex items-center gap-1.5 pb-2.5 border-b-2 px-1 transition-colors ${
               activeTab === "SLD_DIAGRAM"
-                ? "border-[#004B91] text-[#004B91]"
+                ? "border-brand text-brand"
                 : "border-transparent text-slate-500 hover:text-slate-800"
             }`}
           >
@@ -262,7 +262,7 @@ export const FeederDetailModal: React.FC<FeederDetailModalProps> = ({
             onClick={() => setActiveTab("LOAD_CURVE")}
             className={`flex items-center gap-1.5 pb-2.5 border-b-2 px-1 transition-colors ${
               activeTab === "LOAD_CURVE"
-                ? "border-[#004B91] text-[#004B91]"
+                ? "border-brand text-brand"
                 : "border-transparent text-slate-500 hover:text-slate-800"
             }`}
           >
@@ -274,7 +274,7 @@ export const FeederDetailModal: React.FC<FeederDetailModalProps> = ({
             onClick={() => setActiveTab("PROTECTION_RELAYS")}
             className={`flex items-center gap-1.5 pb-2.5 border-b-2 px-1 transition-colors ${
               activeTab === "PROTECTION_RELAYS"
-                ? "border-[#004B91] text-[#004B91]"
+                ? "border-brand text-brand"
                 : "border-transparent text-slate-500 hover:text-slate-800"
             }`}
           >
@@ -286,7 +286,7 @@ export const FeederDetailModal: React.FC<FeederDetailModalProps> = ({
             onClick={() => setActiveTab("TARIFF_COST")}
             className={`flex items-center gap-1.5 pb-2.5 border-b-2 px-1 transition-colors ${
               activeTab === "TARIFF_COST"
-                ? "border-[#004B91] text-[#004B91]"
+                ? "border-brand text-brand"
                 : "border-transparent text-slate-500 hover:text-slate-800"
             }`}
           >
@@ -314,7 +314,7 @@ export const FeederDetailModal: React.FC<FeederDetailModalProps> = ({
                   <svg viewBox="0 0 600 140" className="w-full h-full">
                     {/* 110kV / 22kV Busbar */}
                     <line x1="50" y1="20" x2="550" y2="20" stroke="#f59e0b" strokeWidth="4" />
-                    <text x="60" y="14" fill="#f59e0b" fontSize="10" fontWeight="bold" fontFamily="monospace">
+                    <text x="60" y="14" fill="#f59e0b" fontSize="10" fontWeight="bold" fontFamily="Inter, sans-serif">
                       MAIN SUBSTATION BUSBAR (22kV)
                     </text>
 
@@ -327,7 +327,7 @@ export const FeederDetailModal: React.FC<FeederDetailModalProps> = ({
                     {/* Vacuum Circuit Breaker */}
                     <line x1="300" y1="55" x2="300" y2="70" stroke="#cbd5e1" strokeWidth="2" />
                     <rect x="288" y="70" width="24" height="24" rx="3" fill="#047857" stroke="#10b981" strokeWidth="1.5" />
-                    <text x="300" y="86" fill="#ffffff" fontSize="9" fontWeight="bold" textAnchor="middle" fontFamily="monospace">
+                    <text x="300" y="86" fill="#ffffff" fontSize="9" fontWeight="bold" textAnchor="middle" fontFamily="Inter, sans-serif">
                       VCB
                     </text>
 
@@ -335,7 +335,7 @@ export const FeederDetailModal: React.FC<FeederDetailModalProps> = ({
                     <line x1="300" y1="94" x2="300" y2="105" stroke="#cbd5e1" strokeWidth="2" />
                     <circle cx="300" cy="110" r="5" fill="none" stroke="#f59e0b" strokeWidth="1.5" />
                     <circle cx="300" cy="116" r="5" fill="none" stroke="#f59e0b" strokeWidth="1.5" />
-                    <text x="315" y="115" fill="#94a3b8" fontSize="8" fontFamily="monospace">CT {fData.ctRatio}</text>
+                    <text x="315" y="115" fill="#94a3b8" fontSize="8" fontFamily="Inter, sans-serif">CT {fData.ctRatio}</text>
 
                     {/* Outgoing Feeder Cable to Field */}
                     <line x1="300" y1="122" x2="300" y2="138" stroke="#cbd5e1" strokeWidth="2" strokeDasharray="3 2" />
@@ -350,7 +350,7 @@ export const FeederDetailModal: React.FC<FeederDetailModalProps> = ({
 
               {/* Connected Assets List */}
               <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200 space-y-2">
-                <span className="text-[10px] font-mono font-bold text-slate-500 uppercase block">
+                <span className="text-xs font-mono font-bold text-slate-500 block">
                   Downstream Connected Electrical Assets:
                 </span>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
@@ -383,7 +383,7 @@ export const FeederDetailModal: React.FC<FeederDetailModalProps> = ({
                       return (
                         <g key={kw}>
                           <line x1="40" y1={y} x2="740" y2={y} stroke="#334155" strokeWidth="0.8" strokeDasharray="3 3" />
-                          <text x="32" y={y + 3} fill="#64748b" fontSize="9" fontFamily="monospace" textAnchor="end">
+                          <text x="32" y={y + 3} fill="#64748b" fontSize="9" fontFamily="Inter, sans-serif" textAnchor="end">
                             {kw}kW
                           </text>
                         </g>
@@ -407,7 +407,7 @@ export const FeederDetailModal: React.FC<FeederDetailModalProps> = ({
                       return (
                         <g key={idx}>
                           <circle cx={x} cy={y} r="3.5" fill="#ffffff" stroke="#f59e0b" strokeWidth="2" />
-                          <text x={x} y="155" fill="#94a3b8" fontSize="8" fontFamily="monospace" textAnchor="middle">
+                          <text x={x} y="155" fill="#94a3b8" fontSize="8" fontFamily="Inter, sans-serif" textAnchor="middle">
                             {p.time}
                           </text>
                         </g>
@@ -425,9 +425,9 @@ export const FeederDetailModal: React.FC<FeederDetailModalProps> = ({
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 {fData.tripRelays.map((relay, idx) => (
                   <div key={idx} className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
-                    <span className="text-[10px] font-mono text-slate-500 font-bold uppercase block">Protection Loop {idx + 1}</span>
+                    <span className="text-xs font-mono text-slate-500 font-bold block">Protection Loop {idx + 1}</span>
                     <strong className="text-sm font-black text-slate-900 block">{relay}</strong>
-                    <span className="text-[10px] text-emerald-600 block flex items-center gap-1">
+                    <span className="text-xs text-emerald-600 block flex items-center gap-1">
                       <CheckCircle2 className="w-3 h-3" /> Active & Armed
                     </span>
                   </div>
@@ -443,19 +443,19 @@ export const FeederDetailModal: React.FC<FeederDetailModalProps> = ({
                 <span className="font-bold text-slate-800 block">EVN Time-of-Use Electricity Cost Allocation</span>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 font-mono">
                   <div className="bg-white p-3 rounded-xl border border-slate-200">
-                    <span className="text-[10px] text-slate-400 block">Normal Hours Rate</span>
+                    <span className="text-xs text-slate-400 block">Normal Hours Rate</span>
                     <strong className="text-sm font-black text-slate-900">
                       {tariff?.normalRateVnd ? `${tariff.normalRateVnd.toLocaleString()} đ/kWh` : "1,685 đ/kWh"}
                     </strong>
                   </div>
                   <div className="bg-white p-3 rounded-xl border border-slate-200">
-                    <span className="text-[10px] text-slate-400 block">Peak Hours Rate</span>
+                    <span className="text-xs text-slate-400 block">Peak Hours Rate</span>
                     <strong className="text-sm font-black text-rose-600">
                       {tariff?.peakRateVnd ? `${tariff.peakRateVnd.toLocaleString()} đ/kWh` : "3,076 đ/kWh"}
                     </strong>
                   </div>
                   <div className="bg-white p-3 rounded-xl border border-slate-200">
-                    <span className="text-[10px] text-slate-400 block">Off-Peak Hours Rate</span>
+                    <span className="text-xs text-slate-400 block">Off-Peak Hours Rate</span>
                     <strong className="text-sm font-black text-emerald-600">
                       {tariff?.offPeakRateVnd ? `${tariff.offPeakRateVnd.toLocaleString()} đ/kWh` : "1,100 đ/kWh"}
                     </strong>

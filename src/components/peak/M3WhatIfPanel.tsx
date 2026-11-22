@@ -25,11 +25,11 @@ const Slider: React.FC<{ label: string; value: number; min: number; max: number;
   changed,
 }) => (
   <label className="block space-y-1">
-    <div className="flex items-center justify-between text-[11px] font-bold">
+    <div className="flex items-center justify-between text-xs font-bold">
       <span className="text-slate-700">{label}</span>
       <span className={`tabular-nums ${changed ? "text-orange-700" : "text-slate-900"}`}>{display}</span>
     </div>
-    <input type="range" min={min} max={max} step={step} value={value} onChange={(e) => onChange(Number(e.target.value))} className="w-full accent-[#004B91] cursor-pointer" />
+    <input type="range" min={min} max={max} step={step} value={value} onChange={(e) => onChange(Number(e.target.value))} className="w-full accent-brand cursor-pointer" />
   </label>
 );
 
@@ -58,14 +58,14 @@ export const M3WhatIfPanel: React.FC<Props> = ({ settings, defaults, onChange, r
     <div className="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-2xs space-y-3.5 text-xs">
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
-          <FlaskConical className="w-4 h-4 text-[#004B91]" />
+          <FlaskConical className="w-4 h-4 text-brand" />
           <h3 className="font-bold text-slate-900 text-sm">{t("What-if", "Mô phỏng What-if")}</h3>
         </div>
         <button
           type="button"
           onClick={reset}
           disabled={isDefault}
-          className="px-2 py-1 rounded-lg border border-slate-200 text-[11px] font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-40 flex items-center gap-1 cursor-pointer disabled:cursor-not-allowed"
+          className="px-2 py-1 rounded-lg border border-slate-200 text-xs font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-40 flex items-center gap-1 cursor-pointer disabled:cursor-not-allowed"
         >
           <RotateCcw className="w-3 h-3" />
           {t("Reset", "Khôi phục")}
@@ -112,20 +112,20 @@ export const M3WhatIfPanel: React.FC<Props> = ({ settings, defaults, onChange, r
         onChange={(v) => onChange({ ...settings, itvReserve: v })}
         changed={settings.itvReserve !== defaults.itvReserve}
       />
-      <label className="flex items-center justify-between gap-2 text-[11px] font-bold text-slate-700 cursor-pointer">
+      <label className="flex items-center justify-between gap-2 text-xs font-bold text-slate-700 cursor-pointer">
         <span>
           {t("With BESS", "Có BESS")}{" "}
           <span className="font-normal text-slate-500">
             ({kw(BESS_OPTION.powerKw)} / {num(BESS_OPTION.energyKwh)} kWh, {t("not installed", "chưa lắp đặt")})
           </span>
         </span>
-        <input type="checkbox" checked={settings.bessEnabled} onChange={(e) => onChange({ ...settings, bessEnabled: e.target.checked })} className="w-4 h-4 accent-[#004B91]" />
+        <input type="checkbox" checked={settings.bessEnabled} onChange={(e) => onChange({ ...settings, bessEnabled: e.target.checked })} className="w-4 h-4 accent-brand" />
       </label>
 
       <AnimatePresence>
         {!result.feasible && result.infeasible && (
-          <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="rounded-xl border-2 border-red-300 bg-red-50 p-2.5 text-[11px] text-red-900 space-y-0.5">
-            <div className="flex items-center gap-1.5 font-black uppercase">
+          <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="rounded-xl border-2 border-red-300 bg-red-50 p-2.5 text-xs text-red-900 space-y-0.5">
+            <div className="flex items-center gap-1.5 font-black">
               <AlertOctagon className="w-3.5 h-3.5" />
               {t("Infeasible", "Không khả thi")}
             </div>
@@ -150,12 +150,12 @@ export const M3WhatIfPanel: React.FC<Props> = ({ settings, defaults, onChange, r
           { l: "CO₂e", v: tco2(result.co2SavedT * 1000), d: 0, unit: "", inv: false },
         ].map((x) => (
           <div key={x.l} className="rounded-lg bg-slate-50 p-2">
-            <div className="text-[10px] font-bold text-slate-500">{x.l}</div>
+            <div className="text-xs font-bold text-slate-500">{x.l}</div>
             <motion.div key={x.v} initial={{ opacity: 0.3 }} animate={{ opacity: 1 }} className="font-black text-slate-900 tabular-nums">
               {x.v}
             </motion.div>
             {x.d !== 0 && (
-              <div className={`text-[10px] font-bold ${(x.d < 0) === x.inv ? "text-emerald-700" : "text-red-700"}`}>
+              <div className={`text-xs font-bold ${(x.d < 0) === x.inv ? "text-emerald-700" : "text-red-700"}`}>
                 {x.d > 0 ? "+" : "−"}
                 {x.unit === "vnd" ? vnd(Math.abs(x.d)) : kw(Math.abs(x.d))}
               </div>

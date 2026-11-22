@@ -18,6 +18,7 @@
  *   σ             = f(load, lead time, ETA uncertainty of arriving vessels)
  *   p_peak        = 1 − Φ((P_cap − NetGrid_P50) / σ)
  */
+import { SERIES } from "../theme/tokens";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -201,12 +202,12 @@ export interface ForecastResult {
 // ---------------------------------------------------------------------------
 
 export const FEEDERS: { key: FeederKey; id: string; name: BilingualText; color: string }[] = [
-  { key: "f01", id: "F-01", name: { en: "STS quay cranes", vn: "Cẩu bờ STS" }, color: "#004B91" },
-  { key: "f02", id: "F-02", name: { en: "Yard e-RTG cranes", vn: "Cẩu khung bãi e-RTG" }, color: "#4A81C9" },
-  { key: "f03", id: "F-03", name: { en: "Reefer yard", vn: "Bãi container lạnh" }, color: "#0EA5E9" },
-  { key: "f04", id: "F-04", name: { en: "Shore power (OPS)", vn: "Điện bờ (OPS)" }, color: "#7C3AED" },
-  { key: "f05", id: "F-05", name: { en: "EV charging hub", vn: "Trạm sạc xe điện" }, color: "#10B981" },
-  { key: "f06", id: "F-06", name: { en: "Auxiliary (lighting, HVAC, pumps)", vn: "Phụ trợ (chiếu sáng, HVAC, bơm)" }, color: "#94A3B8" },
+  { key: "f01", id: "F-01", name: { en: "STS quay cranes", vn: "Cẩu bờ STS" }, color: SERIES.f01 },
+  { key: "f02", id: "F-02", name: { en: "Yard e-RTG cranes", vn: "Cẩu khung bãi e-RTG" }, color: SERIES.f02 },
+  { key: "f03", id: "F-03", name: { en: "Reefer yard", vn: "Bãi container lạnh" }, color: SERIES.f03 },
+  { key: "f04", id: "F-04", name: { en: "Shore power (OPS)", vn: "Điện bờ (OPS)" }, color: SERIES.f04 },
+  { key: "f05", id: "F-05", name: { en: "EV charging hub", vn: "Trạm sạc xe điện" }, color: SERIES.f05 },
+  { key: "f06", id: "F-06", name: { en: "Auxiliary (lighting, HVAC, pumps)", vn: "Phụ trợ (chiếu sáng, HVAC, bơm)" }, color: SERIES.f06 },
 ];
 
 // ---------------------------------------------------------------------------

@@ -135,10 +135,10 @@ export const Navigation: React.FC<NavigationProps> = ({
         <div className="flex items-center gap-3">
           <GPortLogo size="sm" showText={true} />
           <div className="hidden lg:flex items-center gap-2 pl-3 border-l border-slate-200">
-            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+            <span className="text-xs font-semibold text-slate-500">
               Hệ thống Điều phối Năng lượng & Carbon Cảng biển
             </span>
-            <span className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 font-medium">
+            <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 font-medium">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
               Audit-Ready
             </span>
@@ -180,7 +180,7 @@ export const Navigation: React.FC<NavigationProps> = ({
 
             {roleDropdownOpen && (
               <div className="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-xl border border-slate-200 py-1.5 z-50 animate-in fade-in slide-in-from-top-2">
-                <div className="px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-400 border-b border-slate-100">
+                <div className="px-3 py-1.5 text-xs font-bold text-slate-400 border-b border-slate-100">
                   Chuyển đổi vai trò người dùng
                 </div>
                 {(["ADMIN", "TECHNICAL_SPECIALIST", "OPERATIONS_SPECIALIST", "FINANCIAL_ACCOUNTANT", "VIEWER"] as UserRole[]).map((r) => (
@@ -226,7 +226,7 @@ export const Navigation: React.FC<NavigationProps> = ({
                   <span>{page.label}</span>
                   {page.badge && (
                     <span
-                      className={`text-[10px] px-1.5 py-0.5 rounded-md uppercase font-bold tracking-wider ${
+                      className={`text-xs px-1.5 py-0.5 rounded-md font-bold ${
                         isActive
                           ? "bg-white/20 text-white"
                           : "bg-slate-200/80 text-slate-600"

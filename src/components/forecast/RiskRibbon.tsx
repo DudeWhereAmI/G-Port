@@ -31,7 +31,7 @@ export const RiskRibbon: React.FC<RiskRibbonProps> = ({ points, domain }) => {
 
   return (
     <div className="relative" style={{ marginLeft: TIMELINE_LEFT, marginRight: TIMELINE_RIGHT }}>
-      <div className="absolute top-[14px] text-[10px] font-bold text-slate-500 text-right leading-tight" style={{ left: -TIMELINE_LEFT, width: TIMELINE_LEFT - 6 }}>
+      <div className="absolute top-[14px] text-xs font-bold text-slate-500 text-right leading-tight" style={{ left: -TIMELINE_LEFT, width: TIMELINE_LEFT - 6 }}>
         p_peak
       </div>
       {/* switch labels */}
@@ -39,7 +39,7 @@ export const RiskRibbon: React.FC<RiskRibbonProps> = ({ points, domain }) => {
         {runs.filter((r) => visible(r.from, r.to)).map((r) => (
           <div
             key={r.from}
-            className="absolute top-0 h-3.5 text-[10px] font-bold text-orange-700 whitespace-nowrap overflow-visible flex items-center justify-center"
+            className="absolute top-0 h-3.5 text-xs font-bold text-orange-700 whitespace-nowrap overflow-visible flex items-center justify-center"
             style={box(r.from, r.to)}
           >
             {t("Switch P50 → P90", "Chuyển P50 → P90")}
@@ -66,7 +66,7 @@ export const RiskRibbon: React.FC<RiskRibbonProps> = ({ points, domain }) => {
           <div className="absolute top-0 bottom-0 w-0.5 bg-slate-900" style={{ left: `${timelinePct(NOW_MINUTE, domain)}%` }} />
         )}
       </div>
-      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1 text-[10px] text-slate-500 font-semibold">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1 text-xs text-slate-500 font-semibold">
         <span>{t("Probability net grid > 8,000 kW per 15 min:", "Xác suất điện lưới > 8.000 kW mỗi 15 phút:")}</span>
         {[
           { c: pPeakColor(0), l: "<1%" },

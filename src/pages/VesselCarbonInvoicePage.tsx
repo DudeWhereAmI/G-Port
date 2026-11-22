@@ -93,11 +93,11 @@ export const VesselCarbonInvoicePage: React.FC<VesselCarbonInvoicePageProps> = (
     <div className="space-y-5 pb-12">
       <div className="bg-white p-6 rounded-2xl border border-slate-200/90 shadow-2xs space-y-4">
         <div>
-          <div className="text-xs font-bold text-[#004B91] mb-1">{t("Emissions & records (M-2 · e-INV)", "Phát thải & hồ sơ (M-2 · e-INV)")}</div>
+          <div className="text-xs font-bold text-brand mb-1">{t("Emissions & records (M-2 · e-INV)", "Phát thải & hồ sơ (M-2 · e-INV)")}</div>
           <h1 className="text-2xl font-black text-slate-900 tracking-tight">
             {t("Carbon Accounting & Vessel-Call Emission Records", "Kế toán Carbon & Hồ sơ Phát thải Lượt tàu")}
           </h1>
-          <div className="text-[11px] text-slate-600 mt-1">
+          <div className="text-xs text-slate-600 mt-1">
             {t(
               `Dataset v2 · ${PERIOD.fromIso} – ${PERIOD.toIso} · ${PORT_NAME.en} · grid EF ${grid.value} kgCO₂e/kWh (${grid.year})`,
               `Dataset v2 · 17/11 – 23/11/2026 · ${PORT_NAME.vn} · EF lưới ${num(grid.value, 4)} kgCO₂e/kWh (${grid.year})`
@@ -122,7 +122,7 @@ export const VesselCarbonInvoicePage: React.FC<VesselCarbonInvoicePageProps> = (
           ))}
         </div>
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-2">
-          <div className="flex flex-wrap items-center gap-2 text-[11px]">
+          <div className="flex flex-wrap items-center gap-2 text-xs">
             <Filter className="w-3.5 h-3.5 text-slate-500" />
             <label className="flex items-center gap-1 font-bold text-slate-600">
               {t("Period", "Kỳ báo cáo")}
@@ -172,7 +172,7 @@ export const VesselCarbonInvoicePage: React.FC<VesselCarbonInvoicePageProps> = (
             <button
               type="button"
               onClick={() => downloadLedgerCsv(calls)}
-              className="px-2.5 py-1.5 rounded-lg border border-slate-200 text-[11px] font-bold text-slate-700 hover:bg-slate-50 flex items-center gap-1 cursor-pointer"
+              className="px-2.5 py-1.5 rounded-lg border border-slate-200 text-xs font-bold text-slate-700 hover:bg-slate-50 flex items-center gap-1 cursor-pointer"
             >
               <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-700" />
               {t("Ledger CSV", "CSV sổ cái")}
@@ -180,9 +180,9 @@ export const VesselCarbonInvoicePage: React.FC<VesselCarbonInvoicePageProps> = (
             <button
               type="button"
               onClick={() => downloadReportingExcel("ND06", t("Facility GHG inventory (Decree 06/2022)", "Kiểm kê KNK cấp cơ sở (NĐ 06/2022)"), lang)}
-              className="px-2.5 py-1.5 rounded-lg border border-slate-200 text-[11px] font-bold text-slate-700 hover:bg-slate-50 flex items-center gap-1 cursor-pointer"
+              className="px-2.5 py-1.5 rounded-lg border border-slate-200 text-xs font-bold text-slate-700 hover:bg-slate-50 flex items-center gap-1 cursor-pointer"
             >
-              <Sheet className="w-3.5 h-3.5 text-[#004B91]" />
+              <Sheet className="w-3.5 h-3.5 text-brand" />
               {t("Excel form", "Excel biểu mẫu")}
             </button>
           </div>

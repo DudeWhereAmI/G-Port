@@ -20,15 +20,15 @@ const GROUP_COLOR = { LAG: "#004B91", TOS: "#7C3AED", WEATHER: "#059669", CALEND
 
 const Box: React.FC<{ title: string; children: React.ReactNode; note?: string }> = ({ title, children, note }) => (
   <div className="rounded-xl border border-slate-200 p-3 space-y-2 min-w-0">
-    <div className="text-[11px] font-bold text-slate-800 uppercase tracking-wider">{title}</div>
+    <div className="text-xs font-bold text-slate-800">{title}</div>
     {children}
-    {note && <div className="text-[10px] text-slate-500">{note}</div>}
+    {note && <div className="text-xs text-slate-500">{note}</div>}
   </div>
 );
 
 const SimpleTooltip: React.FC<any> = ({ active, payload, label, render }) =>
   active && payload?.length ? (
-    <div className="bg-white border border-slate-300 rounded-lg shadow px-2.5 py-1.5 text-[11px] text-slate-900 space-y-0.5">
+    <div className="bg-white border border-slate-300 rounded-lg shadow px-2.5 py-1.5 text-xs text-slate-900 space-y-0.5">
       {render(payload, label)}
     </div>
   ) : null;
@@ -65,13 +65,13 @@ export const ModelHealthPanel: React.FC = () => {
       <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-2">
         {tiles.map((tile) => (
           <div key={tile.label} className="rounded-xl bg-slate-50 border border-slate-200 p-2.5">
-            <div className="text-[10px] font-bold text-slate-500">{tile.label}</div>
-            <div className="font-mono font-black text-slate-900 tabular-nums text-sm">{tile.value}</div>
-            {tile.sub && <div className="text-[10px] text-emerald-700 font-semibold">{tile.sub}</div>}
+            <div className="text-xs font-bold text-slate-500">{tile.label}</div>
+            <div className="font-black text-slate-900 tabular-nums text-sm">{tile.value}</div>
+            {tile.sub && <div className="text-xs text-emerald-700 font-semibold">{tile.sub}</div>}
           </div>
         ))}
       </div>
-      <div className="text-[11px] text-slate-600">
+      <div className="text-xs text-slate-600">
         {MODEL_METRICS.modelVersion} · {t("Pinball loss on P10/P50/P90", "Pinball loss trên P10/P50/P90")} ·{" "}
         {t(
           `last weekly retrain ${LAST_RETRAIN.label.en} (${LAST_RETRAIN.windowDays}-day window, ${num(LAST_RETRAIN.samples)} samples) · next ${LAST_RETRAIN.nextLabel.en}`,
@@ -87,17 +87,17 @@ export const ModelHealthPanel: React.FC = () => {
           <div className="h-48">
             <ResponsiveContainer width="100%" height="100%">
               <ComposedChart data={learning} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
-                <XAxis dataKey="label" fontSize={10} stroke="#64748B" tickLine={false} />
-                <YAxis fontSize={10} stroke="#64748B" tickLine={false} width={36} domain={[0, 2.5]} tickFormatter={(v: number) => pct(v, 1)} />
+                <CartesianGrid vertical={false} stroke="#EEF0F3" />
+                <XAxis dataKey="label" fontSize={12} stroke="#94A3B8" tickLine={false} />
+                <YAxis fontSize={12} stroke="#94A3B8" tickLine={false} width={36} domain={[0, 2.5]} tickFormatter={(v: number) => pct(v, 1)} />
                 <Tooltip
                   content={
                     <SimpleTooltip
                       render={(p: any[]) => (
                         <>
                           <div className="font-bold">{p[0].payload.label}</div>
-                          <div>MAPE <b className="font-mono">{pct(p[0].payload.mapePct, 2)}</b></div>
-                          <div>RMSE <b className="font-mono">{kw(p[0].payload.rmseKw, 1)}</b></div>
+                          <div>MAPE <b className="">{pct(p[0].payload.mapePct, 2)}</b></div>
+                          <div>RMSE <b className="">{kw(p[0].payload.rmseKw, 1)}</b></div>
                         </>
                       )}
                     />
@@ -116,8 +116,8 @@ export const ModelHealthPanel: React.FC = () => {
           <div className="h-48">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={top10.map((f) => ({ ...f, label: t(f.name.en, f.name.vn), gainPct: f.gain * 100 }))} layout="vertical" margin={{ top: 0, right: 8, left: 0, bottom: 0 }}>
-                <XAxis type="number" fontSize={10} stroke="#64748B" tickLine={false} tickFormatter={(v: number) => pct(v, 0)} />
-                <YAxis type="category" dataKey="label" fontSize={9} stroke="#64748B" tickLine={false} width={120} interval={0} />
+                <XAxis type="number" fontSize={12} stroke="#94A3B8" tickLine={false} tickFormatter={(v: number) => pct(v, 0)} />
+                <YAxis type="category" dataKey="label" fontSize={12} stroke="#94A3B8" tickLine={false} width={120} interval={0} />
                 <Tooltip
                   content={
                     <SimpleTooltip
@@ -125,7 +125,7 @@ export const ModelHealthPanel: React.FC = () => {
                         <>
                           <div className="font-bold">{p[0].payload.label}</div>
                           <div>
-                            {groupLabel[p[0].payload.group as keyof typeof groupLabel]} · <b className="font-mono">{pct(p[0].payload.gainPct, 1)}</b>
+                            {groupLabel[p[0].payload.group as keyof typeof groupLabel]} · <b className="">{pct(p[0].payload.gainPct, 1)}</b>
                           </div>
                         </>
                       )}
@@ -140,7 +140,7 @@ export const ModelHealthPanel: React.FC = () => {
               </BarChart>
             </ResponsiveContainer>
           </div>
-          <div className="flex flex-wrap gap-x-3 gap-y-1 text-[10px] text-slate-600 font-semibold">
+          <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-slate-600 font-semibold">
             {(Object.keys(GROUP_COLOR) as (keyof typeof GROUP_COLOR)[]).map((g) => (
               <span key={g} className="inline-flex items-center gap-1">
                 <span className="inline-block w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: GROUP_COLOR[g] }} />
@@ -157,10 +157,10 @@ export const ModelHealthPanel: React.FC = () => {
           <div className="h-48">
             <ResponsiveContainer width="100%" height="100%">
               <ComposedChart data={days} margin={{ top: 8, right: 4, left: 0, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
-                <XAxis dataKey="name" fontSize={9} stroke="#64748B" tickLine={false} interval={0} />
-                <YAxis yAxisId="kw" fontSize={10} stroke="#64748B" tickLine={false} width={36} domain={[-150, 150]} />
-                <YAxis yAxisId="pct" orientation="right" fontSize={10} stroke="#64748B" tickLine={false} width={34} domain={[0, 2]} tickFormatter={(v: number) => pct(v, 1)} />
+                <CartesianGrid vertical={false} stroke="#EEF0F3" />
+                <XAxis dataKey="name" fontSize={12} stroke="#94A3B8" tickLine={false} interval={0} />
+                <YAxis yAxisId="kw" fontSize={12} stroke="#94A3B8" tickLine={false} width={36} domain={[-150, 150]} />
+                <YAxis yAxisId="pct" orientation="right" fontSize={12} stroke="#94A3B8" tickLine={false} width={34} domain={[0, 2]} tickFormatter={(v: number) => pct(v, 1)} />
                 <Tooltip
                   content={
                     <SimpleTooltip
@@ -169,9 +169,9 @@ export const ModelHealthPanel: React.FC = () => {
                         return (
                           <>
                             <div className="font-bold">{d.name}</div>
-                            <div>{t("Forecast peak", "Đỉnh dự báo")} <b className="font-mono">{kw(d.forecastPeakKw)}</b></div>
-                            <div>{t("Actual peak", "Đỉnh thực tế")} <b className="font-mono">{kw(d.actualPeakKw)}</b></div>
-                            <div>MAPE <b className="font-mono">{pct(d.mapePct, 2)}</b> · RMSE <b className="font-mono">{kw(d.rmseKw, 1)}</b></div>
+                            <div>{t("Forecast peak", "Đỉnh dự báo")} <b className="">{kw(d.forecastPeakKw)}</b></div>
+                            <div>{t("Actual peak", "Đỉnh thực tế")} <b className="">{kw(d.actualPeakKw)}</b></div>
+                            <div>MAPE <b className="">{pct(d.mapePct, 2)}</b> · RMSE <b className="">{kw(d.rmseKw, 1)}</b></div>
                           </>
                         );
                       }}

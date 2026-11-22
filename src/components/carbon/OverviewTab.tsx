@@ -17,6 +17,7 @@ import {
   YAxis,
 } from "recharts";
 import { useLanguage } from "../../context/LanguageContext";
+import { CHART, SERIES } from "../../theme/tokens";
 import { useFormat } from "../../utils/format";
 import {
   BALANCE_STATS,
@@ -42,7 +43,7 @@ export const Panel: React.FC<{ title: string; note?: string; right?: React.React
     <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2">
       <div>
         <h3 className="font-bold text-slate-900 text-sm">{title}</h3>
-        {note && <div className="text-[11px] text-slate-500 mt-0.5">{note}</div>}
+        {note && <div className="text-xs text-slate-500 mt-0.5">{note}</div>}
       </div>
       {right}
     </div>
@@ -52,9 +53,9 @@ export const Panel: React.FC<{ title: string; note?: string; right?: React.React
 
 export const Kpi: React.FC<{ label: string; value: string; sub?: React.ReactNode; tone?: "default" | "good" }> = ({ label, value, sub, tone = "default" }) => (
   <div className={`p-4 rounded-xl border ${tone === "good" ? "bg-emerald-50/60 border-emerald-200" : "bg-white border-slate-200/90"}`}>
-    <div className="text-slate-500 text-[11px] font-bold mb-1">{label}</div>
+    <div className="text-slate-500 text-xs font-bold mb-1">{label}</div>
     <div className="text-lg sm:text-xl font-black text-slate-900 tabular-nums">{value}</div>
-    {sub && <div className="text-[11px] text-slate-500 tabular-nums">{sub}</div>}
+    {sub && <div className="text-xs text-slate-500 tabular-nums">{sub}</div>}
   </div>
 );
 
@@ -95,17 +96,17 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({ period, calls, filtere
 
   const TreeCell: React.FC<any> = (p) => {
     const { x, y, width, height, name, size, index } = p;
-    const colors = ["#004B91", "#2563EB", "#7C3AED", "#0EA5E9", "#4A81C9", "#10B981", "#94A3B8"];
+    const colors = CHART;
     if (width <= 0 || height <= 0) return null;
     return (
       <g>
         <rect x={x} y={y} width={width} height={height} fill={colors[index % colors.length]} stroke="#fff" strokeWidth={2} />
         {width > 70 && height > 34 && (
           <>
-            <text x={x + 6} y={y + 16} fill="#fff" fontSize={11} fontWeight={700}>
+            <text x={x + 6} y={y + 16} fill="#fff" fontSize={12} fontWeight={700}>
               {name}
             </text>
-            <text x={x + 6} y={y + 30} fill="#fff" fontSize={10}>
+            <text x={x + 6} y={y + 30} fill="#fff" fontSize={12}>
               {num(size / 1000, 1)} t
             </text>
           </>
@@ -117,7 +118,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({ period, calls, filtere
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-end gap-2">
-        <div className="text-[11px] text-slate-500">
+        <div className="text-xs text-slate-500">
           {filtered
             ? t(`KPIs follow the filter: ${calls.length} vessel calls`, `KPI theo bộ lọc: ${calls.length} lượt tàu`)
             : period === "DAY"
@@ -170,18 +171,18 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({ period, calls, filtere
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <ComposedChart data={series} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
-                <XAxis dataKey="label" fontSize={10} stroke="#64748B" tickLine={false} />
-                <YAxis yAxisId="t" fontSize={10} stroke="#64748B" tickLine={false} width={44} tickFormatter={(v: number) => num(v)} />
-                <YAxis yAxisId="i" orientation="right" fontSize={10} stroke="#64748B" tickLine={false} width={34} domain={[0, 35]} />
+                <CartesianGrid vertical={false} stroke="#EEF0F3" />
+                <XAxis dataKey="label" fontSize={12} stroke="#94A3B8" tickLine={false} />
+                <YAxis yAxisId="t" fontSize={12} stroke="#94A3B8" tickLine={false} width={44} tickFormatter={(v: number) => num(v)} />
+                <YAxis yAxisId="i" orientation="right" fontSize={12} stroke="#94A3B8" tickLine={false} width={34} domain={[0, 35]} />
                 <Tooltip
                   formatter={(v: any, k: any) =>
                     k === "intensity" ? [`${num(Number(v), 2)} kgCO₂e/TEU`, t("Intensity", "Cường độ")] : [`${num(Number(v), 2)} t`, k === "scope1T" ? "Scope 1" : "Scope 2"]
                   }
                 />
-                <Legend formatter={(k: any) => (k === "scope1T" ? "Scope 1" : k === "scope2T" ? "Scope 2" : t("Intensity", "Cường độ"))} wrapperStyle={{ fontSize: 10 }} />
-                <Bar yAxisId="t" dataKey="scope2T" stackId="s" fill="#4A81C9" />
-                <Bar yAxisId="t" dataKey="scope1T" stackId="s" fill="#F59E0B" radius={[3, 3, 0, 0]} />
+                <Legend formatter={(k: any) => (k === "scope1T" ? "Scope 1" : k === "scope2T" ? "Scope 2" : t("Intensity", "Cường độ"))} wrapperStyle={{ fontSize: 12 }} />
+                <Bar yAxisId="t" dataKey="scope2T" stackId="s" fill={SERIES.scope2} />
+                <Bar yAxisId="t" dataKey="scope1T" stackId="s" fill={SERIES.scope1} radius={[3, 3, 0, 0]} />
                 <Line yAxisId="i" type="monotone" dataKey="intensity" stroke="#0F172A" strokeWidth={2} dot={{ r: 2 }} />
                 <ReferenceLine yAxisId="i" y={TARGET_INTENSITY_2026} stroke="#059669" strokeDasharray="4 3" />
               </ComposedChart>
@@ -203,10 +204,10 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({ period, calls, filtere
               </ResponsiveContainer>
               <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                 <span className="font-black text-slate-900 text-sm tabular-nums">{num(donutTotal / 1000, 1)}</span>
-                <span className="text-[10px] text-slate-500">tCO₂e</span>
+                <span className="text-xs text-slate-500">tCO₂e</span>
               </div>
             </div>
-            <ul className="space-y-1 text-[11px]">
+            <ul className="space-y-1 text-xs">
               {donut.map((d) => (
                 <li key={d.key} className="flex items-center justify-between gap-1">
                   <span className="flex items-center gap-1.5 min-w-0">
@@ -238,11 +239,11 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({ period, calls, filtere
           <div className="h-56">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={year} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
-                <XAxis dataKey="label" fontSize={10} stroke="#64748B" tickLine={false} />
-                <YAxis fontSize={10} stroke="#64748B" tickLine={false} width={34} domain={[14, 22]} />
+                <CartesianGrid vertical={false} stroke="#EEF0F3" />
+                <XAxis dataKey="label" fontSize={12} stroke="#94A3B8" tickLine={false} />
+                <YAxis fontSize={12} stroke="#94A3B8" tickLine={false} width={34} domain={[14, 22]} />
                 <Tooltip formatter={(v: any, k: any) => [`${num(Number(v), 2)} kgCO₂e/TEU`, k === "targetIntensity" ? t("Target", "Mục tiêu") : t("Actual", "Thực tế")]} />
-                <Legend formatter={(k: any) => (k === "targetIntensity" ? t("Target", "Mục tiêu") : t("Actual", "Thực tế"))} wrapperStyle={{ fontSize: 10 }} />
+                <Legend formatter={(k: any) => (k === "targetIntensity" ? t("Target", "Mục tiêu") : t("Actual", "Thực tế"))} wrapperStyle={{ fontSize: 12 }} />
                 <Line type="monotone" dataKey="intensity" stroke="#004B91" strokeWidth={2.5} dot={{ r: 2.5 }} />
                 <Line type="monotone" dataKey="targetIntensity" stroke="#059669" strokeDasharray="5 3" dot={false} />
               </LineChart>

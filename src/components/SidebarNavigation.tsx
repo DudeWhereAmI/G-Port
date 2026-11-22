@@ -64,7 +64,7 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder={t("Search modules...", "Tìm kiếm phân hệ...")}
-              className="w-full pl-8 pr-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-normal text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-[#004B91] focus:bg-white"
+              className="w-full pl-8 pr-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-normal text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-brand focus:bg-white"
             />
           </div>
         )}
@@ -85,12 +85,12 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
           onClick={() => handleNavigate("OVERVIEW")}
           className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg font-bold transition-colors cursor-pointer ${
             activeSubPage === "OVERVIEW"
-              ? "bg-blue-50/80 text-[#004B91] font-black border-l-3 border-[#004B91]"
+              ? "bg-blue-50/80 text-brand font-black border-l-3 border-brand"
               : "text-slate-700 hover:bg-slate-50 hover:text-slate-900"
           }`}
           title={t("Overview", "Tổng quan")}
         >
-          <Home className={`w-4 h-4 shrink-0 ${activeSubPage === "OVERVIEW" ? "text-[#004B91]" : "text-slate-600"}`} />
+          <Home className={`w-4 h-4 shrink-0 ${activeSubPage === "OVERVIEW" ? "text-brand" : "text-slate-600"}`} />
           {!collapsed && <span>{t("Overview", "Tổng quan Cảng")}</span>}
         </button>
 
@@ -103,7 +103,7 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
             }}
             className={`w-full flex items-center justify-between px-3 py-2 rounded-lg font-bold transition-colors cursor-pointer ${
               (activeSubPage === "INPUT_LAYER" || activeSubPage === "MODULE_1_FORECAST" || activeSubPage === "MODULE_3_OPTIMIZATION")
-                ? "bg-blue-50/70 text-[#004B91]"
+                ? "bg-blue-50/70 text-brand"
                 : "text-slate-700 hover:bg-slate-50"
             }`}
             title={t("Microgrid & SCADA", "Lưới điện Cảng & SCADA")}
@@ -127,7 +127,7 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
                 onClick={() => handleNavigate("INPUT_LAYER")}
                 className={`w-full text-left px-3 py-1.5 rounded-md transition-colors flex items-center justify-between cursor-pointer ${
                   activeSubPage === "INPUT_LAYER"
-                    ? "bg-blue-100 text-[#004B91] font-bold"
+                    ? "bg-blue-100 text-brand font-bold"
                     : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
                 }`}
               >
@@ -149,7 +149,7 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
                   <TrendingUp className="w-3.5 h-3.5 text-indigo-600" />
                   <span>{t("Load Forecast", "Dự báo Phụ tải")}</span>
                 </div>
-                <span className="text-[9px] font-mono px-1 rounded bg-indigo-100 text-indigo-700 font-bold">M-1</span>
+                <span className="text-xs font-mono px-1 rounded bg-indigo-100 text-indigo-700 font-bold">M-1</span>
               </button>
 
               <button
@@ -164,7 +164,7 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
                   <Sliders className="w-3.5 h-3.5 text-amber-600" />
                   <span>{t("Peak Shaving", "Cắt Đỉnh Phụ Tải")}</span>
                 </div>
-                <span className="text-[9px] font-mono px-1 rounded bg-amber-100 text-amber-700 font-bold">M-3</span>
+                <span className="text-xs font-mono px-1 rounded bg-amber-100 text-amber-700 font-bold">M-3</span>
               </button>
             </div>
           )}
@@ -186,7 +186,7 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
               {!collapsed && <span>{t("Emissions & Invoices", "Phát thải & Hóa đơn")}</span>}
             </div>
             {!collapsed && (
-              <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 font-bold">
+              <span className="text-xs font-mono px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 font-bold">
                 e-INV
               </span>
             )}
