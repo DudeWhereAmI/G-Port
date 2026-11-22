@@ -46,6 +46,7 @@ import { VesselSchedulePage } from "./pages/VesselSchedulePage";
 import { PartnersPage } from "./pages/PartnersPage";
 import { MeterTelemetryModal, MeterModalMode } from "./components/MeterTelemetryModal";
 import { LanguageProvider } from "./context/LanguageContext";
+import type { ForecastHandoff } from "./data/module3PeakShaving";
 
 import { 
   X, 
@@ -131,6 +132,14 @@ export default function App() {
     setFocusedForecastWindowId(windowId);
     setFocusedForecastOpenReport(openReport);
     setActiveSubPage("MODULE_1_FORECAST");
+  };
+
+  // Module 1 → Module 3 hand-off (overload window sent to Peak Shaving)
+  const [forecastHandoff, setForecastHandoff] = useState<ForecastHandoff | null>(null);
+
+  const handleSendToPeakShaving = (handoff: ForecastHandoff) => {
+    setForecastHandoff(handoff);
+    setActiveSubPage("MODULE_3_OPTIMIZATION");
   };
 
   // Asset Form State
@@ -272,6 +281,8 @@ export default function App() {
                 focusedWindowId={focusedForecastWindowId}
                 focusedWindowOpenReport={focusedForecastOpenReport}
                 onClearFocusedWindow={() => setFocusedForecastWindowId(null)}
+                onNavigate={setActiveSubPage}
+                onSendToPeakShaving={handleSendToPeakShaving}
               />
             )}
 
@@ -291,6 +302,9 @@ export default function App() {
                 tariff={tariff}
                 bessStatus={bessStatus}
                 pvStatus={pvStatus}
+                forecastHandoff={forecastHandoff}
+                onDismissForecastHandoff={() => setForecastHandoff(null)}
+                onBackToForecast={() => setActiveSubPage("MODULE_1_FORECAST")}
               />
             )}
 

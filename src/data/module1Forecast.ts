@@ -1,10 +1,22 @@
 /**
- * Module 1 (M-1) – 24h load forecast data.
+ * Module 1 (M-1) – 24h load forecast data and client-side approximation model.
  *
- * Fully deterministic: a fixed-seed PRNG drives the small noise term, so every
- * render / build produces the same numbers. Everything the Forecast page shows
- * (KPIs, chart, window cards, report table) is derived from FORECAST_POINTS so
- * the figures always agree with each other.
+ * Fully deterministic: noise terms come from fixed-seed PRNG arrays that are
+ * generated once, so every render / build / what-if run produces the same
+ * numbers for the same inputs. Everything on the Forecast page (KPIs, chart,
+ * risk ribbon, berth Gantt, window cards, table, exports) is derived from
+ * `computeForecast()` so the figures always agree with each other.
+ *
+ * Load model (per 15-minute interval, evaluated at the interval midpoint):
+ *   F-01 STS      = Σ vessels: active cranes × kW/crane (shift-change dip)
+ *   F-02 e-RTG    = base + Σ vessels: active cranes × kW/crane-equivalent
+ *   F-03 Reefer   = reefer count × kW/unit(T_amb)
+ *   F-04 OPS      = Σ vessels at berth: shore-power demand
+ *   F-05 EV/BESS  = EV tractor charging schedule
+ *   F-06 Aux      = base + night lighting + HVAC(T_amb)
+ *   PV            = clear-sky profile × cloud factor × (1 − extra reduction)
+ *   σ             = f(load, lead time, ETA uncertainty of arriving vessels)
+ *   p_peak        = 1 − Φ((P_cap − NetGrid_P50) / σ)
  */
 
 // ---------------------------------------------------------------------------
@@ -18,15 +30,32 @@ export const Z90 = 1.2816;
 export const P_PEAK_SWITCH = 0.1;
 export const INTERVAL_MINUTES = 15;
 export const POINTS_PER_DAY = 96;
+export const DAY_MINUTES = 1440;
+
+/** Forecast day (Monday) – fixed so the page is deterministic. */
+export const FORECAST_DATE = { iso: "2026-11-23", weekday: 1, vn: "Thứ Hai, 23/11/2026", en: "Monday, 23 Nov 2026" };
+/** Day-ahead forecast issued at 22:00 the previous evening (minute −120). */
+export const ISSUE_MINUTE = -120;
+/** Last 15-minute rolling update; intervals before it are locked for audit. */
+export const LOCK_MINUTE = 11 * 60 + 30;
+/** Simulated "now" on the page. */
+export const NOW_MINUTE = 11 * 60 + 40;
 
 export const MODEL_METRICS = {
   rmseKw: 66.7,
   mapePct: 1.31,
+  mapeBaselinePct: 2.24,
   r2: 0.9987,
   coveragePct: 100,
   inferenceMs: 56.2,
   mlpWeight: 0.6,
+  lgbmWeight: 0.4,
+  modelVersion: "MLP-NN + LightGBM v3.2",
+  features: 18,
 };
+
+/** Input data quality for the current run (shown in the header badge). */
+export const INPUT_DATA_QUALITY = { validPct: 99.6, errorFlags: 0, streams: 14 };
 
 // ---------------------------------------------------------------------------
 // Types
@@ -34,6 +63,8 @@ export const MODEL_METRICS = {
 
 export type TouBand = "OFF_PEAK" | "STANDARD" | "PEAK";
 export type WindowStatus = "NORMAL" | "HIGH_SOLAR" | "WARNING" | "OVERLOAD";
+export type BerthId = "B1" | "B2" | "B3";
+export type FeederKey = "f01" | "f02" | "f03" | "f04" | "f05" | "f06";
 
 export interface BilingualText {
   en: string;
@@ -41,12 +72,49 @@ export interface BilingualText {
 }
 
 export interface TouPreset {
-  id: string;
+  id: "CURRENT" | "QD963";
   name: BilingualText;
+  note: BilingualText;
   /** [startMinute, endMinute) ranges */
   peak: [number, number][];
   offPeak: [number, number][];
+  /** weekdays (0 = Sunday) on which the peak band applies */
+  peakDays: number[];
 }
+
+export interface CraneSegment {
+  /** absolute minute of day from which this crane count applies */
+  fromMin: number;
+  cranes: number;
+}
+
+export interface VesselCall {
+  id: string;
+  code: string;
+  name: string;
+  berth: BerthId;
+  /** minutes relative to 00:00 of the forecast day (may be < 0 or > 1440) */
+  etaMin: number;
+  etdMin: number;
+  /** historical ETA − ATA error (1σ, minutes) */
+  etaSigmaMin: number;
+  teu: number;
+  loaM: number;
+  reefers: number;
+  opsKw: number;
+  cranes: CraneSegment[];
+}
+
+export interface ForecastScenario {
+  vessels: VesselCall[];
+  reeferFactor: number;
+  /** cloud factor (share of clear-sky PV) at each 2-hour window midpoint */
+  cloud: number[];
+  /** additional PV reduction 0…0.8 (what-if) */
+  pvReduction: number;
+}
+
+export type FeederValues = Record<FeederKey, number>;
 
 export interface ForecastPoint {
   /** minute of day at the start of the interval (0 … 1425) */
@@ -59,20 +127,19 @@ export interface ForecastPoint {
   pv: number;
   /** net grid import (P50) = load − PV */
   netGrid: number;
-  /** σ of the load distribution, derived from P90 − P50 */
   sigma: number;
   /** probability that net grid import exceeds the substation limit (0…1) */
   pPeak: number;
   tou: TouBand;
-}
-
-export interface FeederBreakdown {
-  f01StsKw: number;
-  f02RtgKw: number;
-  f03ReeferKw: number;
-  f04OpsKw: number;
-  f05EvBessKw: number;
-  f06AuxKw: number;
+  feeders: FeederValues;
+  /** load contributed by each vessel call (STS + e-RTG share + OPS) */
+  byVessel: Record<string, number>;
+  cranes: number;
+  reefers: number;
+  tempC: number;
+  /** metered load for locked (past) intervals, null for the future */
+  actual: number | null;
+  locked: boolean;
 }
 
 export interface ForecastWindowRecord {
@@ -92,7 +159,6 @@ export interface ForecastWindowRecord {
   /** highest p_peak in the window (0…1) and when */
   maxPPeak: number;
   maxPPeakTime: string;
-  /** highest PV output in the window */
   peakPvKw: number;
   vessels: string[];
   vesselCodes: string[];
@@ -103,9 +169,43 @@ export interface ForecastWindowRecord {
   tempAmbC: number;
   solarIrradianceWm2: number;
   summary: BilingualText;
-  feeders: FeederBreakdown;
+  feeders: FeederValues;
   points: ForecastPoint[];
 }
+
+export interface ForecastKpis {
+  peakNetGrid: ForecastPoint;
+  peakWindow: ForecastWindowRecord;
+  peakPv: ForecastPoint;
+  overloadWindows: ForecastWindowRecord[];
+  warningWindows: ForecastWindowRecord[];
+  alertWindows: ForecastWindowRecord[];
+  /** intervals with p_peak ≥ 10 % (planned on P90) */
+  switchIntervals: number;
+  maxPPeak: ForecastPoint;
+  accuracyPct: number;
+}
+
+export interface ForecastResult {
+  scenario: ForecastScenario;
+  preset: TouPreset;
+  points: ForecastPoint[];
+  windows: ForecastWindowRecord[];
+  kpis: ForecastKpis;
+}
+
+// ---------------------------------------------------------------------------
+// Feeders (6 lines)
+// ---------------------------------------------------------------------------
+
+export const FEEDERS: { key: FeederKey; id: string; name: BilingualText; color: string }[] = [
+  { key: "f01", id: "F-01", name: { en: "STS quay cranes", vn: "Cẩu bờ STS" }, color: "#004B91" },
+  { key: "f02", id: "F-02", name: { en: "Yard e-RTG cranes", vn: "Cẩu khung bãi e-RTG" }, color: "#4A81C9" },
+  { key: "f03", id: "F-03", name: { en: "Reefer yard", vn: "Bãi container lạnh" }, color: "#0EA5E9" },
+  { key: "f04", id: "F-04", name: { en: "Shore power (OPS)", vn: "Điện bờ (OPS)" }, color: "#7C3AED" },
+  { key: "f05", id: "F-05", name: { en: "EV charging hub", vn: "Trạm sạc xe điện" }, color: "#10B981" },
+  { key: "f06", id: "F-06", name: { en: "Auxiliary (lighting, HVAC, pumps)", vn: "Phụ trợ (chiếu sáng, HVAC, bơm)" }, color: "#94A3B8" },
+];
 
 // ---------------------------------------------------------------------------
 // TOU presets
@@ -117,6 +217,10 @@ export const TOU_PRESETS: TouPreset[] = [
   {
     id: "CURRENT",
     name: { en: "Current schedule", vn: "Hiện hành" },
+    note: {
+      en: "Peak 09:30–11:30 & 17:00–20:00 · Off-peak 22:00–04:00",
+      vn: "Cao điểm 09:30–11:30 & 17:00–20:00 · Thấp điểm 22:00–04:00",
+    },
     peak: [
       [hm(9, 30), hm(11, 30)],
       [hm(17), hm(20)],
@@ -125,21 +229,32 @@ export const TOU_PRESETS: TouPreset[] = [
       [hm(22), hm(24)],
       [hm(0), hm(4)],
     ],
+    peakDays: [1, 2, 3, 4, 5, 6],
+  },
+  {
+    id: "QD963",
+    name: { en: "Decision 963/QĐ-BCT", vn: "QĐ 963/QĐ-BCT" },
+    note: {
+      en: "Peak 17:30–22:30 Mon–Sat · Off-peak 00:00–06:00 (effective date under revision)",
+      vn: "Cao điểm 17:30–22:30 thứ Hai–thứ Bảy · Thấp điểm 00:00–06:00 (thời điểm áp dụng đang sửa đổi)",
+    },
+    peak: [[hm(17, 30), hm(22, 30)]],
+    offPeak: [[hm(0), hm(6)]],
+    peakDays: [1, 2, 3, 4, 5, 6],
   },
 ];
 
-export const ACTIVE_TOU_PRESET = TOU_PRESETS[0];
+export const DEFAULT_TOU_PRESET = TOU_PRESETS[0];
 
-export function touBandAt(minute: number, preset: TouPreset = ACTIVE_TOU_PRESET): TouBand {
-  const inRange = (ranges: [number, number][]) =>
-    ranges.some(([s, e]) => minute >= s && minute < e);
-  if (inRange(preset.peak)) return "PEAK";
+export function touBandAt(minute: number, preset: TouPreset = DEFAULT_TOU_PRESET, weekday = FORECAST_DATE.weekday): TouBand {
+  const inRange = (ranges: [number, number][]) => ranges.some(([s, e]) => minute >= s && minute < e);
+  if (preset.peakDays.includes(weekday) && inRange(preset.peak)) return "PEAK";
   if (inRange(preset.offPeak)) return "OFF_PEAK";
   return "STANDARD";
 }
 
 // ---------------------------------------------------------------------------
-// Helpers
+// Math helpers
 // ---------------------------------------------------------------------------
 
 function mulberry32(seed: number) {
@@ -160,8 +275,7 @@ function erf(x: number): number {
   const t = 1 / (1 + 0.3275911 * ax);
   const y =
     1 -
-    ((((1.061405429 * t - 1.453152027) * t + 1.421413741) * t - 0.284496736) * t +
-      0.254829592) *
+    ((((1.061405429 * t - 1.453152027) * t + 1.421413741) * t - 0.284496736) * t + 0.254829592) *
       t *
       Math.exp(-ax * ax);
   return sign * y;
@@ -178,12 +292,20 @@ export function exceedanceProbability(p50: number, sigma: number, capKw = SUBSTA
 }
 
 export function minuteLabel(minute: number): string {
-  const h = Math.floor(minute / 60);
-  const m = minute % 60;
-  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+  const m = ((minute % DAY_MINUTES) + DAY_MINUTES) % DAY_MINUTES;
+  const h = minute === DAY_MINUTES ? 24 : Math.floor(m / 60);
+  const mm = minute === DAY_MINUTES ? 0 : m % 60;
+  return `${String(h).padStart(2, "0")}:${String(mm).padStart(2, "0")}`;
 }
 
-/** Cosine interpolation of anchor values placed at each window's midpoint. */
+/** "HH:MM" plus a day marker for times outside the forecast day. */
+export function minuteLabelWithDay(minute: number, lang: "EN" | "VN"): string {
+  if (minute < 0) return `${minuteLabel(minute)} (${lang === "VN" ? "hôm trước" : "prev. day"})`;
+  if (minute >= DAY_MINUTES) return `${minuteLabel(minute)} (${lang === "VN" ? "hôm sau" : "next day"})`;
+  return minuteLabel(minute);
+}
+
+/** Cosine interpolation of 12 anchor values placed at each window midpoint. */
 function interpolateAnchors(values: number[], minute: number): number {
   const mids = values.map((_, i) => i * 120 + 60);
   if (minute <= mids[0]) return values[0];
@@ -194,219 +316,249 @@ function interpolateAnchors(values: number[], minute: number): number {
   return values[i] * (1 - w) + values[i + 1] * w;
 }
 
+const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
+
 // ---------------------------------------------------------------------------
-// Scenario (12 two-hour anchors). Afternoon is overcast, so PV is low exactly
-// when two large vessels are worked in parallel → net grid exceeds 8,000 kW.
+// Base scenario – vessel calls & weather
+// Afternoon is overcast while three vessels are worked in parallel, so the
+// net grid import still exceeds 8,000 kW after PV between 14:00 and 18:00.
 // ---------------------------------------------------------------------------
 
-interface ScenarioAnchor {
-  loadKw: number; // P50 load at the window midpoint
-  cloudFactor: number; // share of clear-sky PV actually produced
-  sigmaKw: number; // forecast σ
-  vessels: string[];
-  vesselCodes: string[];
-  berth: string;
-  stsCranes: number;
-  reeferPlugs: number;
-  shorePowerKw: number;
-  tempAmbC: number;
-  solarIrradianceWm2: number;
-  summary: BilingualText;
-  /** feeder weights F-01…F-06 (normalised to the window load) */
-  feederWeights: [number, number, number, number, number, number];
-}
-
-const PV_CLEAR_SKY_PEAK_KW = 2000;
-const PV_SUNRISE = hm(6);
-const PV_SUNSET = hm(18);
-
-const SCENARIO: ScenarioAnchor[] = [
+export const BASE_VESSELS: VesselCall[] = [
   {
-    loadKw: 2770, cloudFactor: 1, sigmaKw: 160,
-    vessels: ["TAN CANG GLORY"], vesselCodes: ["UC-04"], berth: "B1",
-    stsCranes: 2, reeferPlugs: 185, shorePowerKw: 480, tempAmbC: 26.4, solarIrradianceWm2: 0,
-    summary: {
-      en: "Finishing night cargo operations (2 STS cranes active)",
-      vn: "Hoàn tất làm hàng ca đêm (2 cẩu STS hoạt động)",
-    },
-    feederWeights: [840, 420, 680, 480, 180, 167],
+    id: "V-TCG", code: "UC-04", name: "TAN CANG GLORY", berth: "B1",
+    etaMin: hm(-6), etdMin: hm(5, 30), etaSigmaMin: 15,
+    teu: 1100, loaM: 222, reefers: 60, opsKw: 480,
+    cranes: [{ fromMin: hm(-6), cranes: 2 }],
   },
   {
-    loadKw: 2740, cloudFactor: 1, sigmaKw: 160,
-    vessels: ["TAN CANG GLORY"], vesselCodes: ["UC-04"], berth: "B1",
-    stsCranes: 2, reeferPlugs: 180, shorePowerKw: 480, tempAmbC: 25.8, solarIrradianceWm2: 0,
-    summary: {
-      en: "Off-peak night window; EV tractor charging & reefer pre-cooling",
-      vn: "Khung đêm thấp điểm; sạc xe đầu kéo EV và làm lạnh trước container lạnh",
-    },
-    feederWeights: [760, 380, 650, 480, 315, 160],
+    id: "V-SOM", code: "UC-01", name: "SPIRIT OF MUMBAI", berth: "B2",
+    etaMin: hm(6, 15), etdMin: hm(22, 45), etaSigmaMin: 20,
+    teu: 2600, loaM: 300, reefers: 140, opsKw: 750,
+    cranes: [
+      { fromMin: hm(6, 15), cranes: 4 },
+      { fromMin: hm(17), cranes: 2 },
+    ],
   },
   {
-    loadKw: 2490, cloudFactor: 1, sigmaKw: 160,
-    vessels: ["TAN CANG GLORY"], vesselCodes: ["UC-04"], berth: "B1",
-    stsCranes: 1, reeferPlugs: 175, shorePowerKw: 320, tempAmbC: 25.5, solarIrradianceWm2: 0,
-    summary: {
-      en: "Vessel departing Berth B1; morning shift handover",
-      vn: "Tàu rời cầu B1; giao ca sáng",
-    },
-    feederWeights: [520, 340, 640, 320, 490, 180],
+    id: "V-APU", code: "UC-02", name: "ONE APUS", berth: "B3",
+    etaMin: hm(12, 30), etdMin: hm(30), etaSigmaMin: 40,
+    teu: 3200, loaM: 364, reefers: 180, opsKw: 820,
+    cranes: [{ fromMin: hm(12, 30), cranes: 3 }],
   },
   {
-    loadKw: 2420, cloudFactor: 1, sigmaKw: 165,
-    vessels: ["SPIRIT OF MUMBAI"], vesselCodes: ["UC-01"], berth: "B2",
-    stsCranes: 2, reeferPlugs: 240, shorePowerKw: 620, tempAmbC: 26.8, solarIrradianceWm2: 85,
-    summary: {
-      en: "SPIRIT OF MUMBAI berths at B2; shore power connected",
-      vn: "SPIRIT OF MUMBAI cập cầu B2; đấu nối điện bờ",
-    },
-    feederWeights: [680, 310, 645, 620, 0, 160],
-  },
-  {
-    loadKw: 4000, cloudFactor: 1, sigmaKw: 170,
-    vessels: ["SPIRIT OF MUMBAI"], vesselCodes: ["UC-01"], berth: "B2",
-    stsCranes: 4, reeferPlugs: 310, shorePowerKw: 750, tempAmbC: 29.4, solarIrradianceWm2: 460,
-    summary: {
-      en: "4 STS cranes working; reefer cooling demand rising",
-      vn: "4 cẩu STS làm hàng; nhu cầu làm lạnh container tăng",
-    },
-    feederWeights: [1680, 620, 786, 750, 0, 160],
-  },
-  {
-    loadKw: 4600, cloudFactor: 0.97, sigmaKw: 175,
-    vessels: ["SPIRIT OF MUMBAI"], vesselCodes: ["UC-01"], berth: "B2",
-    stsCranes: 4, reeferPlugs: 325, shorePowerKw: 760, tempAmbC: 32.1, solarIrradianceWm2: 790,
-    summary: {
-      en: "Morning peak tariff; rooftop PV covers a large share of demand",
-      vn: "Giờ cao điểm buổi sáng; điện mặt trời áp mái bù phần lớn phụ tải",
-    },
-    feederWeights: [1740, 660, 824, 760, 0, 160],
-  },
-  {
-    loadKw: 5600, cloudFactor: 0.92, sigmaKw: 185,
-    vessels: ["SPIRIT OF MUMBAI", "ONE APUS"], vesselCodes: ["UC-01", "UC-02"], berth: "B2 & B3",
-    stsCranes: 5, reeferPlugs: 360, shorePowerKw: 1050, tempAmbC: 33.6, solarIrradianceWm2: 880,
-    summary: {
-      en: "ONE APUS berths at B3; PV at its daily high, clouds building from 14:00",
-      vn: "ONE APUS cập cầu B3; điện mặt trời đạt đỉnh ngày, mây tăng dần từ 14:00",
-    },
-    feederWeights: [1900, 760, 950, 1050, 40, 170],
-  },
-  {
-    loadKw: 8900, cloudFactor: 0.4, sigmaKw: 195,
-    vessels: ["ONE APUS", "SPIRIT OF MUMBAI"], vesselCodes: ["UC-02", "UC-01"], berth: "B2 & B3",
-    stsCranes: 6, reeferPlugs: 520, shorePowerKw: 1520, tempAmbC: 31.8, solarIrradianceWm2: 310,
-    summary: {
-      en: "OVERLOAD: 2 large vessels on 6 STS cranes + shore power; overcast sky cuts PV",
-      vn: "QUÁ TẢI: 2 tàu lớn chạy 6 cẩu STS + điện bờ; trời nhiều mây làm giảm điện mặt trời",
-    },
-    feederWeights: [3420, 1410, 1461, 1480, 200, 180],
-  },
-  {
-    loadKw: 8700, cloudFactor: 0.3, sigmaKw: 195,
-    vessels: ["ONE APUS", "SPIRIT OF MUMBAI"], vesselCodes: ["UC-02", "UC-01"], berth: "B2 & B3",
-    stsCranes: 6, reeferPlugs: 535, shorePowerKw: 1530, tempAmbC: 30.4, solarIrradianceWm2: 120,
-    summary: {
-      en: "OVERLOAD: heavy dual-vessel crane work, 535 reefers, PV almost gone",
-      vn: "QUÁ TẢI: hai tàu làm hàng cường độ cao, 535 container lạnh, điện mặt trời gần như bằng 0",
-    },
-    feederWeights: [3340, 1380, 1458, 1490, 180, 180],
-  },
-  {
-    loadKw: 6700, cloudFactor: 0.3, sigmaKw: 180,
-    vessels: ["ONE APUS", "SPIRIT OF MUMBAI"], vesselCodes: ["UC-02", "UC-01"], berth: "B2 & B3",
-    stsCranes: 5, reeferPlugs: 450, shorePowerKw: 1420, tempAmbC: 29.2, solarIrradianceWm2: 15,
-    summary: {
-      en: "Evening shift change during the peak tariff; solar output ends",
-      vn: "Giao ca chiều trong giờ cao điểm; điện mặt trời kết thúc",
-    },
-    feederWeights: [2790, 1120, 1169, 1420, 0, 190],
-  },
-  {
-    loadKw: 6150, cloudFactor: 1, sigmaKw: 175,
-    vessels: ["ONE APUS", "SPIRIT OF MUMBAI"], vesselCodes: ["UC-02", "UC-01"], berth: "B2 & B3",
-    stsCranes: 4, reeferPlugs: 430, shorePowerKw: 1380, tempAmbC: 28.1, solarIrradianceWm2: 0,
-    summary: {
-      en: "Steady night discharge across 2 vessels",
-      vn: "Dỡ hàng ổn định ban đêm trên 2 tàu",
-    },
-    feederWeights: [2480, 1020, 1080, 1380, 0, 190],
-  },
-  {
-    loadKw: 4560, cloudFactor: 1, sigmaKw: 170,
-    vessels: ["ONE APUS"], vesselCodes: ["UC-02"], berth: "B3",
-    stsCranes: 3, reeferPlugs: 390, shorePowerKw: 980, tempAmbC: 27.2, solarIrradianceWm2: 0,
-    summary: {
-      en: "SPIRIT OF MUMBAI departs; off-peak tariff begins",
-      vn: "SPIRIT OF MUMBAI rời cảng; bắt đầu giờ thấp điểm",
-    },
-    feederWeights: [1680, 740, 920, 980, 60, 180],
+    id: "V-TCS", code: "FD-07", name: "TC SYMPHONY", berth: "B1",
+    etaMin: hm(13, 15), etdMin: hm(19), etaSigmaMin: 30,
+    teu: 450, loaM: 150, reefers: 30, opsKw: 0,
+    cranes: [{ fromMin: hm(13, 15), cranes: 1 }],
   },
 ];
 
+/** Cloud factor at window midpoints 01:00, 03:00 … 23:00 (overcast afternoon). */
+export const BASE_CLOUD = [1, 1, 1, 1, 0.98, 0.95, 0.88, 0.4, 0.3, 0.3, 1, 1];
+
+export const BASE_SCENARIO: ForecastScenario = {
+  vessels: BASE_VESSELS,
+  reeferFactor: 1,
+  cloud: BASE_CLOUD,
+  pvReduction: 0,
+};
+
+/** Operational context per 2-hour window (base plan, no status wording). */
+const WINDOW_SUMMARIES: BilingualText[] = [
+  { en: "Night discharge of TAN CANG GLORY at B1 (2 STS cranes)", vn: "Dỡ hàng đêm tàu TAN CANG GLORY tại B1 (2 cẩu STS)" },
+  { en: "Off-peak window: EV tractor charging & reefer pre-cooling", vn: "Khung thấp điểm: sạc xe đầu kéo điện và làm lạnh trước container lạnh" },
+  { en: "TAN CANG GLORY finishing and leaving B1; morning shift handover", vn: "TAN CANG GLORY hoàn tất và rời B1; giao ca sáng" },
+  { en: "SPIRIT OF MUMBAI berths at B2; shore power connected", vn: "SPIRIT OF MUMBAI cập cầu B2; đấu nối điện bờ" },
+  { en: "4 STS cranes on SPIRIT OF MUMBAI; reefer cooling demand rising", vn: "4 cẩu STS làm tàu SPIRIT OF MUMBAI; nhu cầu làm lạnh container tăng" },
+  { en: "Morning peak tariff; rooftop PV covers a large share of demand", vn: "Giờ cao điểm buổi sáng; điện mặt trời áp mái bù phần lớn phụ tải" },
+  { en: "ONE APUS berths at B3, TC SYMPHONY at B1; clouds building from 13:00", vn: "ONE APUS cập B3, TC SYMPHONY cập B1; mây tăng dần từ 13:00" },
+  { en: "3 vessels worked in parallel (8 STS) + shore power; overcast sky cuts PV", vn: "3 tàu làm hàng song song (8 cẩu STS) + điện bờ; trời nhiều mây làm giảm điện mặt trời" },
+  { en: "Parallel crane work continues, reefer yard near capacity, PV almost gone", vn: "Tiếp tục làm hàng song song, bãi lạnh gần đầy, điện mặt trời gần như bằng 0" },
+  { en: "Evening shift change; SPIRIT OF MUMBAI down to 2 STS, TC SYMPHONY departs", vn: "Giao ca chiều; SPIRIT OF MUMBAI giảm còn 2 cẩu STS, TC SYMPHONY rời cảng" },
+  { en: "Steady night discharge on 2 vessels", vn: "Dỡ hàng ổn định ban đêm trên 2 tàu" },
+  { en: "SPIRIT OF MUMBAI departs B2; off-peak tariff begins", vn: "SPIRIT OF MUMBAI rời B2; bắt đầu giờ thấp điểm" },
+];
+
 // ---------------------------------------------------------------------------
-// 96 × 15-minute points
+// Physical / operational parameters of the approximation model
 // ---------------------------------------------------------------------------
 
-const SEED = 20251122;
+const PHYS = {
+  stsKwPerCrane: 470,
+  rtgKwPerCrane: 190,
+  rtgBaseKw: 150,
+  reeferBaseCount: 330,
+  reeferKwAt28C: 2.55,
+  reeferKwPerDeg: 0.06,
+  auxBaseKw: 150,
+  lightingKw: 270,
+  hvacKwPerDeg: 25,
+  pvClearSkyPeakKw: 2000,
+  pvKwp: 2450,
+  mooringMin: 30,
+  unmooringMin: 45,
+  rampMin: 30,
+};
 
-function clearSkyPv(minuteMid: number): number {
-  if (minuteMid <= PV_SUNRISE || minuteMid >= PV_SUNSET) return 0;
-  const x = Math.sin((Math.PI * (minuteMid - PV_SUNRISE)) / (PV_SUNSET - PV_SUNRISE));
-  return PV_CLEAR_SKY_PEAK_KW * Math.pow(x, 1.3);
+const PV_SUNRISE = hm(6);
+const PV_SUNSET = hm(18);
+
+function clearSkyPv(minute: number): number {
+  if (minute <= PV_SUNRISE || minute >= PV_SUNSET) return 0;
+  const x = Math.sin((Math.PI * (minute - PV_SUNRISE)) / (PV_SUNSET - PV_SUNRISE));
+  return PHYS.pvClearSkyPeakKw * Math.pow(x, 1.3);
 }
 
-function buildPoints(): ForecastPoint[] {
+function tempAt(minute: number): number {
+  return 29.5 + 4.3 * Math.cos((2 * Math.PI * (minute - hm(14, 30))) / DAY_MINUTES);
+}
+
+function shiftFactor(minute: number): number {
+  return (minute >= hm(6) && minute < hm(6, 30)) || (minute >= hm(18) && minute < hm(18, 30)) ? 0.6 : 1;
+}
+
+function evChargingAt(minute: number): number {
+  if (minute >= hm(22) || minute < hm(5)) return 320;
+  if (minute < hm(6)) return 160;
+  if (minute >= hm(11) && minute < hm(13, 30)) return 180; // midday solar charging
+  return 60;
+}
+
+function workWindow(v: VesselCall) {
+  return { start: v.etaMin + PHYS.mooringMin, end: v.etdMin - PHYS.unmooringMin };
+}
+
+export function cranesAt(v: VesselCall, minute: number): number {
+  const { start, end } = workWindow(v);
+  if (minute < start || minute >= end) return 0;
+  let c = v.cranes[0]?.cranes ?? 0;
+  for (const seg of v.cranes) if (minute >= seg.fromMin) c = seg.cranes;
+  const ramp = Math.min(1, (minute - start) / PHYS.rampMin, (end - minute) / PHYS.rampMin);
+  return c * ramp;
+}
+
+function opsAt(v: VesselCall, minute: number): number {
+  return minute >= v.etaMin + PHYS.mooringMin && minute < v.etdMin - PHYS.mooringMin ? v.opsKw : 0;
+}
+
+function dischargeProgress(v: VesselCall, minute: number): number {
+  const { start, end } = workWindow(v);
+  if (end <= start) return 0;
+  return clamp((minute - start) / (end - start), 0, 1);
+}
+
+/** Peak load a vessel call can add (used for ETA-uncertainty widening). */
+function vesselPeakLoad(v: VesselCall): number {
+  const maxCranes = Math.max(...v.cranes.map((c) => c.cranes));
+  return maxCranes * (PHYS.stsKwPerCrane + PHYS.rtgKwPerCrane) + v.opsKw;
+}
+
+// Deterministic noise (generated once, indexed by interval)
+const SEED = 20251123;
+const NOISE = (() => {
   const rand = mulberry32(SEED);
-  const loads = SCENARIO.map((s) => s.loadKw);
-  const clouds = SCENARIO.map((s) => s.cloudFactor);
-  const sigmas = SCENARIO.map((s) => s.sigmaKw);
-
-  const points: ForecastPoint[] = [];
+  const load: number[] = [];
+  const pv: number[] = [];
+  const actual: number[] = [];
+  let ar = 0;
   for (let i = 0; i < POINTS_PER_DAY; i++) {
-    const minute = i * INTERVAL_MINUTES;
-    const mid = minute + INTERVAL_MINUTES / 2;
-    const noise = (rand() - 0.5) * 70;
-    const p50 = Math.round(interpolateAnchors(loads, mid) + noise);
-    const sigma = Math.round(interpolateAnchors(sigmas, mid) * 10) / 10;
-    const band = Math.round(Z90 * sigma);
-    const pvNoise = 1 + (rand() - 0.5) * 0.06;
-    const pv = Math.max(0, Math.round(clearSkyPv(mid) * interpolateAnchors(clouds, mid) * pvNoise));
-    const netGrid = p50 - pv;
-    points.push({
-      minute,
-      label: minuteLabel(minute),
-      p10: p50 - band,
-      p50,
-      p90: p50 + band,
-      pv,
-      netGrid,
-      sigma: band / Z90,
-      pPeak: exceedanceProbability(netGrid, band / Z90),
-      tou: touBandAt(minute),
-    });
+    load.push((rand() - 0.5) * 70);
+    pv.push(1 + (rand() - 0.5) * 0.06);
+    // AR(1) metering error, roughly N(0, 60 kW)
+    const u1 = Math.max(rand(), 1e-9);
+    const u2 = rand();
+    const gauss = Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
+    ar = 0.6 * ar + 48 * gauss;
+    actual.push(ar);
   }
-  return points;
-}
-
-export const FORECAST_POINTS: ForecastPoint[] = buildPoints();
+  return { load, pv, actual };
+})();
 
 // ---------------------------------------------------------------------------
-// 12 two-hour windows aggregated from the 96 points
+// Core computation
 // ---------------------------------------------------------------------------
 
-function distributeFeeders(weights: number[], totalKw: number): FeederBreakdown {
-  const sum = weights.reduce((a, b) => a + b, 0);
-  const kws = weights.map((w) => Math.round((w / sum) * totalKw));
-  // F-06 absorbs rounding so the six lines add up exactly
-  const diff = totalKw - kws.reduce((a, b) => a + b, 0);
-  kws[5] += diff;
+function computePoint(i: number, s: ForecastScenario, preset: TouPreset): ForecastPoint {
+  const minute = i * INTERVAL_MINUTES;
+  const mid = minute + INTERVAL_MINUTES / 2;
+  const locked = minute < LOCK_MINUTE;
+  const tempC = tempAt(mid);
+  const sf = shiftFactor(mid);
+
+  let sts = 0;
+  let rtg = PHYS.rtgBaseKw;
+  let ops = 0;
+  let cranes = 0;
+  let reefers = PHYS.reeferBaseCount;
+  const byVessel: Record<string, number> = {};
+  for (const v of s.vessels) {
+    const c = cranesAt(v, mid) * sf;
+    const o = opsAt(v, mid);
+    const vSts = c * PHYS.stsKwPerCrane;
+    const vRtg = c * PHYS.rtgKwPerCrane;
+    sts += vSts;
+    rtg += vRtg;
+    ops += o;
+    cranes += c;
+    reefers += v.reefers * dischargeProgress(v, mid);
+    byVessel[v.id] = Math.round(vSts + vRtg + o);
+  }
+  reefers *= s.reeferFactor;
+  const reeferKw = reefers * (PHYS.reeferKwAt28C + PHYS.reeferKwPerDeg * (tempC - 28));
+  const aux =
+    PHYS.auxBaseKw +
+    (mid < PV_SUNRISE || mid >= PV_SUNSET ? PHYS.lightingKw : 0) +
+    PHYS.hvacKwPerDeg * Math.max(0, tempC - 26);
+
+  const feeders: FeederValues = {
+    f01: Math.round(sts),
+    f02: Math.max(0, Math.round(rtg + NOISE.load[i])), // e-RTG absorbs model noise
+    f03: Math.round(reeferKw),
+    f04: Math.round(ops),
+    f05: evChargingAt(mid),
+    f06: Math.round(aux),
+  };
+  const p50 = feeders.f01 + feeders.f02 + feeders.f03 + feeders.f04 + feeders.f05 + feeders.f06;
+
+  const pvFactor = locked ? 1 : 1 - s.pvReduction;
+  const pv = Math.max(0, Math.round(clearSkyPv(mid) * interpolateAnchors(s.cloud, mid) * NOISE.pv[i] * pvFactor));
+  const netGrid = p50 - pv;
+
+  // σ: base share of load, growing with lead time, widened around uncertain ETAs
+  let sigma: number;
+  if (locked) {
+    sigma = 0.012 * p50;
+  } else {
+    const leadH = (minute - LOCK_MINUTE) / 60;
+    sigma = 0.017 * p50 * (1 + 0.02 * leadH);
+    for (const v of s.vessels) {
+      if (v.etaMin <= LOCK_MINUTE) continue;
+      const d = (mid - v.etaMin) / (1.5 * v.etaSigmaMin);
+      sigma += vesselPeakLoad(v) * 0.18 * Math.exp(-d * d);
+    }
+  }
+  const band = Math.round(Z90 * sigma);
+  sigma = band / Z90;
+
   return {
-    f01StsKw: kws[0],
-    f02RtgKw: kws[1],
-    f03ReeferKw: kws[2],
-    f04OpsKw: kws[3],
-    f05EvBessKw: kws[4],
-    f06AuxKw: kws[5],
+    minute,
+    label: minuteLabel(minute),
+    p10: p50 - band,
+    p50,
+    p90: p50 + band,
+    pv,
+    netGrid,
+    sigma,
+    pPeak: exceedanceProbability(netGrid, sigma),
+    tou: touBandAt(minute, preset),
+    feeders,
+    byVessel,
+    cranes: Math.round(cranes * 10) / 10,
+    reefers: Math.round(reefers),
+    tempC: Math.round(tempC * 10) / 10,
+    actual: locked ? Math.round(p50 + NOISE.actual[i]) : null,
+    locked,
   };
 }
 
@@ -416,13 +568,15 @@ function majorityTou(points: ForecastPoint[]): TouBand {
   return (Object.keys(counts) as TouBand[]).reduce((a, b) => (counts[b] > counts[a] ? b : a));
 }
 
-function buildWindows(points: ForecastPoint[]): ForecastWindowRecord[] {
-  return SCENARIO.map((s, i) => {
+function buildWindows(points: ForecastPoint[], s: ForecastScenario): ForecastWindowRecord[] {
+  return WINDOW_SUMMARIES.map((summary, i) => {
     const startMinute = i * 120;
+    const endMinute = startMinute + 120;
     const pts = points.slice(i * 8, i * 8 + 8);
     const rep = pts.reduce((a, b) => (b.netGrid > a.netGrid ? b : a));
     const maxP = pts.reduce((a, b) => (b.pPeak > a.pPeak ? b : a));
     const peakPv = Math.max(...pts.map((p) => p.pv));
+    const present = s.vessels.filter((v) => v.etaMin < endMinute && v.etdMin > startMinute);
 
     let status: WindowStatus = "NORMAL";
     if (rep.netGrid > SUBSTATION_LIMIT_KW) status = "OVERLOAD";
@@ -432,7 +586,7 @@ function buildWindows(points: ForecastPoint[]): ForecastWindowRecord[] {
     return {
       id: minuteLabel(startMinute),
       startMinute,
-      timeWindow: `${minuteLabel(startMinute)} – ${minuteLabel(startMinute + 120)}`,
+      timeWindow: `${minuteLabel(startMinute)} – ${minuteLabel(endMinute)}`,
       touBand: majorityTou(pts),
       status,
       peakTime: rep.label,
@@ -444,45 +598,141 @@ function buildWindows(points: ForecastPoint[]): ForecastWindowRecord[] {
       maxPPeak: maxP.pPeak,
       maxPPeakTime: maxP.label,
       peakPvKw: peakPv,
-      vessels: s.vessels,
-      vesselCodes: s.vesselCodes,
-      berth: s.berth,
-      stsCranes: s.stsCranes,
-      reeferPlugs: s.reeferPlugs,
-      shorePowerKw: s.shorePowerKw,
-      tempAmbC: s.tempAmbC,
-      solarIrradianceWm2: s.solarIrradianceWm2,
-      summary: s.summary,
-      feeders: distributeFeeders(s.feederWeights, rep.p50),
+      vessels: present.map((v) => v.name),
+      vesselCodes: present.map((v) => v.code),
+      berth: Array.from(new Set(present.map((v) => v.berth))).sort().join(" & ") || "—",
+      stsCranes: Math.round(Math.max(...pts.map((p) => p.cranes))),
+      reeferPlugs: rep.reefers,
+      shorePowerKw: rep.feeders.f04,
+      tempAmbC: rep.tempC,
+      solarIrradianceWm2: Math.round((rep.pv / (PHYS.pvKwp * 0.8)) * 1000),
+      summary,
+      feeders: rep.feeders,
       points: pts,
     };
   });
 }
 
-export const FORECAST_WINDOWS: ForecastWindowRecord[] = buildWindows(FORECAST_POINTS);
-
-// ---------------------------------------------------------------------------
-// Page-level KPIs (derived, never hard-coded)
-// ---------------------------------------------------------------------------
-
-function buildKpis() {
-  const peakNet = FORECAST_POINTS.reduce((a, b) => (b.netGrid > a.netGrid ? b : a));
-  const peakPv = FORECAST_POINTS.reduce((a, b) => (b.pv > a.pv ? b : a));
-  const overloadWindows = FORECAST_WINDOWS.filter((w) => w.status === "OVERLOAD");
-  const warningWindows = FORECAST_WINDOWS.filter((w) => w.status === "WARNING");
-  const peakWindow =
-    FORECAST_WINDOWS.find((w) => w.peakTime === peakNet.label) ?? FORECAST_WINDOWS[0];
+function buildKpis(points: ForecastPoint[], windows: ForecastWindowRecord[]): ForecastKpis {
+  const peakNet = points.reduce((a, b) => (b.netGrid > a.netGrid ? b : a));
+  const peakPv = points.reduce((a, b) => (b.pv > a.pv ? b : a));
+  const maxPPeak = points.reduce((a, b) => (b.pPeak > a.pPeak ? b : a));
+  const overloadWindows = windows.filter((w) => w.status === "OVERLOAD");
+  const warningWindows = windows.filter((w) => w.status === "WARNING");
+  const peakWindow = windows.find((w) => w.points.includes(peakNet)) ?? windows[0];
   return {
     peakNetGrid: peakNet,
     peakWindow,
     peakPv,
     overloadWindows,
     warningWindows,
+    alertWindows: [...overloadWindows, ...warningWindows].sort((a, b) => a.startMinute - b.startMinute),
+    switchIntervals: points.filter((p) => p.pPeak >= P_PEAK_SWITCH).length,
+    maxPPeak,
     accuracyPct: 100 - MODEL_METRICS.mapePct,
   };
 }
 
-export const MODULE1_KPIS = buildKpis();
+/**
+ * Runs the approximation model for a scenario. When `lockedFrom` is given,
+ * intervals before LOCK_MINUTE are copied from it (the past is locked).
+ */
+export function computeForecast(
+  scenario: ForecastScenario,
+  preset: TouPreset = DEFAULT_TOU_PRESET,
+  lockedFrom?: ForecastResult
+): ForecastResult {
+  const points: ForecastPoint[] = [];
+  for (let i = 0; i < POINTS_PER_DAY; i++) {
+    const minute = i * INTERVAL_MINUTES;
+    if (lockedFrom && minute < LOCK_MINUTE) {
+      const p = lockedFrom.points[i];
+      points.push({ ...p, tou: touBandAt(minute, preset) });
+    } else {
+      points.push(computePoint(i, scenario, preset));
+    }
+  }
+  const windows = buildWindows(points, scenario);
+  return { scenario, preset, points, windows, kpis: buildKpis(points, windows) };
+}
+
+// ---------------------------------------------------------------------------
+// What-if simulation
+// ---------------------------------------------------------------------------
+
+export interface WhatIfInput {
+  vesselId: string;
+  /** shift of the whole call (ETA & ETD), minutes, −180…180 */
+  etaShiftMin: number;
+  /** STS cranes assigned to the selected vessel (null = plan) */
+  cranes: number | null;
+  /** reefer count change in percent, −20…20 */
+  reeferPct: number;
+  /** extra cloud cover → PV reduction in percent, 0…80 */
+  pvReductionPct: number;
+}
+
+/** Vessels whose ETA is after the last update can be shifted. */
+export const WHAT_IF_VESSELS = BASE_VESSELS.filter((v) => v.etaMin > LOCK_MINUTE);
+
+export const DEFAULT_WHAT_IF: WhatIfInput = {
+  vesselId: WHAT_IF_VESSELS[0]?.id ?? BASE_VESSELS[0].id,
+  etaShiftMin: 0,
+  cranes: null,
+  reeferPct: 0,
+  pvReductionPct: 0,
+};
+
+export function planCranes(v: VesselCall): number {
+  return Math.max(...v.cranes.map((c) => c.cranes));
+}
+
+export function applyWhatIf(base: ForecastScenario, w: WhatIfInput): ForecastScenario {
+  return {
+    ...base,
+    reeferFactor: base.reeferFactor * (1 + w.reeferPct / 100),
+    pvReduction: w.pvReductionPct / 100,
+    vessels: base.vessels.map((v) => {
+      if (v.id !== w.vesselId) return v;
+      const shift = w.etaShiftMin;
+      const cranes = w.cranes ?? null;
+      return {
+        ...v,
+        etaMin: v.etaMin + shift,
+        etdMin: v.etdMin + shift,
+        cranes: v.cranes.map((c) => ({ fromMin: c.fromMin + shift, cranes: cranes ?? c.cranes })),
+      };
+    }),
+  };
+}
+
+export type ReforecastTrigger = "ETA" | "REEFER" | "THROUGHPUT" | "STS_STOP";
+
+/** Event-based re-forecast rules: ETA ≥ 30 min, reefer ≥ 10 %, throughput ≥ 15 %, STS stop. */
+export function reforecastTriggers(w: WhatIfInput): ReforecastTrigger[] {
+  const out: ReforecastTrigger[] = [];
+  if (Math.abs(w.etaShiftMin) >= 30) out.push("ETA");
+  if (Math.abs(w.reeferPct) >= 10) out.push("REEFER");
+  const v = BASE_VESSELS.find((x) => x.id === w.vesselId);
+  if (v && w.cranes !== null) {
+    const plan = planCranes(v);
+    if (Math.abs(w.cranes - plan) / plan >= 0.15) out.push("THROUGHPUT");
+    if (w.cranes < plan) out.push("STS_STOP");
+  }
+  return out;
+}
+
+// ---------------------------------------------------------------------------
+// Base result (used by the page, exports and Module 3 hand-off)
+// ---------------------------------------------------------------------------
+
+export const BASE_FORECAST: ForecastResult = computeForecast(BASE_SCENARIO);
+export const FORECAST_POINTS = BASE_FORECAST.points;
+export const FORECAST_WINDOWS = BASE_FORECAST.windows;
+export const MODULE1_KPIS = BASE_FORECAST.kpis;
+
+/** 1 day-ahead run + one update every 15 minutes since 22:00. */
+export const ROLLING_UPDATES_SINCE_ISSUE = (LOCK_MINUTE - ISSUE_MINUTE) / INTERVAL_MINUTES;
 
 // ---------------------------------------------------------------------------
 // Accuracy history by training window (self-learning curve)
@@ -504,3 +754,8 @@ export const ACCURACY_HISTORY: AccuracyHistoryRow[] = [
   { windowDays: 25, samples: 2400, mapePct: 1.33, rmseKw: 63.7, coveragePct: 100 },
   { windowDays: 30, samples: 2880, mapePct: 1.31, rmseKw: 66.7, coveragePct: 100 },
 ];
+
+/** Event-based re-forecasts already run today (see the re-forecast log). */
+export const EVENT_REFORECASTS_TODAY = 3;
+/** Version = day-ahead run + rolling updates + event-based re-forecasts. */
+export const FORECAST_VERSION = 1 + ROLLING_UPDATES_SINCE_ISSUE + EVENT_REFORECASTS_TODAY;
