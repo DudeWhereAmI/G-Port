@@ -24,7 +24,13 @@ import {
   TrendingDown,
   ZoomOut,
   Lock,
-  ChevronRight
+  ChevronRight,
+  Database,
+  LayoutGrid,
+  List,
+  FileSpreadsheet,
+  Activity,
+  History
 } from "lucide-react";
 import {
   BASE_FORECAST,
@@ -48,8 +54,13 @@ import {
   LOCK_MINUTE,
   NOW_MINUTE,
   ISSUE_MINUTE,
+  INPUT_DATA_QUALITY,
   minuteLabel
 } from "../data/module1Forecast";
+import { downloadForecastCsv, openForecastPdf } from "../utils/exportForecast";
+import { WindowTable } from "../components/forecast/WindowTable";
+import { ModelHealthPanel } from "../components/forecast/ModelHealthPanel";
+import { ReforecastLog } from "../components/forecast/ReforecastLog";
 import { estimateM3Dispatch, ForecastHandoff } from "../data/module3PeakShaving";
 import { useFormat } from "../utils/format";
 import {
@@ -154,6 +165,7 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
   focusedWindowId,
   focusedWindowOpenReport,
   onClearFocusedWindow,
+  onNavigate,
   onSendToPeakShaving,
 }) => {
   const { t, lang } = useLanguage();
@@ -172,6 +184,13 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
 
   // What-if
   const [whatIf, setWhatIf] = useState<WhatIfInput>(DEFAULT_WHAT_IF);
+
+  // Window list view (C4), analytics tab (C1/C2), export feedback (C5)
+  const [windowView, setWindowView] = useState<"CARDS" | "TABLE">("CARDS");
+  const [zoomedWindowId, setZoomedWindowId] = useState<string | null>(null);
+  const [analyticsTab, setAnalyticsTab] = useState<"HEALTH" | "LOG">("HEALTH");
+  const [exportNotice, setExportNotice] = useState<string | null>(null);
+  const chartRef = React.useRef<HTMLDivElement>(null);
 
   // Popups
   const [selectedWindow, setSelectedWindow] = useState<ForecastWindowRecord | null>(null);
@@ -248,8 +267,24 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
     setShowForecastReportModal(true);
   };
 
-  const zoomToWindow = (w: ForecastWindowRecord) => {
+  const zoomToWindow = (w: ForecastWindowRecord, scroll = false) => {
     setDomain([Math.max(0, w.startMinute - 60), Math.min(1440, w.startMinute + 180)]);
+    setZoomedWindowId(w.id);
+    if (scroll) chartRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  const exportMeta = { lang, simulated: !isDefaultWhatIf };
+  const handleExportCsv = () => {
+    downloadForecastCsv(result, exportMeta);
+    setExportNotice(t("CSV with 96 intervals downloaded.", "Đã tải CSV gồm 96 chu kỳ."));
+  };
+  const handleExportPdf = () => {
+    const ok = openForecastPdf(result, exportMeta);
+    setExportNotice(
+      ok
+        ? t("Report opened in a new tab – choose “Save as PDF” in the print dialog.", "Đã mở báo cáo ở tab mới – chọn “Lưu dưới dạng PDF” trong hộp thoại in.")
+        : t("The browser blocked the new tab. Allow pop-ups for this site and try again.", "Trình duyệt đã chặn tab mới. Hãy cho phép cửa sổ bật lên cho trang này rồi thử lại.")
+    );
   };
 
   const handleSendToM3 = (w: ForecastWindowRecord) => {
@@ -315,7 +350,37 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2.5 self-start lg:self-auto shrink-0">
+        <div className="flex flex-col items-start lg:items-end gap-2 self-start lg:self-auto shrink-0">
+          <button
+            type="button"
+            onClick={() => onNavigate?.("INPUT_LAYER")}
+            className="px-2.5 py-1 rounded-full border border-emerald-200 bg-emerald-50 text-emerald-800 text-[11px] font-bold flex items-center gap-1.5 hover:bg-emerald-100 cursor-pointer"
+            title={t("Open Telemetry Feeds", "Mở trang Telemetry Feed")}
+          >
+            <Database className="w-3.5 h-3.5" />
+            {t(
+              `Input data: ${pct(INPUT_DATA_QUALITY.validPct)} valid · ${INPUT_DATA_QUALITY.errorFlags} error flags`,
+              `Dữ liệu đầu vào: ${pct(INPUT_DATA_QUALITY.validPct)} hợp lệ · ${INPUT_DATA_QUALITY.errorFlags} cờ lỗi`
+            )}
+            <ChevronRight className="w-3 h-3" />
+          </button>
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={handleExportCsv}
+            className="px-3 py-2 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-50 text-xs font-bold flex items-center gap-1.5 whitespace-nowrap cursor-pointer"
+          >
+            <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-700" />
+            {t("Export CSV", "Xuất CSV")}
+          </button>
+          <button
+            type="button"
+            onClick={handleExportPdf}
+            className="px-3 py-2 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-50 text-xs font-bold flex items-center gap-1.5 whitespace-nowrap cursor-pointer"
+          >
+            <Download className="w-3.5 h-3.5 text-red-700" />
+            {t("Export PDF", "Xuất PDF")}
+          </button>
           <button
             type="button"
             onClick={() => setShowSettingsModal(true)}
@@ -333,6 +398,15 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
             <FileText className="w-3.5 h-3.5" />
             <span>{t("24h Forecast Report", "Báo Cáo Dự Báo 24h")}</span>
           </button>
+        </div>
+        {exportNotice && (
+          <div className="text-[11px] text-slate-600 flex items-center gap-2">
+            {exportNotice}
+            <button type="button" onClick={() => setExportNotice(null)} className="text-slate-400 hover:text-slate-700 cursor-pointer" aria-label={t("Close", "Đóng")}>
+              <X className="w-3 h-3" />
+            </button>
+          </div>
+        )}
         </div>
       </div>
 
@@ -476,7 +550,7 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
       {/* 3. CHART + WHAT-IF */}
       {/* ================================================================== */}
       <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_300px] gap-4 items-start">
-        <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-2xs space-y-3 min-w-0">
+        <div ref={chartRef} className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-2xs space-y-3 min-w-0 scroll-mt-4">
           <div className="flex flex-col gap-3 border-b border-slate-100 pb-3">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
               <div>
@@ -531,7 +605,10 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
               {isZoomed && (
                 <button
                   type="button"
-                  onClick={() => setDomain(FULL_DAY_DOMAIN)}
+                  onClick={() => {
+                    setDomain(FULL_DAY_DOMAIN);
+                    setZoomedWindowId(null);
+                  }}
                   className="px-2.5 py-1.5 rounded-lg border border-[#004B91] text-[#004B91] text-[11px] font-bold flex items-center gap-1 hover:bg-blue-50 cursor-pointer"
                 >
                   <ZoomOut className="w-3.5 h-3.5" />
@@ -616,6 +693,25 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
         </div>
 
         <div className="flex items-center gap-1.5 flex-wrap">
+          <div className="flex items-center gap-0.5 bg-slate-100 p-0.5 rounded-lg mr-2">
+            {([
+              { id: "CARDS", icon: LayoutGrid, label: t("Cards", "Thẻ") },
+              { id: "TABLE", icon: List, label: t("Table", "Bảng") },
+            ] as const).map((v) => (
+              <button
+                key={v.id}
+                type="button"
+                onClick={() => setWindowView(v.id)}
+                aria-pressed={windowView === v.id}
+                className={`px-2.5 py-1 rounded-md text-[11px] font-bold flex items-center gap-1 cursor-pointer ${
+                  windowView === v.id ? "bg-white text-slate-900 shadow-2xs" : "text-slate-500 hover:text-slate-900"
+                }`}
+              >
+                <v.icon className="w-3.5 h-3.5" />
+                {v.label}
+              </button>
+            ))}
+          </div>
           <span className="text-slate-500 font-bold text-[11px] mr-1">{t("Filter:", "Bộ lọc:")}</span>
           {([
             { id: "ALL", label: t(`All Time Windows (${windows.length})`, `Tất cả Khung giờ (${windows.length})`) },
@@ -640,6 +736,15 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
       {/* ================================================================== */}
       {/* 5. TIME WINDOW CARDS */}
       {/* ================================================================== */}
+      {windowView === "TABLE" ? (
+        <WindowTable
+          windows={filteredWindows}
+          selectedId={zoomedWindowId}
+          onRowClick={(w) => zoomToWindow(w, true)}
+          renderTou={(w) => <TouBadge band={w.touBand} />}
+          renderStatus={(w) => <StatusBadge status={w.status} />}
+        />
+      ) : (
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
         {filteredWindows.map((win) => {
           const isOverload = win.status === "OVERLOAD";
@@ -666,7 +771,7 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
                   <div className="flex items-center justify-between gap-2 mt-0.5">
                     <button
                       type="button"
-                      onClick={() => zoomToWindow(win)}
+                      onClick={() => zoomToWindow(win, true)}
                       className="font-black text-slate-900 text-base font-mono hover:text-[#004B91] cursor-pointer"
                       title={t("Zoom chart to this window", "Phóng biểu đồ tới khung giờ này")}
                     >
@@ -764,6 +869,35 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
             </div>
           );
         })}
+      </div>
+      )}
+
+      {/* ================================================================== */}
+      {/* 6. MODEL HEALTH (C1) & RE-FORECAST LOG (C2) */}
+      {/* ================================================================== */}
+      <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-2xs space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
+          <h2 className="font-bold text-slate-900 text-sm">{t("Forecast model", "Mô hình dự báo")}</h2>
+          <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl text-xs self-start">
+            {([
+              { id: "HEALTH", icon: Activity, label: t("Model health", "Sức khỏe mô hình") },
+              { id: "LOG", icon: History, label: t("Re-forecast log", "Nhật ký tái dự báo") },
+            ] as const).map((tab) => (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setAnalyticsTab(tab.id)}
+                className={`px-3 py-1.5 rounded-lg font-bold flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
+                  analyticsTab === tab.id ? "bg-white text-slate-900 shadow-2xs" : "text-slate-600 hover:text-slate-900"
+                }`}
+              >
+                <tab.icon className="w-3.5 h-3.5" />
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        </div>
+        {analyticsTab === "HEALTH" ? <ModelHealthPanel /> : <ReforecastLog />}
       </div>
 
       {/* ================================================================== */}
@@ -928,11 +1062,19 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
               </button>
               <button
                 type="button"
-                onClick={handlePrint}
+                onClick={handleExportCsv}
+                className="px-4 py-2 bg-white border border-slate-200 text-slate-700 rounded-lg text-xs font-bold hover:bg-slate-100 transition-colors flex items-center gap-2 cursor-pointer"
+              >
+                <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-700" />
+                <span>{t("Export CSV (96 intervals)", "Xuất CSV (96 chu kỳ)")}</span>
+              </button>
+              <button
+                type="button"
+                onClick={handleExportPdf}
                 className="px-5 py-2 bg-[#004B91] text-white rounded-lg text-xs font-bold hover:bg-[#00386E] transition-colors flex items-center gap-2 shadow-2xs cursor-pointer"
               >
                 <Download className="w-3.5 h-3.5" />
-                <span>{t("Print / Save PDF", "In / Lưu PDF")}</span>
+                <span>{t("Export PDF (96 intervals)", "Xuất PDF (96 chu kỳ)")}</span>
               </button>
             </div>
           </div>

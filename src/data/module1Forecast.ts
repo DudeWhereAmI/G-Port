@@ -755,7 +755,122 @@ export const ACCURACY_HISTORY: AccuracyHistoryRow[] = [
   { windowDays: 30, samples: 2880, mapePct: 1.31, rmseKw: 66.7, coveragePct: 100 },
 ];
 
-/** Event-based re-forecasts already run today (see the re-forecast log). */
-export const EVENT_REFORECASTS_TODAY = 3;
+// ---------------------------------------------------------------------------
+// Re-forecast log (C2). Each entry re-runs the model on the scenario that was
+// valid before and after the update, so "peak before → after" is real model
+// output; the final scenario equals BASE_SCENARIO.
+// ---------------------------------------------------------------------------
+
+export type ReforecastKind = "DAY_AHEAD" | "ROLLING" | "ETA" | "REEFER" | "STS_STOP" | "RETRAIN";
+
+export interface ReforecastLogEntry {
+  /** minutes relative to 00:00 of the forecast day (negative = previous day) */
+  minute: number;
+  kind: ReforecastKind;
+  cause: BilingualText;
+  actor: BilingualText;
+  peakBeforeKw: number | null;
+  peakAfterKw: number;
+  peakAfterTime: string;
+  version: number;
+}
+
+const ISSUE_CLOUD = [1, 1, 1, 1, 0.98, 0.95, 0.9, 0.75, 0.65, 0.6, 1, 1];
+const withVessel = (s: ForecastScenario, id: string, patch: (v: VesselCall) => VesselCall): ForecastScenario => ({
+  ...s,
+  vessels: s.vessels.map((v) => (v.id === id ? patch(v) : v)),
+});
+const shiftCall = (v: VesselCall, d: number): VesselCall => ({
+  ...v,
+  etaMin: v.etaMin + d,
+  etdMin: v.etdMin + d,
+  cranes: v.cranes.map((c) => ({ ...c, fromMin: c.fromMin + d })),
+});
+
+/** Scenario as known at 22:00 the previous evening. */
+const SCENARIO_AT_ISSUE: ForecastScenario = withVessel(
+  { ...BASE_SCENARIO, cloud: ISSUE_CLOUD, reeferFactor: 1 / 1.12 },
+  "V-APU",
+  (v) => shiftCall(v, -45)
+);
+
+interface LogStep {
+  minute: number;
+  kind: ReforecastKind;
+  cause: BilingualText;
+  actor: BilingualText;
+  scenario: ForecastScenario;
+}
+
+const LOG_STEPS: LogStep[] = (() => {
+  const s0 = SCENARIO_AT_ISSUE;
+  const s1 = withVessel(s0, "V-APU", (v) => shiftCall(v, 45));
+  const s2 = { ...s1, cloud: BASE_CLOUD };
+  const s3 = { ...s2, reeferFactor: 1 };
+  return [
+    {
+      minute: ISSUE_MINUTE, kind: "DAY_AHEAD", scenario: s0,
+      cause: { en: "Day-ahead forecast for the next 24 h", vn: "Lập dự báo ngày tới cho 24h" },
+      actor: { en: "System (22:00 schedule)", vn: "Hệ thống (lịch 22:00)" },
+    },
+    {
+      minute: hm(6, 20), kind: "ETA", scenario: s1,
+      cause: { en: "ONE APUS ETA +45 min (11:45 → 12:30)", vn: "ETA ONE APUS lệch +45 phút (11:45 → 12:30)" },
+      actor: { en: "TOS N4 (automatic)", vn: "TOS N4 (tự động)" },
+    },
+    {
+      minute: hm(7, 30), kind: "ROLLING", scenario: s2,
+      cause: { en: "New weather run: afternoon cloud cover increases, PV lowered", vn: "Bản tin thời tiết mới: mây chiều tăng, hạ dự báo PV" },
+      actor: { en: "System (15-min rolling update)", vn: "Hệ thống (cuốn chiếu 15 phút)" },
+    },
+    {
+      minute: hm(9, 5), kind: "REEFER", scenario: s3,
+      cause: { en: "Reefer count +12% (updated manifests)", vn: "Số container lạnh +12% (manifest cập nhật)" },
+      actor: { en: "TOS N4 (automatic)", vn: "TOS N4 (tự động)" },
+    },
+    {
+      minute: hm(10, 40), kind: "STS_STOP", scenario: s3,
+      cause: { en: "STS S03 (SPIRIT OF MUMBAI) stopped 25 min – fault", vn: "Cẩu STS S03 (SPIRIT OF MUMBAI) dừng 25 phút do sự cố" },
+      actor: { en: "Shift supervisor (manual)", vn: "Trưởng ca (thủ công)" },
+    },
+    {
+      minute: LOCK_MINUTE, kind: "ROLLING", scenario: s3,
+      cause: { en: "Rolling update; intervals up to 11:30 locked", vn: "Cập nhật cuốn chiếu; khóa các chu kỳ đến 11:30" },
+      actor: { en: "System (15-min rolling update)", vn: "Hệ thống (cuốn chiếu 15 phút)" },
+    },
+  ];
+})();
+
+/** Number of 15-minute rolling updates in (ISSUE_MINUTE, minute]. */
+const rollingUpdatesUntil = (minute: number) => Math.floor((minute - ISSUE_MINUTE) / INTERVAL_MINUTES);
+
+export const REFORECAST_LOG: ReforecastLogEntry[] = (() => {
+  const entries: ReforecastLogEntry[] = [];
+  let events = 0;
+  let prevPeak: number | null = null;
+  for (const step of LOG_STEPS) {
+    const isEvent = step.kind === "ETA" || step.kind === "REEFER" || step.kind === "STS_STOP";
+    if (isEvent) events++;
+    const r = computeForecast(step.scenario);
+    const peak = r.kpis.peakNetGrid;
+    entries.push({
+      minute: step.minute,
+      kind: step.kind,
+      cause: step.cause,
+      actor: step.actor,
+      peakBeforeKw: prevPeak,
+      peakAfterKw: peak.netGrid,
+      peakAfterTime: peak.label,
+      version: step.kind === "DAY_AHEAD" ? 1 : 1 + rollingUpdatesUntil(step.minute) + events,
+    });
+    prevPeak = peak.netGrid;
+  }
+  return entries.reverse(); // newest first
+})();
+
+/** Event-based re-forecasts already run today (from the log). */
+export const EVENT_REFORECASTS_TODAY = REFORECAST_LOG.filter(
+  (e) => e.kind === "ETA" || e.kind === "REEFER" || e.kind === "STS_STOP"
+).length;
 /** Version = day-ahead run + rolling updates + event-based re-forecasts. */
-export const FORECAST_VERSION = 1 + ROLLING_UPDATES_SINCE_ISSUE + EVENT_REFORECASTS_TODAY;
+export const FORECAST_VERSION = REFORECAST_LOG[0].version;
