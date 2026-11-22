@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   Bar,
   CartesianGrid,
@@ -58,7 +58,7 @@ export const Kpi: React.FC<{ label: string; value: string; sub?: React.ReactNode
   </div>
 );
 
-const PERIODS: { id: PeriodKind; en: string; vn: string }[] = [
+export const PERIODS: { id: PeriodKind; en: string; vn: string }[] = [
   { id: "DAY", en: "Day", vn: "Ngày" },
   { id: "MONTH", en: "Month", vn: "Tháng" },
   { id: "QUARTER", en: "Quarter", vn: "Quý" },
@@ -66,6 +66,7 @@ const PERIODS: { id: PeriodKind; en: string; vn: string }[] = [
 ];
 
 interface OverviewTabProps {
+  period: PeriodKind;
   calls: CallRecord[];
   filtered: boolean;
   onOpenCall: (r: CallRecord) => void;
@@ -73,10 +74,9 @@ interface OverviewTabProps {
 }
 
 /** B1 – facility-level inventory overview. */
-export const OverviewTab: React.FC<OverviewTabProps> = ({ calls, filtered, extra }) => {
+export const OverviewTab: React.FC<OverviewTabProps> = ({ period, calls, filtered, extra }) => {
   const { t } = useLanguage();
   const { num, pct } = useFormat();
-  const [period, setPeriod] = useState<PeriodKind>("DAY");
   const series = periodSeries(period);
 
   // KPIs: period totals, or the filtered calls when a berth / carrier filter is active
@@ -116,19 +116,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({ calls, filtered, extra
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl text-xs">
-          {PERIODS.map((p) => (
-            <button
-              key={p.id}
-              type="button"
-              onClick={() => setPeriod(p.id)}
-              className={`px-3 py-1.5 rounded-lg font-bold cursor-pointer ${period === p.id ? "bg-white text-slate-900 shadow-2xs" : "text-slate-600 hover:text-slate-900"}`}
-            >
-              {t(p.en, p.vn)}
-            </button>
-          ))}
-        </div>
+      <div className="flex flex-wrap items-center justify-end gap-2">
         <div className="text-[11px] text-slate-500">
           {filtered
             ? t(`KPIs follow the filter: ${calls.length} vessel calls`, `KPI theo bộ lọc: ${calls.length} lượt tàu`)
@@ -145,10 +133,29 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({ calls, filtered, extra
           sub={
             <>
               {num(s1, 2)} / {num(s2, 2)} t · <span title={t("Combined uncertainty", "Độ bất định tổng hợp")}>±{num(uPct, 1)}%</span>
+              {!filtered && period === "DAY" && (
+                <div>
+                  {t(
+                    `facility · of which ${calls.length} calls ${num(callKg / 1000, 2)} t`,
+                    `toàn cơ sở · trong đó ${calls.length} lượt tàu ${num(callKg / 1000, 2)} t`
+                  )}
+                </div>
+              )}
             </>
           }
         />
-        <Kpi label={t("Intensity", "Cường độ")} value={`${num(teu ? ((s1 + s2) * 1000) / teu : 0, 2)} kgCO₂e/TEU`} sub={`${num(teu)} TEU`} />
+        <Kpi
+          label={t("Intensity", "Cường độ")}
+          value={`${num(teu ? ((s1 + s2) * 1000) / teu : 0, 2)} kgCO₂e/TEU`}
+          sub={
+            filtered
+              ? `${num(teu)} TEU`
+              : t(
+                  `facility I_term · call average ${num(callKg / Math.max(1, calls.reduce((a, r) => a + r.teu, 0)), 2)} · ${num(teu)} TEU`,
+                  `toàn cảng I_term · bình quân lượt tàu ${num(callKg / Math.max(1, calls.reduce((a, r) => a + r.teu, 0)), 2)} · ${num(teu)} TEU`
+                )
+          }
+        />
         <Kpi label={t("Directly measured data", "Dữ liệu đo trực tiếp")} value={pct(measuredPct)} sub={t("of call-level emissions", "trên phát thải lượt tàu")} />
         <Kpi
           tone="good"
