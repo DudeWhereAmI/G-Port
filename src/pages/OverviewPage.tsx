@@ -233,7 +233,7 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
           </div>
           <div className="w-full bg-slate-100 rounded-full h-2 mt-2 overflow-hidden">
             <div
-              className="bg-blue-600 h-2 rounded-full transition-all duration-500"
+              className="bg-blue-600 h-2 rounded-full transition-all duration-200"
               style={{
                 width: `${Math.min(
                   100,

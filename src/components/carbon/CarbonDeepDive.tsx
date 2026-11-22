@@ -3,6 +3,7 @@ import { Area, Bar, BarChart, CartesianGrid, ComposedChart, Legend, Line, Respon
 import { AlertTriangle, ExternalLink, Plus } from "lucide-react";
 import { useLanguage } from "../../context/LanguageContext";
 import { SERIES } from "../../theme/tokens";
+import { useToast } from "../ui";
 import { formatKShort, useFormat, useMoneyFormat } from "../../utils/format";
 import { minuteLabel } from "../../data/module1Forecast";
 import { EMISSION_FACTORS, EmissionFactorVersion } from "../../data/emissionFactors";
@@ -89,6 +90,7 @@ export const IpmvpPanel: React.FC<{ onOpenM3?: () => void }> = ({ onOpenM3 }) =>
 
 export const FactorLibrary: React.FC = () => {
   const { t } = useLanguage();
+  const toast = useToast();
   const { num } = useFormat();
   const [factors, setFactors] = useState<EmissionFactorVersion[]>(EMISSION_FACTORS);
   const [form, setForm] = useState({ value: "", year: "2024", from: "2027-01-01" });
@@ -115,6 +117,7 @@ export const FactorLibrary: React.FC = () => {
       ...fs.filter((f) => f.id !== id).map((f) => (f.kind === "GRID" ? { ...f, status: "ARCHIVED" as const } : f)),
     ]);
     setOpen(false);
+    toast(t(`Grid EF ${id} activated for new periods`, `Đã kích hoạt EF lưới ${id} cho kỳ mới`));
   };
 
   return (

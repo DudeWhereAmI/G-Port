@@ -299,7 +299,7 @@ export const VesselSchedulePage: React.FC<VesselSchedulePageProps> = ({
                     </div>
                     <div className="w-full bg-slate-100 rounded-xs h-1.5 overflow-hidden">
                       <div 
-                        className="bg-brand h-1.5 rounded-xs transition-all duration-300"
+                        className="bg-brand h-1.5 rounded-xs transition-all duration-200"
                         style={{ width: `${Math.min(100, progressPct)}%` }}
                       />
                     </div>

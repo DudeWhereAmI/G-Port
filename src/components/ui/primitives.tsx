@@ -61,7 +61,7 @@ export const IconButton: React.FC<React.ButtonHTMLAttributes<HTMLButtonElement> 
   >
     <Icon className="w-[18px] h-[18px]" aria-hidden="true" />
     {badge !== undefined && badge > 0 && (
-      <span className="absolute -top-0.5 -right-0.5 min-w-4 h-4 px-1 rounded-full bg-danger-dot text-white text-[10px] leading-4 font-semibold text-center">{badge}</span>
+      <span className="absolute -top-0.5 -right-0.5 min-w-4 h-4 px-1 rounded-full bg-danger-dot text-white text-[11px] leading-4 font-semibold text-center">{badge}</span>
     )}
   </button>
 );

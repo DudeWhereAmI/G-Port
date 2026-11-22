@@ -7,11 +7,13 @@ import { sha256Hex } from "../../utils/sha256";
 import { downloadReportingExcel } from "../../utils/carbonExport";
 import { Panel } from "./OverviewTab";
 import { EmptyState } from "./CallsTab";
+import { useToast } from "../ui";
 
 /** B4 – deadlines, legal forms, ISO 14064-1 readiness and carrier sharing. */
 export const ReportingTab: React.FC<{ calls: CallRecord[]; onOpenCall: (r: CallRecord) => void }> = ({ calls, onOpenCall }) => {
   const { t, lang } = useLanguage();
   const { pct } = useFormat();
+  const toast = useToast();
   const [drafts, setDrafts] = useState<Record<string, boolean>>({});
   const [links, setLinks] = useState<Record<string, string>>({});
   const shared = calls.filter((r) => r.status === "SHARED");
@@ -58,7 +60,7 @@ export const ReportingTab: React.FC<{ calls: CallRecord[]; onOpenCall: (r: CallR
                 <div className="flex gap-1.5">
                   <button
                     type="button"
-                    onClick={() => setDrafts((d) => ({ ...d, [f.id]: true }))}
+                    onClick={() => { setDrafts((d) => ({ ...d, [f.id]: true })); toast(t("Draft created", "Đã tạo bản nháp")); }}
                     className="px-2 py-1 rounded-control border border-line text-xs font-medium text-slate-700 hover:bg-slate-50 flex items-center gap-1 cursor-pointer"
                   >
                     <FilePlus2 className="w-3 h-3" />
@@ -66,7 +68,7 @@ export const ReportingTab: React.FC<{ calls: CallRecord[]; onOpenCall: (r: CallR
                   </button>
                   <button
                     type="button"
-                    onClick={() => downloadReportingExcel(f.id, `${f.legal} – ${t(f.name.en, f.name.vn)}`, lang)}
+                    onClick={() => { downloadReportingExcel(f.id, `${f.legal} – ${t(f.name.en, f.name.vn)}`, lang); toast(t("Excel form downloaded", "Đã tải biểu mẫu Excel")); }}
                     className="px-2 py-1 rounded-control bg-brand text-white text-xs font-medium flex items-center gap-1 cursor-pointer"
                   >
                     <Download className="w-3 h-3" />
@@ -117,12 +119,14 @@ export const ReportingTab: React.FC<{ calls: CallRecord[]; onOpenCall: (r: CallR
                     </button>
                     <button
                       type="button"
-                      onClick={() =>
-                        setLinks((l) => ({
-                          ...l,
-                          [r.id]: `https://share.gport.vn/r/${sha256Hex(r.hash + "|share|" + dayIso(30)).slice(0, 16)}?exp=${dayIso(30)}`,
-                        }))
-                      }
+                      onClick={() => {
+                        const link = `https://share.gport.vn/r/${sha256Hex(r.hash + "|share|" + dayIso(30)).slice(0, 16)}?exp=${dayIso(30)}`;
+                        setLinks((l) => ({ ...l, [r.id]: link }));
+                        navigator.clipboard?.writeText(link).then(
+                          () => toast(t("Share link created and copied (valid 30 days)", "Đã tạo và sao chép link chia sẻ (hiệu lực 30 ngày)")),
+                          () => toast(t("Share link created (valid 30 days)", "Đã tạo link chia sẻ (hiệu lực 30 ngày)"), "info")
+                        );
+                      }}
                       className="self-start px-2 py-1 rounded-control border border-line text-xs font-medium text-slate-700 hover:bg-slate-50 flex items-center gap-1 whitespace-nowrap cursor-pointer"
                     >
                       <Link2 className="w-3 h-3" />

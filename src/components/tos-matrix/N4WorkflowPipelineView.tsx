@@ -242,7 +242,7 @@ export const N4WorkflowPipelineView: React.FC = () => {
               onClick={() => setSyncedWithTOS(!syncedWithTOS)}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-bold text-slate-700 bg-slate-50 hover:bg-slate-100 transition-colors shadow-2xs"
             >
-              <RefreshCw className={`w-3.5 h-3.5 ${syncedWithTOS ? "text-emerald-600 animate-spin-slow" : "text-slate-400"}`} />
+              <RefreshCw className={`w-3.5 h-3.5 ${syncedWithTOS ? "text-emerald-600" : "text-slate-400"}`} />
               <span>{syncedWithTOS ? "TOS N4 Connected (Syncing)" : "TOS Paused"}</span>
             </button>
           </div>

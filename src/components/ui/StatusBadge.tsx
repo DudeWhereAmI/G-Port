@@ -66,7 +66,7 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, tone, children
 
 /** Neutral grey tag (module codes, categories). */
 export const Tag: React.FC<{ children: React.ReactNode; title?: string }> = ({ children, title }) => (
-  <span title={title} className="inline-flex items-center h-5 px-1.5 rounded-[4px] bg-slate-100 text-slate-500 text-[11px] font-medium leading-none">
+  <span title={title} className="inline-flex items-center h-5 px-1.5 rounded-[4px] bg-slate-100 text-slate-600 text-[11px] font-medium leading-none">
     {children}
   </span>
 );

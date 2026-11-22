@@ -446,7 +446,7 @@ export const InputLayerPage: React.FC<InputLayerPageProps> = ({
               <div className="flex items-center gap-2 mb-2 shrink-0">
                 <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
                   <div
-                    className={`h-full rounded-full transition-all duration-300 ${getProgressColor(
+                    className={`h-full rounded-full transition-all duration-200 ${getProgressColor(
                       selectedEntity.statusTone
                     )}`}
                     style={{ width: `${selectedEntity.progressPercent}%` }}
