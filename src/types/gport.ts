@@ -10,6 +10,10 @@ export type SubPageId =
   | "VESSEL_SCHEDULE"
   | "VESSEL_CARBON_INVOICE" 
   | "ECO_CALCULATOR"
+  | "COMPLIANCE"
+  | "AUDIT_LOG"
+  | "SETTINGS"
+  | "USERS"
   | "PARTNERS";
 
 export interface Asset {

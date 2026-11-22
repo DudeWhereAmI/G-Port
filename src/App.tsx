@@ -33,8 +33,15 @@ import {
   ADMIN_ZONES 
 } from "./data/activityConfig";
 
-import { EnterpriseHeader } from "./components/EnterpriseHeader";
-import { SidebarNavigation } from "./components/SidebarNavigation";
+import { TopBar, AppNotification, TimeRange } from "./components/shell/TopBar";
+import { Sidebar } from "./components/shell/Sidebar";
+import { CommandPalette } from "./components/shell/CommandPalette";
+import { LoginScreen, PlaceholderPage, StatusBar } from "./components/shell/ShellExtras";
+import { pageMeta } from "./components/shell/pages";
+import { PageSkeleton, ToastProvider } from "./components/ui";
+import { MODULE1_KPIS } from "./data/module1Forecast";
+import { DEFAULT_APPROVALS } from "./data/module3PeakShaving";
+import { DISCREPANCIES } from "./data/module2Carbon";
 import { OverviewPage } from "./pages/OverviewPage";
 import { EcoCalculatorPage } from "./pages/EcoCalculatorPage";
 import { InputLayerPage } from "./pages/InputLayerPage";
@@ -45,7 +52,7 @@ import { VesselCarbonInvoicePage, CarbonTab } from "./pages/VesselCarbonInvoiceP
 import { VesselSchedulePage } from "./pages/VesselSchedulePage";
 import { PartnersPage } from "./pages/PartnersPage";
 import { MeterTelemetryModal, MeterModalMode } from "./components/MeterTelemetryModal";
-import { LanguageProvider } from "./context/LanguageContext";
+import { LanguageProvider, useLanguage } from "./context/LanguageContext";
 import type { ForecastHandoff } from "./data/module3PeakShaving";
 
 import { 
@@ -58,12 +65,82 @@ import {
   CheckCircle2
 } from "lucide-react";
 
-export default function App() {
+function AppInner() {
+  const { t } = useLanguage();
   // Navigation & Role states
-  const [activeSubPage, setActiveSubPage] = useState<SubPageId>("OVERVIEW");
+  const [activeSubPage, setActiveSubPageRaw] = useState<SubPageId>("OVERVIEW");
+  const [pageLoading, setPageLoading] = useState(false);
+  const [paletteOpen, setPaletteOpen] = useState(false);
+  const [timeRange, setTimeRange] = useState<TimeRange>("TODAY");
+  const [signedIn, setSignedIn] = useState<boolean>(() => {
+    try {
+      return sessionStorage.getItem("gport.signedIn") === "1";
+    } catch {
+      return false;
+    }
+  });
   const [currentRole, setCurrentRole] = useState<UserRole>("ADMIN");
   const [currentUserEmail, setCurrentUserEmail] = useState("admin@gport.maritime.vn");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
+  const setActiveSubPage = React.useCallback((page: SubPageId) => {
+    if (page === "COMPLIANCE") setCarbonInitialTab("REPORTING");
+    if (page === "AUDIT_LOG") setCarbonInitialTab("METHOD");
+    setActiveSubPageRaw((prev) => {
+      if (prev !== page) {
+        setPageLoading(true);
+        setTimeout(() => setPageLoading(false), 200);
+      }
+      return page;
+    });
+  }, []);
+
+  // Tab title per page: "Dự báo phụ tải · G-Port"
+  React.useEffect(() => {
+    const m = pageMeta(activeSubPage);
+    document.title = signedIn ? `${t(m.name.en, m.name.vn)} · G-Port` : "G-Port";
+    document.documentElement.lang = t("en", "vi");
+  }, [activeSubPage, signedIn, t]);
+
+  // Ctrl/⌘+K opens the command palette
+  React.useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setPaletteOpen((o) => !o);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
+  // Sidebar collapses automatically below 1280 px
+  React.useEffect(() => {
+    const apply = () => window.innerWidth < 1280 && setSidebarCollapsed(true);
+    apply();
+    window.addEventListener("resize", apply);
+    return () => window.removeEventListener("resize", apply);
+  }, []);
+
+  const notifications: AppNotification[] = React.useMemo(() => {
+    const out: AppNotification[] = [];
+    MODULE1_KPIS.alertWindows.forEach((w) =>
+      out.push({
+        id: `m1-${w.id}`,
+        tone: w.status === "OVERLOAD" ? "danger" : "warning",
+        title: t(`Grid overload ${w.timeWindow}`, `Quá tải lưới ${w.timeWindow}`),
+        detail: t(`Net grid ${w.netGridKw.toLocaleString("en-US")} kW > 8,000 kW`, `Điện lưới thuần ${w.netGridKw.toLocaleString("vi-VN")} kW > 8.000 kW`),
+        page: "MODULE_1_FORECAST",
+      })
+    );
+    const pending = Object.values(DEFAULT_APPROVALS).filter((a) => a === "PENDING").length;
+    if (pending)
+      out.push({ id: "m3-approvals", tone: "warning", title: t(`${pending} recommendation pending`, `${pending} khuyến nghị chờ duyệt`), detail: t("Dispatch & peak shaving", "Điều độ & cắt đỉnh"), page: "MODULE_3_OPTIMIZATION" });
+    DISCREPANCIES.filter((d) => d.status === "INVESTIGATING").forEach((d) =>
+      out.push({ id: `m2-${d.meter}`, tone: "info", title: t("Discrepancy under review", "Chênh lệch đang kiểm tra"), detail: `${d.meter} · ${t(d.deviation.en, d.deviation.vn)}`, page: "VESSEL_CARBON_INVOICE" })
+    );
+    return out;
+  }, [t]);
 
   // Automatically collapse the main sidebar when entering Telemetry Feeds to maximize 2D map & timeline space
   React.useEffect(() => {
@@ -204,43 +281,63 @@ export default function App() {
   };
 
   return (
-    <LanguageProvider>
-    <div className="h-screen w-screen overflow-hidden bg-slate-100 text-slate-900 font-sans flex flex-col antialiased">
-      {/* ENTERPRISE TOP HEADER - Fixed at top, zero scrollbars */}
-      <div className="flex-none z-40">
-        <EnterpriseHeader
-          currentRole={currentRole}
-          onChangeRole={setCurrentRole}
-          onNavigate={setActiveSubPage}
-          activeSubPage={activeSubPage}
-          onOpenMeterModal={handleOpenMeterModal}
-        />
-      </div>
+    !signedIn ? (
+      <LoginScreen
+        onSignIn={() => {
+          try {
+            sessionStorage.setItem("gport.signedIn", "1");
+          } catch {
+            /* storage unavailable */
+          }
+          setSignedIn(true);
+        }}
+      />
+    ) : (
+    <div className="h-screen w-screen overflow-hidden bg-canvas text-ink font-sans flex flex-col">
+      <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:z-[80] focus:top-2 focus:left-2 focus:bg-white focus:px-3 focus:py-2 focus:rounded-control">
+        {t("Skip to content", "Bỏ qua tới nội dung")}
+      </a>
+      <TopBar
+        onOpenPalette={() => setPaletteOpen(true)}
+        notifications={notifications}
+        onNavigate={setActiveSubPage}
+        timeRange={timeRange}
+        onTimeRange={setTimeRange}
+        role={currentRole}
+        onRole={setCurrentRole}
+        email={currentUserEmail}
+        onLogout={() => {
+          try {
+            sessionStorage.removeItem("gport.signedIn");
+          } catch {
+            /* storage unavailable */
+          }
+          setSignedIn(false);
+        }}
+      />
 
-      {/* TWO-COLUMN ENTERPRISE WORKSPACE: SIDEBAR ON LEFT + MAIN SUBPAGE */}
       <div className="flex-1 flex overflow-hidden min-h-0">
-        {/* LEFT SIDEBAR TOOL NAVIGATION - Independent Scrollbar */}
-        <SidebarNavigation
-          activeSubPage={activeSubPage}
-          onSelectSubPage={setActiveSubPage}
-          collapsed={sidebarCollapsed}
-          onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
-        />
+        <Sidebar active={activeSubPage} onNavigate={setActiveSubPage} collapsed={sidebarCollapsed} onToggle={() => setSidebarCollapsed(!sidebarCollapsed)} />
 
-        {/* RIGHT MAIN CONTENT AREA - Independent Scrollbar (Full-bleed flex container on INPUT_LAYER) */}
         <main
+          id="main-content"
           className={
             activeSubPage === "INPUT_LAYER"
-              ? "flex-1 h-full overflow-hidden bg-slate-50/70 p-2 sm:p-3 flex flex-col min-w-0 min-h-0"
-              : "flex-1 h-full overflow-y-auto bg-slate-50/70 p-4 sm:p-6 min-w-0"
+              ? "flex-1 h-full overflow-hidden p-3 sm:p-4 flex flex-col min-w-0 min-h-0"
+              : "flex-1 h-full overflow-y-auto px-6 lg:px-8 py-6 min-w-0"
           }
         >
-          {/* Subpage Routing */}
+          {pageLoading && activeSubPage !== "INPUT_LAYER" && (
+            <div className="max-w-[1440px] mx-auto">
+              <PageSkeleton />
+            </div>
+          )}
           <div
+            hidden={pageLoading && activeSubPage !== "INPUT_LAYER"}
             className={
               activeSubPage === "INPUT_LAYER"
                 ? "w-full h-full flex-1 min-h-0 flex flex-col"
-                : "max-w-7xl mx-auto"
+                : "max-w-[1440px] mx-auto"
             }
           >
             {activeSubPage === "OVERVIEW" && (
@@ -323,7 +420,11 @@ export default function App() {
               />
             )}
 
-            {activeSubPage === "VESSEL_CARBON_INVOICE" && (
+            {(activeSubPage === "SETTINGS" || activeSubPage === "USERS") && (
+              <PlaceholderPage page={activeSubPage} onBack={() => setActiveSubPage("OVERVIEW")} />
+            )}
+
+            {(activeSubPage === "VESSEL_CARBON_INVOICE" || activeSubPage === "COMPLIANCE" || activeSubPage === "AUDIT_LOG") && (
               <VesselCarbonInvoicePage
                 invoices={invoices}
                 vessels={vessels}
@@ -343,6 +444,8 @@ export default function App() {
           </div>
         </main>
       </div>
+      <StatusBar />
+      <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} onNavigate={setActiveSubPage} />
 
       {/* Floating Eco Routing shortcut temporarily hidden alongside Routing & Schedules */}
 
@@ -557,6 +660,16 @@ export default function App() {
         }
       />
     </div>
+    )
+  );
+}
+
+export default function App() {
+  return (
+    <LanguageProvider>
+      <ToastProvider>
+        <AppInner />
+      </ToastProvider>
     </LanguageProvider>
   );
 }
