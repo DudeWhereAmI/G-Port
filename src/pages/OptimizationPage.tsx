@@ -1,8 +1,8 @@
 import React, { useMemo, useState } from "react";
 import { useLanguage } from "../context/LanguageContext";
 import { ElectricityTariffTou, BessSystemStatus, PvSystemStatus, SubPageId } from "../types/gport";
-import { TrendingDown, Zap, Sliders, Leaf, Info } from "lucide-react";
-import { BASE_FORECAST, SUBSTATION_LIMIT_KW } from "../data/module1Forecast";
+import { TrendingDown, Zap, Sliders, Leaf, Info, ImageDown } from "lucide-react";
+import { BASE_FORECAST, NOW_MINUTE, SUBSTATION_LIMIT_KW } from "../data/module1Forecast";
 import {
   ApprovalState,
   AssetGroup,
@@ -10,16 +10,21 @@ import {
   DEFAULT_DISPATCH_SETTINGS,
   DispatchSettings,
   FLEX_CAPACITY_KW,
+  FLEX_GROUPS,
   FlexGroupId,
+  MILP_STATS,
   ForecastHandoff,
   PROTECTED_GROUPS,
   REPORT_MVP,
   runDispatch,
 } from "../data/module3PeakShaving";
 import { useFormat, useMoneyFormat } from "../utils/format";
-import { BeforeAfterChart, M3_COLORS } from "../components/peak/PeakCharts";
+import { BeforeAfterChart, M3_COLORS, PowerBalanceChart, WaterfallChart } from "../components/peak/PeakCharts";
+import { DecisionMatrix } from "../components/peak/DecisionMatrix";
+import { ConstraintPanel } from "../components/peak/ConstraintPanel";
+import { downloadSvgAsPng } from "../utils/pngExport";
 import { GroupDrawer, GroupTable } from "../components/peak/GroupTable";
-import { APPROVAL_GROUPS } from "../components/peak/ApprovalQueue";
+import { APPROVAL_GROUPS, ApprovalLogEntry, ApprovalQueue } from "../components/peak/ApprovalQueue";
 import { LegendItem } from "../components/forecast/ForecastDemandChart";
 
 interface OptimizationPageProps {
@@ -61,13 +66,29 @@ export const OptimizationPage: React.FC<OptimizationPageProps> = ({ forecastHand
   const { num, kw, pct } = useFormat();
   const { vnd, tco2 } = useMoneyFormat();
 
-  const [approvals] = useState<Record<FlexGroupId, ApprovalState>>(DEFAULT_APPROVALS);
+  const [approvals, setApprovals] = useState<Record<FlexGroupId, ApprovalState>>(DEFAULT_APPROVALS);
+  const [decisionLog, setDecisionLog] = useState<ApprovalLogEntry[]>([]);
+  const waterfallRef = React.useRef<HTMLDivElement>(null);
+  const [pngNotice, setPngNotice] = useState<string | null>(null);
   const [settings] = useState<DispatchSettings>(DEFAULT_DISPATCH_SETTINGS);
   const [basis, setBasis] = useState<"GRID" | "LOAD">("GRID");
   const [openGroup, setOpenGroup] = useState<AssetGroup | null>(null);
 
   const result = useMemo(() => runDispatch(BASE_FORECAST, { ...settings, approvals }), [settings, approvals]);
   const approvedCount = APPROVAL_GROUPS.filter((g) => approvals[g] === "APPROVED").length;
+  const flexName = (id: FlexGroupId) => {
+    const g = FLEX_GROUPS.find((x) => x.id === id);
+    return g ? t(g.name.en, g.name.vn) : id;
+  };
+  const decide = (g: FlexGroupId, action: "APPROVED" | "REJECTED", reasonId?: string) => {
+    setApprovals((prev) => ({ ...prev, [g]: action }));
+    setDecisionLog((prev) => [{ minute: NOW_MINUTE, group: g, action, reasonId }, ...prev]);
+  };
+  const scrollTo = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+  const exportWaterfall = async () => {
+    const ok = await downloadSvgAsPng(waterfallRef.current, "gport-m3-waterfall.png");
+    setPngNotice(ok ? t("PNG downloaded.", "Đã tải ảnh PNG.") : t("Could not export the chart.", "Không xuất được biểu đồ."));
+  };
 
   return (
     <div className="space-y-6 pb-12">
@@ -135,7 +156,12 @@ export const OptimizationPage: React.FC<OptimizationPageProps> = ({ forecastHand
           <div className="text-xl sm:text-2xl font-black text-slate-900 tabular-nums">{vnd(result.savingVndPerDay)}</div>
           <div className="text-[11px] text-slate-500">{t("Objective J before − after", "Hàm mục tiêu J trước − sau")}</div>
         </div>
-        <div className="bg-white p-4 rounded-xl border border-slate-200/90">
+        <button
+          type="button"
+          onClick={() => scrollTo("m3-approvals")}
+          className="text-left bg-white p-4 rounded-xl border border-amber-300 hover:bg-amber-50/50 cursor-pointer"
+          title={t("Open the approval queue", "Mở hàng đợi phê duyệt")}
+        >
           <div className="flex items-center justify-between text-slate-500 text-[11px] font-bold mb-1">
             <span>{t("Operator approvals", "Phê duyệt vận hành")}</span>
             <Sliders className="w-4 h-4 text-amber-600" />
@@ -148,7 +174,7 @@ export const OptimizationPage: React.FC<OptimizationPageProps> = ({ forecastHand
               ? t(`${APPROVAL_GROUPS.length - approvedCount} pending`, `${APPROVAL_GROUPS.length - approvedCount} chờ duyệt`)
               : t("All approved", "Đã duyệt tất cả")}
           </div>
-        </div>
+        </button>
         <div className="bg-white p-4 rounded-xl border border-slate-200/90">
           <div className="flex items-center justify-between text-slate-500 text-[11px] font-bold mb-1">
             <span>{t("Grid energy & CO₂e saved", "Giảm điện lưới & CO₂e")}</span>
@@ -203,6 +229,62 @@ export const OptimizationPage: React.FC<OptimizationPageProps> = ({ forecastHand
           <LegendItem color={M3_COLORS.limit} kind="dashed" label={t(`Limit ${num(SUBSTATION_LIMIT_KW)} kW`, `Giới hạn ${num(SUBSTATION_LIMIT_KW)} kW`)} />
         </div>
       </Card>
+
+      {/* B3 waterfall + B2 power balance */}
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+        <Card
+          title={t("From forecast peak to peak after dispatch", "Từ đỉnh dự báo đến đỉnh sau điều độ")}
+          note={t(`Contribution of each group at ${result.peakBefore.label}`, `Đóng góp của từng nhóm lúc ${result.peakBefore.label}`)}
+          right={
+            <div className="flex items-center gap-2">
+              {pngNotice && <span className="text-[10px] text-slate-500">{pngNotice}</span>}
+              <button
+                type="button"
+                onClick={exportWaterfall}
+                className="px-2.5 py-1.5 rounded-lg border border-slate-200 text-[11px] font-bold text-slate-700 hover:bg-slate-50 flex items-center gap-1 whitespace-nowrap cursor-pointer"
+              >
+                <ImageDown className="w-3.5 h-3.5" />
+                {t("Download PNG", "Tải ảnh PNG")}
+              </button>
+            </div>
+          }
+        >
+          <div ref={waterfallRef}>
+            <WaterfallChart result={result} />
+          </div>
+        </Card>
+        <Card
+          title={t("Power balance after dispatch", "Cân bằng công suất sau điều độ")}
+          note={t("Grid + PV self-use + BESS discharge = loads + BESS charge", "Lưới + PV tự dùng + BESS xả = phụ tải + BESS sạc")}
+        >
+          <PowerBalanceChart result={result} />
+        </Card>
+      </div>
+
+      {/* B4 decision matrix */}
+      <Card
+        title={t("Decision matrix · 12 groups × 96 intervals", "Ma trận quyết định · 12 nhóm × 96 chu kỳ")}
+        note={t(
+          `${MILP_STATS.decisionVariables} decision variables · MILP solved in ${num(MILP_STATS.solveSec, 2)} s`,
+          `${MILP_STATS.decisionVariables} biến quyết định · MILP giải trong ${num(MILP_STATS.solveSec, 2)} s`
+        )}
+      >
+        <DecisionMatrix result={result} points={BASE_FORECAST.points} />
+      </Card>
+
+      {/* B5 constraints + B6 approvals */}
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 items-start">
+        <Card title={t("Constraints satisfied", "Ràng buộc đều đạt")} note={t("Checked on the dispatch plan above", "Kiểm tra trên kế hoạch điều độ phía trên")}>
+          <ConstraintPanel result={result} />
+        </Card>
+        <Card
+          id="m3-approvals"
+          title={t("Approval queue", "Hàng đợi phê duyệt")}
+          note={t("Reefer & EV commands need an operator; PV/BESS setpoints are automatic", "Lệnh reefer & sạc xe cần nhân viên duyệt; điểm đặt PV/BESS tự động")}
+        >
+          <ApprovalQueue result={result} approvals={approvals} log={decisionLog} onDecide={decide} groupName={flexName} />
+        </Card>
+      </div>
 
       {/* Dispatch groups + protected chips */}
       <Card
