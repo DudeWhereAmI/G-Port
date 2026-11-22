@@ -1,0 +1,249 @@
+import React, { useState } from "react";
+import {
+  Bar,
+  CartesianGrid,
+  Cell,
+  ComposedChart,
+  Legend,
+  Line,
+  LineChart,
+  Pie,
+  PieChart,
+  ReferenceLine,
+  ResponsiveContainer,
+  Tooltip,
+  Treemap,
+  XAxis,
+  YAxis,
+} from "recharts";
+import { useLanguage } from "../../context/LanguageContext";
+import { useFormat } from "../../utils/format";
+import {
+  BALANCE_STATS,
+  CallRecord,
+  DELTA_BAL_PCT,
+  FACILITY_SOURCES,
+  PeriodKind,
+  TARGET_INTENSITY_2026,
+  ZONES,
+  lineUncertaintyPct,
+  periodSeries,
+} from "../../data/module2Carbon";
+
+export const Panel: React.FC<{ title: string; note?: string; right?: React.ReactNode; children: React.ReactNode; className?: string; id?: string }> = ({
+  title,
+  note,
+  right,
+  children,
+  className,
+  id,
+}) => (
+  <section id={id} className={`bg-white rounded-2xl p-5 border border-slate-200/90 shadow-2xs space-y-3 min-w-0 scroll-mt-4 ${className ?? ""}`}>
+    <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2">
+      <div>
+        <h3 className="font-bold text-slate-900 text-sm">{title}</h3>
+        {note && <div className="text-[11px] text-slate-500 mt-0.5">{note}</div>}
+      </div>
+      {right}
+    </div>
+    {children}
+  </section>
+);
+
+export const Kpi: React.FC<{ label: string; value: string; sub?: React.ReactNode; tone?: "default" | "good" }> = ({ label, value, sub, tone = "default" }) => (
+  <div className={`p-4 rounded-xl border ${tone === "good" ? "bg-emerald-50/60 border-emerald-200" : "bg-white border-slate-200/90"}`}>
+    <div className="text-slate-500 text-[11px] font-bold mb-1">{label}</div>
+    <div className="text-lg sm:text-xl font-black text-slate-900 tabular-nums">{value}</div>
+    {sub && <div className="text-[11px] text-slate-500 tabular-nums">{sub}</div>}
+  </div>
+);
+
+const PERIODS: { id: PeriodKind; en: string; vn: string }[] = [
+  { id: "DAY", en: "Day", vn: "Ngày" },
+  { id: "MONTH", en: "Month", vn: "Tháng" },
+  { id: "QUARTER", en: "Quarter", vn: "Quý" },
+  { id: "YEAR", en: "Year", vn: "Năm" },
+];
+
+interface OverviewTabProps {
+  calls: CallRecord[];
+  filtered: boolean;
+  onOpenCall: (r: CallRecord) => void;
+  extra?: React.ReactNode;
+}
+
+/** B1 – facility-level inventory overview. */
+export const OverviewTab: React.FC<OverviewTabProps> = ({ calls, filtered, extra }) => {
+  const { t } = useLanguage();
+  const { num, pct } = useFormat();
+  const [period, setPeriod] = useState<PeriodKind>("DAY");
+  const series = periodSeries(period);
+
+  // KPIs: period totals, or the filtered calls when a berth / carrier filter is active
+  const s1 = filtered ? calls.reduce((a, r) => a + r.scope1Kg, 0) / 1000 : series.reduce((a, x) => a + x.scope1T, 0);
+  const s2 = filtered ? calls.reduce((a, r) => a + r.scope2Kg, 0) / 1000 : series.reduce((a, x) => a + x.scope2T, 0);
+  const teu = filtered ? calls.reduce((a, r) => a + r.teu, 0) : series.reduce((a, x) => a + x.teu, 0);
+  const lines = calls.flatMap((r) => r.lines);
+  const callKg = lines.reduce((a, l) => a + l.kg, 0);
+  const measuredPct = callKg ? (lines.filter((l) => l.level === "MEASURED").reduce((a, l) => a + l.kg, 0) / callKg) * 100 : 0;
+  const uPct = callKg ? Math.sqrt(lines.reduce((a, l) => a + (l.kg * lineUncertaintyPct(l)) ** 2, 0)) / callKg : 0;
+
+  const donut = Object.entries(FACILITY_SOURCES).map(([k, s]) => ({ key: k, name: t(s.name.en, s.name.vn), value: Math.round(s.kg), color: s.color }));
+  const donutTotal = donut.reduce((a, x) => a + x.value, 0);
+  const tree = ZONES.map((z) => ({ name: t(z.name.en, z.name.vn), size: Math.round(z.kg) }));
+  const year = periodSeries("YEAR");
+
+  const TreeCell: React.FC<any> = (p) => {
+    const { x, y, width, height, name, size, index } = p;
+    const colors = ["#004B91", "#2563EB", "#7C3AED", "#0EA5E9", "#4A81C9", "#10B981", "#94A3B8"];
+    if (width <= 0 || height <= 0) return null;
+    return (
+      <g>
+        <rect x={x} y={y} width={width} height={height} fill={colors[index % colors.length]} stroke="#fff" strokeWidth={2} />
+        {width > 70 && height > 34 && (
+          <>
+            <text x={x + 6} y={y + 16} fill="#fff" fontSize={11} fontWeight={700}>
+              {name}
+            </text>
+            <text x={x + 6} y={y + 30} fill="#fff" fontSize={10}>
+              {num(size / 1000, 1)} t
+            </text>
+          </>
+        )}
+      </g>
+    );
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl text-xs">
+          {PERIODS.map((p) => (
+            <button
+              key={p.id}
+              type="button"
+              onClick={() => setPeriod(p.id)}
+              className={`px-3 py-1.5 rounded-lg font-bold cursor-pointer ${period === p.id ? "bg-white text-slate-900 shadow-2xs" : "text-slate-600 hover:text-slate-900"}`}
+            >
+              {t(p.en, p.vn)}
+            </button>
+          ))}
+        </div>
+        <div className="text-[11px] text-slate-500">
+          {filtered
+            ? t(`KPIs follow the filter: ${calls.length} vessel calls`, `KPI theo bộ lọc: ${calls.length} lượt tàu`)
+            : period === "DAY"
+            ? t("Dataset v2 days, calls attributed to their arrival day", "Các ngày Dataset v2, lượt tàu tính theo ngày tàu đến")
+            : t("Earlier periods: modelled history (not Dataset v2)", "Các kỳ trước: lịch sử mô hình hóa (không thuộc Dataset v2)")}
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <Kpi
+          label={t("Total (Scope 1 / Scope 2)", "Tổng (Scope 1 / Scope 2)")}
+          value={`${num(s1 + s2, 2)} tCO₂e`}
+          sub={
+            <>
+              {num(s1, 2)} / {num(s2, 2)} t · <span title={t("Combined uncertainty", "Độ bất định tổng hợp")}>±{num(uPct, 1)}%</span>
+            </>
+          }
+        />
+        <Kpi label={t("Intensity", "Cường độ")} value={`${num(teu ? ((s1 + s2) * 1000) / teu : 0, 2)} kgCO₂e/TEU`} sub={`${num(teu)} TEU`} />
+        <Kpi label={t("Directly measured data", "Dữ liệu đo trực tiếp")} value={pct(measuredPct)} sub={t("of call-level emissions", "trên phát thải lượt tàu")} />
+        <Kpi
+          tone="good"
+          label={t("Reconciliation Δbal", "Sai số đối soát Δbal")}
+          value={pct(DELTA_BAL_PCT, 2)}
+          sub={t(`raw ${pct(BALANCE_STATS.rawDeltaBalPct, 2)} before cleaning`, `thô ${pct(BALANCE_STATS.rawDeltaBalPct, 2)} trước làm sạch`)}
+        />
+      </div>
+
+      <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] gap-4">
+        <Panel title={t("Scope 1 & Scope 2 over time", "Scope 1 & Scope 2 theo thời gian")} note={t("Bars tCO₂e · line kgCO₂e/TEU (right axis)", "Cột tCO₂e · đường kgCO₂e/TEU (trục phải)")}>
+          <div className="h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <ComposedChart data={series} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
+                <XAxis dataKey="label" fontSize={10} stroke="#64748B" tickLine={false} />
+                <YAxis yAxisId="t" fontSize={10} stroke="#64748B" tickLine={false} width={44} tickFormatter={(v: number) => num(v)} />
+                <YAxis yAxisId="i" orientation="right" fontSize={10} stroke="#64748B" tickLine={false} width={34} domain={[0, 35]} />
+                <Tooltip
+                  formatter={(v: any, k: any) =>
+                    k === "intensity" ? [`${num(Number(v), 2)} kgCO₂e/TEU`, t("Intensity", "Cường độ")] : [`${num(Number(v), 2)} t`, k === "scope1T" ? "Scope 1" : "Scope 2"]
+                  }
+                />
+                <Legend formatter={(k: any) => (k === "scope1T" ? "Scope 1" : k === "scope2T" ? "Scope 2" : t("Intensity", "Cường độ"))} wrapperStyle={{ fontSize: 10 }} />
+                <Bar yAxisId="t" dataKey="scope2T" stackId="s" fill="#4A81C9" />
+                <Bar yAxisId="t" dataKey="scope1T" stackId="s" fill="#F59E0B" radius={[3, 3, 0, 0]} />
+                <Line yAxisId="i" type="monotone" dataKey="intensity" stroke="#0F172A" strokeWidth={2} dot={{ r: 2 }} />
+                <ReferenceLine yAxisId="i" y={TARGET_INTENSITY_2026} stroke="#059669" strokeDasharray="4 3" />
+              </ComposedChart>
+            </ResponsiveContainer>
+          </div>
+        </Panel>
+        <Panel title={t("Emissions by source", "Phát thải theo nguồn")} note={t("Dataset v2, facility incl. unallocated", "Dataset v2, toàn cơ sở gồm phần không phân bổ")}>
+          <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-2 items-center">
+            <div className="h-48 relative">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie data={donut} dataKey="value" nameKey="name" innerRadius="55%" outerRadius="90%" paddingAngle={1}>
+                    {donut.map((d) => (
+                      <Cell key={d.key} fill={d.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip formatter={(v: any, n: any) => [`${num(Number(v) / 1000, 2)} t (${pct((Number(v) / donutTotal) * 100)})`, n]} />
+                </PieChart>
+              </ResponsiveContainer>
+              <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                <span className="font-black text-slate-900 text-sm tabular-nums">{num(donutTotal / 1000, 1)}</span>
+                <span className="text-[10px] text-slate-500">tCO₂e</span>
+              </div>
+            </div>
+            <ul className="space-y-1 text-[11px]">
+              {donut.map((d) => (
+                <li key={d.key} className="flex items-center justify-between gap-1">
+                  <span className="flex items-center gap-1.5 min-w-0">
+                    <span className="w-2.5 h-2.5 rounded-sm shrink-0" style={{ backgroundColor: d.color }} />
+                    <span className="truncate">{d.name}</span>
+                  </span>
+                  <span className="tabular-nums text-slate-600">{pct((d.value / donutTotal) * 100, 0)}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </Panel>
+      </div>
+
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+        <Panel title={t("Emissions by zone", "Phát thải theo khu vực")} note={t("Berths, reefer yard, charging hub, gate", "Cầu bến, bãi lạnh, trạm sạc, cổng")}>
+          <div className="h-56">
+            <ResponsiveContainer width="100%" height="100%">
+              <Treemap data={tree} dataKey="size" nameKey="name" content={<TreeCell />} isAnimationActive={false}>
+                <Tooltip formatter={(v: any) => [`${num(Number(v) / 1000, 2)} tCO₂e`, ""]} />
+              </Treemap>
+            </ResponsiveContainer>
+          </div>
+        </Panel>
+        <Panel
+          title={t("Intensity trend vs. target", "Xu hướng cường độ so với mục tiêu")}
+          note={t(`2026 target ${num(TARGET_INTENSITY_2026, 2)} kgCO₂e/TEU (−2%/yr from 2025)`, `Mục tiêu 2026 ${num(TARGET_INTENSITY_2026, 2)} kgCO₂e/TEU (−2%/năm so với 2025)`)}
+        >
+          <div className="h-56">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={year} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
+                <XAxis dataKey="label" fontSize={10} stroke="#64748B" tickLine={false} />
+                <YAxis fontSize={10} stroke="#64748B" tickLine={false} width={34} domain={[14, 22]} />
+                <Tooltip formatter={(v: any, k: any) => [`${num(Number(v), 2)} kgCO₂e/TEU`, k === "targetIntensity" ? t("Target", "Mục tiêu") : t("Actual", "Thực tế")]} />
+                <Legend formatter={(k: any) => (k === "targetIntensity" ? t("Target", "Mục tiêu") : t("Actual", "Thực tế"))} wrapperStyle={{ fontSize: 10 }} />
+                <Line type="monotone" dataKey="intensity" stroke="#004B91" strokeWidth={2.5} dot={{ r: 2.5 }} />
+                <Line type="monotone" dataKey="targetIntensity" stroke="#059669" strokeDasharray="5 3" dot={false} />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </Panel>
+      </div>
+      {extra}
+    </div>
+  );
+};
